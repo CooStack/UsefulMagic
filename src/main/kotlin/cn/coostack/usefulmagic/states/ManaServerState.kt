@@ -1,0 +1,85 @@
+package cn.coostack.usefulmagic.states
+
+import cn.coostack.usefulmagic.UsefulMagic
+import cn.coostack.usefulmagic.beans.PlayerManaData
+import cn.coostack.usefulmagic.packet.s2c.PacketS2CManaDataToggle
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.registry.RegistryWrapper
+import net.minecraft.server.MinecraftServer
+import net.minecraft.world.PersistentState
+import net.minecraft.world.World
+import java.util.UUID
+
+class ManaServerState : PersistentState() {
+    val playerManaData = HashMap<UUID, PlayerManaData>()
+
+    fun getDataFromServer(uuid: UUID): PlayerManaData {
+        return playerManaData.getOrPut(uuid) { PlayerManaData(uuid) }
+    }
+
+    fun sendToggle() {
+        UsefulMagic.server.playerManager.playerList.forEach {
+            val data = playerManaData.getOrPut(it.uuid) {
+                PlayerManaData(it.uuid)
+            }
+            ServerPlayNetworking.send(
+                it,
+                PacketS2CManaDataToggle(data, it.uuid)
+            )
+        }
+    }
+
+    companion object {
+        @JvmStatic
+        fun loadFromNBT(nbt: NbtCompound, lookup: RegistryWrapper.WrapperLookup): ManaServerState {
+            val loader = ManaServerState()
+            val players = nbt.getCompound("players")
+            players.keys.forEach {
+                val uuid = UUID.fromString(it)
+                val value = players.getCompound(it)
+                val data = PlayerManaData(uuid)
+                data.apply {
+                    mana = value.getInt("mana")
+                    maxMana = value.getInt("maxMana")
+                    manaRegeneration = value.getInt("manaRegeneration")
+                }
+                loader.playerManaData[uuid] = data
+            }
+            return loader
+        }
+
+        @JvmStatic
+        private val type = Type<ManaServerState>(
+            ::ManaServerState,
+            ManaServerState::loadFromNBT,
+            null
+        )
+
+        @JvmStatic
+        fun getFromState(server: MinecraftServer): ManaServerState {
+            val pm = server.getWorld(World.OVERWORLD)!!.persistentStateManager
+            val state = pm.getOrCreate(type, UsefulMagic.MOD_ID)
+            state.markDirty()
+            return state
+        }
+    }
+
+    override fun writeNbt(
+        nbt: NbtCompound,
+        registryLookup: RegistryWrapper.WrapperLookup?
+    ): NbtCompound {
+        val playersNBT = NbtCompound()
+        playerManaData.forEach {
+            val key = it.key.toString()
+            val value = it.value
+            val dataNbt = NbtCompound()
+            dataNbt.putInt("mana", value.mana)
+            dataNbt.putInt("maxMana", value.maxMana)
+            dataNbt.putInt("manaRegeneration", value.manaRegeneration)
+            playersNBT.put(key, dataNbt)
+        }
+        nbt.put("players", playersNBT)
+        return nbt
+    }
+}

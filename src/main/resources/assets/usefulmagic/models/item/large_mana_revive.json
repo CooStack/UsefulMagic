@@ -1,0 +1,26 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "usefulmagic:item/large_mana_revive"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "use_count": 0
+      },
+      "model": "usefulmagic:item/large_mana_revive_1"
+    },
+    {
+      "predicate": {
+        "use_count": 0.33
+      },
+      "model": "usefulmagic:item/large_mana_revive_2"
+    },
+    {
+      "predicate": {
+        "use_count": 0.66
+      },
+      "model": "usefulmagic:item/large_mana_revive_3"
+    }
+  ]
+}

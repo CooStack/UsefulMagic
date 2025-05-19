@@ -1,0 +1,38 @@
+{
+  "type": "usefulmagic:altar_recipe",
+  "output": {
+    "id": "usefulmagic:anti_entity_wand",
+    "count": 1
+  },
+  "data": {
+    "0": {
+      "item": "minecraft:netherite_block"
+    },
+    "1": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "2": {
+      "item": "minecraft:netherite_block"
+    },
+    "3": {
+      "item": "minecraft:dragon_breath"
+    },
+    "4": {
+      "item": "minecraft:dragon_breath"
+    },
+    "5": {
+      "item": "minecraft:netherite_block"
+    },
+    "6": {
+      "item": "minecraft:dragon_breath"
+    },
+    "7": {
+      "item": "minecraft:netherite_block"
+    }
+  },
+  "center": {
+    "item": "minecraft:nether_star"
+  },
+  "mana_need": 80000,
+  "tick": 4000
+}

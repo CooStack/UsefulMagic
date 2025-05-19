@@ -1,0 +1,51 @@
+{
+	"schemaVersion": 1,
+	"id": "usefulmagic",
+	"version": "${version}",
+	"name": "UsefulMagic",
+	"description": "有用粒子魔法阵 -> 这模组就TM离谱#2",
+	"authors": [
+		"CooStack"
+	],
+	"contact": {
+		"homepage": "https://space.bilibili.com/291397844",
+		"sources": "https://github.com/CooStack/UsefulMagic"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/usefulmagic/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			{
+				"value": "cn.coostack.usefulmagic.UsefulMagic",
+				"adapter": "kotlin"
+			}
+		],
+		"fabric-datagen": [
+			{
+				"value": "cn.coostack.usefulmagic.UsefulMagicDataGenerator",
+				"adapter": "kotlin"
+			}
+		],
+		"client": [
+			{
+				"value": "cn.coostack.usefulmagic.UsefulMagicClient",
+				"adapter": "kotlin"
+			}
+		]
+	},
+	"mixins": [
+		"usefulmagic.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.16.10",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*",
+		"fabric-language-kotlin": "*",
+		"cooparticlesapi": ">=1.8"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}

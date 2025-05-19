@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "B": {
+      "item": "minecraft:blaze_powder"
+    },
+    "E": {
+      "item": "minecraft:ender_eye"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    }
+  },
+  "pattern": [
+    " B ",
+    "OEO",
+    "OOO"
+  ],
+  "result": {
+    "count": 1,
+    "id": "usefulmagic:altar_block_core"
+  }
+}

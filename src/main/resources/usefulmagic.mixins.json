@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "cn.coostack.usefulmagic.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "FallingBlockEntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [
+  ]
+}

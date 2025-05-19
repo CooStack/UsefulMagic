@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "usefulmagic:item/wand_of_meteorite"
+  }
+}

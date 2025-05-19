@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "E": {
+      "item": "minecraft:ender_pearl"
+    },
+    "S": {
+      "item": "usefulmagic:stone_wand"
+    }
+  },
+  "pattern": [
+    " CC",
+    " SC",
+    "E C"
+  ],
+  "result": {
+    "count": 1,
+    "id": "usefulmagic:copper_wand"
+  }
+}
