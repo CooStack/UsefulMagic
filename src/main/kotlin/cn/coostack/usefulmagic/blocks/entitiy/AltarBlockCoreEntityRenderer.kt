@@ -1,8 +1,11 @@
 package cn.coostack.usefulmagic.blocks.entitiy
 
+import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.usefulmagic.blocks.AltarBlock
+import cn.coostack.usefulmagic.blocks.UsefulMagicBlocks
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.render.LightmapTextureManager
+import net.minecraft.client.render.RenderLayer
 import net.minecraft.client.render.RenderLayers
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.render.WorldRenderer
@@ -28,6 +31,7 @@ class AltarBlockCoreEntityRenderer : BlockEntityRenderer<AltarBlockCoreEntity> {
         val time = world.time
         val angle = (PI / 1800 * ((time + tickDelta) * 50 % 3600)).toFloat()
         val stack = entity.stack
+//        handleAltarBlockRender(RelativeLocation(2.0, 0.0, 0.0), matrices, vertexConsumers, light, overlay)
         if (stack.isEmpty) {
             return
         }
@@ -46,4 +50,29 @@ class AltarBlockCoreEntityRenderer : BlockEntityRenderer<AltarBlockCoreEntity> {
             0
         )
     }
+
+    fun handleAltarBlockRender(
+        relative: RelativeLocation,
+        matrices: MatrixStack,
+        vertexConsumers: VertexConsumerProvider,
+        light: Int,
+        overlay: Int
+    ) {
+        matrices.translate(relative.x, relative.y, relative.z)
+        val state = UsefulMagicBlocks.ALTAR_BLOCK.defaultState
+//        val buffer = vertexConsumers.getBuffer(RenderLayers.getEntityBlockLayer(state, false))
+        val buffer = vertexConsumers.getBuffer(RenderLayer.getTranslucent())
+        MinecraftClient.getInstance().blockRenderManager.modelRenderer.render(
+            matrices.peek(),
+            vertexConsumers.getBuffer(RenderLayer.getTranslucent()),
+            state,
+            MinecraftClient.getInstance().bakedModelManager.blockModels.getModel(state),
+            1f, 1f, 1f,
+            light,
+            overlay
+        )
+        matrices.translate(-relative.x, -relative.y, -relative.z)
+    }
+
+
 }

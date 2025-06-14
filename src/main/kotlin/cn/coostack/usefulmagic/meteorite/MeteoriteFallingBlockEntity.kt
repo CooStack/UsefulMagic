@@ -1,24 +1,19 @@
 package cn.coostack.usefulmagic.meteorite
 
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.mixin.FallingBlockEntityMixin
+import cn.coostack.usefulmagic.mixin.FallingBlockEntityAccessor
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
-import net.minecraft.block.Blocks
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.FallingBlockEntity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.SpawnGroup
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Box
-import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
-import net.minecraft.world.entity.EntityChangeListener
 
 class MeteoriteFallingBlockEntity(entityType: EntityType<out FallingBlockEntity>, world: World) :
     FallingBlockEntity(entityType, world) {
@@ -53,7 +48,7 @@ class MeteoriteFallingBlockEntity(entityType: EntityType<out FallingBlockEntity>
     var max = 120 * 10
 
     constructor(world: World, state: BlockState, pos: Vec3d) : this(ENTITY_TYPE, world) {
-        (this as FallingBlockEntityMixin).blockState = state
+        (this as FallingBlockEntityAccessor).blockState = state
 //        this.intersectionChecked = true
         setPosition(pos.x, pos.y, pos.z)
         setVelocity(Vec3d.ZERO)

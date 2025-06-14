@@ -2,6 +2,7 @@ package cn.coostack.usefulmagic.items.consumer
 
 import cn.coostack.usefulmagic.blocks.entitiy.AltarBlockCoreEntity
 import cn.coostack.usefulmagic.blocks.entitiy.MagicCoreBlockEntity
+import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes.LARGE_REVIVE_USE_COUNT
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import net.minecraft.item.Item
 import net.minecraft.item.Item.TooltipContext
@@ -50,7 +51,7 @@ class LargeManaBottle() : Item(Settings()) {
         val hand = context.hand
         user.getStackInHand(hand).decrement(1)
         val stack = ItemStack(UsefulMagicItems.LARGE_MANA_REVIVE)
-        stack.set(LargeManaRevive.LARGE_REVIVE_USE_COUNT, 1)
+        stack.set(LARGE_REVIVE_USE_COUNT, 1)
         if (!user.inventory.insertStack(stack)) {
             user.dropItem(stack, false)
         }

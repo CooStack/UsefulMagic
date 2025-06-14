@@ -5,10 +5,12 @@ import cn.coostack.usefulmagic.blocks.entitiy.AltarBlockEntity
 import cn.coostack.usefulmagic.blocks.entitiy.MagicCoreBlockEntity
 import cn.coostack.usefulmagic.blocks.entitiy.UsefulMagicBlockEntities
 import com.mojang.serialization.MapCodec
+import net.minecraft.block.Block
 import net.minecraft.block.BlockRenderType
 import net.minecraft.block.BlockState
 import net.minecraft.block.BlockWithEntity
 import net.minecraft.block.ShapeContext
+import net.minecraft.block.Waterloggable
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
@@ -17,6 +19,10 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
+import net.minecraft.state.StateManager
+import net.minecraft.state.property.BooleanProperty
+import net.minecraft.state.property.IntProperty
+import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
@@ -28,9 +34,32 @@ import net.minecraft.util.shape.VoxelShapes
 import net.minecraft.world.BlockView
 import net.minecraft.world.World
 
-class MagicCoreBlock(settings: Settings) : BlockWithEntity(settings) {
+class MagicCoreBlock(settings: Settings) : BlockWithEntity(settings), Waterloggable {
+
+    companion object {
+        @JvmField
+        val LEVEL = IntProperty.of("level", 0, 15)
+
+        @JvmField
+        val WATER_LOGGED = BooleanProperty.of("waterlogged")
+    }
+
+
     override fun getCodec(): MapCodec<out BlockWithEntity?>? {
         return createCodec(::MagicCoreBlock)
+    }
+
+    init {
+        defaultState.with(LEVEL, 15).with(WATER_LOGGED, false)
+    }
+
+    override fun appendProperties(builder: StateManager.Builder<Block?, BlockState?>) {
+        super.appendProperties(builder)
+        builder.add(LEVEL, WATER_LOGGED)
+    }
+
+    override fun getAmbientOcclusionLightLevel(state: BlockState?, world: BlockView?, pos: BlockPos?): Float {
+        return 1f
     }
 
     override fun createBlockEntity(
@@ -50,6 +79,7 @@ class MagicCoreBlock(settings: Settings) : BlockWithEntity(settings) {
         }
     }
 
+
     override fun onUse(
         state: BlockState,
         world: World,
@@ -59,24 +89,29 @@ class MagicCoreBlock(settings: Settings) : BlockWithEntity(settings) {
     ): ActionResult? {
         val res = super.onUse(state, world, pos, player, hit)
         val entity = world.getBlockEntity(pos) ?: return res
-        if (entity !is AltarBlockCoreEntity) {
+        if (world.isClient) return res
+        if (entity !is MagicCoreBlockEntity) {
             return res
         }
-        val handStack = entity.stack
-        val user = player
-        val userStack = if (user.mainHandStack.isEmpty) user.offHandStack else user.mainHandStack
-        if (handStack.isEmpty) {
-            // 把玩家手上的物品塞到这里面
-            if (userStack.isEmpty) return res
-            entity.stack = userStack.copy().also { it.count = 1 }
-            userStack.decrement(1)
-        } else {
-            // 添加到背包
-            val stack = entity.stack
-            if (user.inventory.insertStack(stack)) {
-                world.playSound(null, pos, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 2F, 1F)
-                entity.stack = ItemStack.EMPTY
-            }
+        val userStack = if (player.mainHandStack.isEmpty) player.offHandStack else player.mainHandStack
+        if (userStack.isEmpty) {
+            player.sendMessage(
+                Text.of(
+                    """
+                        §a 魔力核心-属性
+                        §7| §f当前魔力值: ${entity.currentMana}
+                        §7| §f最大储存魔力值: ${entity.maxMana}
+                        §7| §f合成进度: ${
+                        if (entity.crafting) {
+                            "${"%.2d".format(entity.craftingTick.toDouble() / (entity.currentRecipe?.tick ?: 1))}%"
+                        } else {
+                            "未发现合成配方"
+                        }
+                    }
+                        §7| §f魔力恢复速度:${entity.currentReviveSpeed}
+                    """.trimIndent()
+                )
+            )
         }
         return ActionResult.CONSUME
     }

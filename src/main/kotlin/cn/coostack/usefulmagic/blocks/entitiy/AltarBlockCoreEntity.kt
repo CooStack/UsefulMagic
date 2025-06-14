@@ -1,26 +1,25 @@
 package cn.coostack.usefulmagic.blocks.entitiy
 
-import cn.coostack.cooparticlesapi.network.particle.util.ServerParticleUtil
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup
+import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
+import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
+import cn.coostack.cooparticlesapi.network.particle.emitters.impl.SimpleParticleEmitters
+import cn.coostack.cooparticlesapi.particles.impl.ControlableFireworkEffect
+import cn.coostack.cooparticlesapi.utils.Math3DUtil
+import cn.coostack.usefulmagic.items.weapon.wands.WandItem
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
-import net.minecraft.block.Blocks
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.network.PacketCallbacks
 import net.minecraft.network.listener.ClientPlayPacketListener
 import net.minecraft.network.packet.Packet
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket
-import net.minecraft.particle.ParticleTypes
 import net.minecraft.registry.RegistryWrapper
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import kotlin.jvm.optionals.getOrElse
-import kotlin.math.max
-import kotlin.math.min
 
 class AltarBlockCoreEntity(pos: BlockPos, state: BlockState) :
     BlockEntity(UsefulMagicBlockEntities.ALTAR_BLOCK_CORE, pos, state), AltarEntity {
@@ -92,10 +91,47 @@ class AltarBlockCoreEntity(pos: BlockPos, state: BlockState) :
         return res
     }
 
+    fun getCore(): MagicCoreBlockEntity? {
+        val p = pos.up(3)
+        val entity = world?.getBlockEntity(p)
+        return entity as? MagicCoreBlockEntity
+    }
+
+    var time = 0
     fun tick(
-        world: World?,
-        pos: BlockPos?,
-        state: BlockState?,
+        world: World,
+        pos: BlockPos,
+        state: BlockState,
     ) {
+        time++
+        if (world.isClient) {
+            return
+        }
+        val core = getCore() ?: return
+        if (core.crafting) {
+            return
+        }
+        val item = stack.item
+        if (item !is WandItem) return
+        if (time % 10 == 0 && core.currentMana >= 10 && stack.damage > 0) {
+            stack.damage--
+            core.currentMana -= 10
+            val emitter = SimpleParticleEmitters(
+                pos.up(3).toCenterPos(),
+                world as ServerWorld,
+                ControlableParticleData()
+                    .also {
+                        it.effect = ControlableFireworkEffect(it.uuid)
+                        it.velocity = Vec3d(0.0, 0.2, 0.0)
+                        it.speed = -3 / 30.0
+                        it.maxAge = 20
+                        it.color = Math3DUtil.colorOf(200, 100, 250)
+                    }
+            ).also {
+                it.maxTick = 5
+                it.delay = 3
+            }
+            ParticleEmittersManager.spawnEmitters(emitter)
+        }
     }
 }

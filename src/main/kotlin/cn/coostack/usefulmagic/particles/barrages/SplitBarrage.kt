@@ -27,7 +27,8 @@ class SplitBarrage(
     bindControl: ServerParticleGroup,
     options: BarrageOption,
     val subColor: Vec3d,
-    val damage: Double,
+    shooter: PlayerEntity,
+    damage: Double,
     /**
      * 不可分裂设 -1
      */
@@ -44,7 +45,7 @@ class SplitBarrage(
      * 追踪实体范围
      */
     val traceBox: HitBox = HitBox.of(20.0, 10.0, 20.0)
-) : AbstractBarrage(loc, world, hitBox, bindControl, options) {
+) : PlayerDamagedBarrage(loc, world, hitBox, bindControl, options, damage, shooter) {
     var current = 0
     override fun tick() {
         super.tick()
@@ -108,7 +109,7 @@ class SplitBarrage(
                     enableSpeed = this@SplitBarrage.options.enableSpeed
                     maxLivingTick = 60
                     noneHitBoxTick = 10
-                }, subColor, damage / splitCount, -1, 0, true
+                }, subColor, shooter as PlayerEntity, damage / splitCount, -1, 0, true
             )
             sub.shooter = shooter
             sub.direction = Math3DUtil.rotateAsAxis(
@@ -127,16 +128,13 @@ class SplitBarrage(
                 && !livingEntity.noClip
     }
 
-    override fun onHit(result: BarrageHitResult) {
-        val source = world.damageSources.playerAttack(shooter!! as PlayerEntity)
-
+    override fun onHitDamaged(result: BarrageHitResult) {
         if (splitTime != -1) {
             split()
         }
 
-        // 造成实体伤害
+        // 重置实体的damage source
         for (entity in result.entities) {
-            entity.damage(source, damage.toFloat())
             entity.resetPortalCooldown()
             entity.timeUntilRegen = 0
             entity.hurtTime = 0

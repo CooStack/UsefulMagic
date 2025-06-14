@@ -30,7 +30,7 @@ class RoundShapeRecipe(
             val ingredients = DefaultedList.ofSize<Ingredient>(8, Ingredient.EMPTY)
             data.map.forEach {
                 val key = it.key.toIntOrNull() ?: return DataResult.error { "key type is not int" }
-                if (key!in 0..7) return DataResult.error { "index must in 0 - 7" }
+                if (key !in 0..7) return DataResult.error { "index must in 0 - 7" }
                 ingredients[key] = it.value
             }
             return DataResult.success(RoundShapeRecipe(ingredients))
@@ -79,10 +79,16 @@ class RoundShapeRecipe(
 
     private fun getRotates(): Set<List<Int>> {
         return setOf(
+            // 值代表recipe的索引
+            // 索引代表input的索引
             listOf(0, 1, 2, 3, 4, 5, 6, 7),
-            listOf(2, 4, 7, 1, 6, 0, 3, 5),
-            listOf(7, 6, 5, 4, 3, 2, 1, 0),
-            listOf(5, 3, 0, 6, 1, 7, 4, 2),
+            listOf(2, 3, 4, 5, 6, 7, 0, 1),
+            listOf(4, 5, 6, 7, 0, 1, 2, 3),
+            listOf(6, 7, 0, 1, 2, 3, 4, 5),
+            listOf(0, 7, 6, 5, 4, 3, 2, 1),
+            listOf(6, 5, 4, 3, 2, 1, 0, 7),
+            listOf(4, 3, 2, 1, 0, 7, 6, 5),
+            listOf(2, 1, 0, 7, 6, 5, 4, 3),
         )
     }
 

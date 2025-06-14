@@ -20,19 +20,20 @@ import net.minecraft.util.math.Vec3d
 import java.util.Random
 import kotlin.math.PI
 
-class DiamondSwordBarrage(loc: Vec3d, world: ServerWorld, val damage: Double, speed: Double) : AbstractBarrage(
-    loc, world, HitBox.of(6.0, 6.0, 6.0),
-    EndRodSwordStyle(), BarrageOption()
-        .apply {
-            acrossBlock = false
-            acrossLiquid = true
-            acrossEmptyCollectionShape = true
-            noneHitBoxTick = 10
-            maxLivingTick = 120
-            enableSpeed = true
-            this@apply.speed = speed
-        }
-) {
+class DiamondSwordBarrage(loc: Vec3d, world: ServerWorld, damage: Double, shooter: PlayerEntity, speed: Double) :
+    PlayerDamagedBarrage(
+        loc, world, HitBox.of(6.0, 6.0, 6.0),
+        EndRodSwordStyle(), BarrageOption()
+            .apply {
+                acrossBlock = false
+                acrossLiquid = true
+                acrossEmptyCollectionShape = true
+                noneHitBoxTick = 10
+                maxLivingTick = 120
+                enableSpeed = true
+                this@apply.speed = speed
+            }, damage, shooter
+    ) {
     override fun filterHitEntity(livingEntity: LivingEntity): Boolean {
         return shooter?.uuid != livingEntity.uuid && livingEntity.isAlive
     }
@@ -54,10 +55,6 @@ class DiamondSwordBarrage(loc: Vec3d, world: ServerWorld, val damage: Double, sp
         rotateTo.z = MathHelper.lerp(tickDelta, prevDirection.z, direction.z)
         tickDelta += 0.2
         bindControl.rotateParticlesToPoint(rotateTo)
-        if (!first) {
-            bindControl.rotateParticlesAsAxis(PI / Random(System.currentTimeMillis()).nextDouble(-1.0, 1.0))
-            first = true
-        }
         if (noclip()) {
             return
         }
@@ -76,11 +73,8 @@ class DiamondSwordBarrage(loc: Vec3d, world: ServerWorld, val damage: Double, sp
         }
     }
 
-    override fun onHit(result: BarrageHitResult) {
-        val source = world.damageSources.playerAttack(shooter!! as PlayerEntity)
+    override fun onHitDamaged(result: BarrageHitResult) {
         for (entity in result.entities) {
-            entity.damage(source, damage.toFloat())
-            entity.resetPortalCooldown()
             entity.timeUntilRegen = 0
             entity.hurtTime = 0
         }

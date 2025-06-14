@@ -17,16 +17,6 @@ class UsefulMagicModelProvider(output: FabricDataOutput) : FabricModelProvider(o
 
     override fun generateItemModels(gen: ItemModelGenerator) {
         gen.register(UsefulMagicItems.DEBUGGER, Models.GENERATED)
-        gen.register(UsefulMagicItems.WOODEN_WAND, Models.HANDHELD)
-        gen.register(UsefulMagicItems.STONE_WAND, Models.HANDHELD)
-        gen.register(UsefulMagicItems.COPPER_WAND, Models.HANDHELD)
-        gen.register(UsefulMagicItems.IRON_WAND, Models.HANDHELD)
-        gen.register(UsefulMagicItems.GOLDEN_WAND, Models.HANDHELD)
-        gen.register(UsefulMagicItems.DIAMOND_WAND, Models.HANDHELD)
-        gen.register(UsefulMagicItems.NETHERITE_WAND, Models.HANDHELD)
-        gen.register(UsefulMagicItems.WAND_OF_METEORITE, Models.HANDHELD)
-        gen.register(UsefulMagicItems.HEALTH_REVIVE_WAND, Models.HANDHELD)
-        gen.register(UsefulMagicItems.ANTI_ENTITY_WAND, Models.HANDHELD)
         gen.register(UsefulMagicItems.SMALL_MANA_REVIVE, Models.GENERATED)
         gen.register(UsefulMagicItems.SMALL_MANA_BOTTLE, Models.GENERATED)
         gen.register(UsefulMagicItems.MANA_REVIVE, Models.GENERATED)
@@ -38,5 +28,8 @@ class UsefulMagicModelProvider(output: FabricDataOutput) : FabricModelProvider(o
         gen.register(UsefulMagicItems.MANA_CRYSTAL, Models.GENERATED)
         gen.register(UsefulMagicItems.PURPLE_MANA_CRYSTAL, Models.GENERATED)
         gen.register(UsefulMagicItems.RED_MANA_CRYSTAL, Models.GENERATED)
+        gen.register(UsefulMagicItems.DEFEND_CORE, Models.GENERATED)
+        gen.register(UsefulMagicItems.FLYING_RUNE, Models.GENERATED)
+        gen.register(UsefulMagicItems.MAGIC_AXE, Models.HANDHELD)
     }
 }

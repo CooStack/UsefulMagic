@@ -10,6 +10,7 @@ import cn.coostack.usefulmagic.items.UsefulMagicItems.RED_MANA_STAR
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider
 import net.minecraft.registry.RegistryWrapper
+import net.minecraft.registry.tag.ItemTags
 import java.util.concurrent.CompletableFuture
 
 class UsefulMagicItemTagProvider(
@@ -17,6 +18,10 @@ class UsefulMagicItemTagProvider(
     completableFuture: CompletableFuture<RegistryWrapper.WrapperLookup>,
 ) : FabricTagProvider.ItemTagProvider(output, completableFuture) {
     override fun configure(lookup: RegistryWrapper.WrapperLookup) {
+
+        getOrCreateTagBuilder(ItemTags.AXES)
+            .add(UsefulMagicItems.MAGIC_AXE)
+
         getOrCreateTagBuilder(UsefulMagicItemTags.WAND)
             .add(
                 UsefulMagicItems.WOODEN_WAND,
@@ -29,6 +34,8 @@ class UsefulMagicItemTagProvider(
                 UsefulMagicItems.WAND_OF_METEORITE,
                 UsefulMagicItems.ANTI_ENTITY_WAND,
                 UsefulMagicItems.HEALTH_REVIVE_WAND,
+                UsefulMagicItems.LIGHTNING_WAND,
+                UsefulMagicItems.EXPLOSION_WAND,
             )
         getOrCreateTagBuilder(UsefulMagicItemTags.REVIVE)
             .add(
@@ -50,6 +57,6 @@ class UsefulMagicItemTagProvider(
             .add(RED_MANA_STAR)
 
         getOrCreateTagBuilder(UsefulMagicItemTags.CRYSTAL)
-            .add(RED_MANA_CRYSTAL,PURPLE_MANA_CRYSTAL, RED_MANA_CRYSTAL)
+            .add(RED_MANA_CRYSTAL, PURPLE_MANA_CRYSTAL, RED_MANA_CRYSTAL)
     }
 }

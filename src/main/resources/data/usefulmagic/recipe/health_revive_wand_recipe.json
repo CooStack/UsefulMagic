@@ -15,10 +15,10 @@
       "item": "minecraft:dragon_breath"
     },
     "3": {
-      "item": "minecraft:ender_eye"
+      "item": "minecraft:golden_apple"
     },
     "4": {
-      "item": "minecraft:golden_apple"
+      "item": "minecraft:emerald"
     },
     "5": {
       "item": "minecraft:emerald"
@@ -27,7 +27,7 @@
       "item": "minecraft:emerald"
     },
     "7": {
-      "item": "minecraft:emerald"
+      "item": "minecraft:ender_eye"
     }
   },
   "center": {

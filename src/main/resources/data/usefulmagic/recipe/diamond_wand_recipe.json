@@ -18,16 +18,16 @@
       "item": "minecraft:diamond"
     },
     "4": {
-      "item": "minecraft:diamond"
+      "item": "minecraft:amethyst_shard"
     },
     "5": {
-      "item": "minecraft:amethyst_shard"
-    },
-    "6": {
       "item": "minecraft:diamond"
     },
-    "7": {
+    "6": {
       "item": "minecraft:amethyst_shard"
+    },
+    "7": {
+      "item": "minecraft:diamond"
     }
   },
   "center": {

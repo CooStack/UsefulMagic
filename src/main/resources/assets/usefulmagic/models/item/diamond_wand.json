@@ -1,0 +1,50 @@
+{
+	"credit": "Made with Blockbench",
+	"parent": "builtin/generated",
+	"textures": {
+		"layer0": "usefulmagic:item/diamond_wand"
+	},
+	"gui_light": "front",
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [10, -90, 45],
+			"translation": [-0.5, 6, 2.5],
+			"scale": [2, 2, 1.1]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [10, 90, -45],
+			"translation": [-0.5, 6, 2.5],
+			"scale": [2, 2, 1.1]
+		},
+		"firstperson_righthand": {
+			"rotation": [0, -90, 45],
+			"translation": [2, 3, 0.5],
+			"scale": [1.5, 1.5, 1]
+		},
+		"firstperson_lefthand": {
+			"rotation": [0, -90, -45],
+			"translation": [2, 4, 0.5],
+			"scale": [1.5, 1.5, 1]
+		},
+		"ground": {
+			"translation": [0, 2, 0],
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"head": {
+			"rotation": [0, 180, 0],
+			"translation": [0, 13, 7]
+		},
+		"fixed": {
+			"rotation": [0, 180, 0]
+		}
+	},
+	"forge_data": {
+		"layers": {
+			"0": {
+				"block_light": 15,
+				"sky_light": 15
+			}
+		}
+	},
+	"loader": "forge:item_layers"
+}

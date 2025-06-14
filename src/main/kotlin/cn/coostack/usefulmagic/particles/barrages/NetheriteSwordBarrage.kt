@@ -20,19 +20,20 @@ import net.minecraft.util.math.Vec3d
 import java.util.Random
 import kotlin.math.PI
 
-class NetheriteSwordBarrage(loc: Vec3d, world: ServerWorld, val damage: Double, speed: Double) : AbstractBarrage(
-    loc, world, HitBox.of(6.0, 6.0, 6.0),
-    EndRodSwordStyle(), BarrageOption()
-        .apply {
-            acrossBlock = false
-            acrossLiquid = true
-            acrossEmptyCollectionShape = true
-            noneHitBoxTick = 5
-            maxLivingTick = 180
-            enableSpeed = true
-            this@apply.speed = speed
-        }
-) {
+class NetheriteSwordBarrage(loc: Vec3d, world: ServerWorld, damage: Double, shooter: PlayerEntity, speed: Double) :
+    PlayerDamagedBarrage(
+        loc, world, HitBox.of(6.0, 6.0, 6.0),
+        EndRodSwordStyle(), BarrageOption()
+            .apply {
+                acrossBlock = false
+                acrossLiquid = true
+                acrossEmptyCollectionShape = true
+                noneHitBoxTick = 5
+                maxLivingTick = 180
+                enableSpeed = true
+                this@apply.speed = speed
+            }, damage, shooter
+    ) {
     override fun filterHitEntity(livingEntity: LivingEntity): Boolean {
         return shooter?.uuid != livingEntity.uuid && livingEntity.isAlive
     }
@@ -54,10 +55,6 @@ class NetheriteSwordBarrage(loc: Vec3d, world: ServerWorld, val damage: Double, 
         rotateTo.z = MathHelper.lerp(tickDelta, prevDirection.z, direction.z)
         tickDelta += 0.2
         bindControl.rotateParticlesToPoint(rotateTo)
-        if (!first) {
-            bindControl.rotateParticlesAsAxis(PI / Random(System.currentTimeMillis()).nextDouble(-1.0, 1.0))
-            first = true
-        }
         if (noclip()) {
             return
         }
@@ -76,11 +73,9 @@ class NetheriteSwordBarrage(loc: Vec3d, world: ServerWorld, val damage: Double, 
         }
     }
 
-    override fun onHit(result: BarrageHitResult) {
-        val source = world.damageSources.playerAttack(shooter!! as PlayerEntity)
+    val random = Random(System.currentTimeMillis())
+    override fun onHitDamaged(result: BarrageHitResult) {
         for (entity in result.entities) {
-            entity.damage(source, damage.toFloat())
-            entity.resetPortalCooldown()
             entity.timeUntilRegen = 0
             entity.hurtTime = 0
         }
@@ -91,6 +86,8 @@ class NetheriteSwordBarrage(loc: Vec3d, world: ServerWorld, val damage: Double, 
         // 爆炸粒子
         PointsBuilder()
             .addBall(1.0, 8)
+            .rotateAsAxis(random.nextDouble(-PI, PI))
+            .rotateAsAxis(random.nextDouble(-PI, PI), RelativeLocation.xAxis())
             .create()
             .forEach {
                 ServerParticleUtil

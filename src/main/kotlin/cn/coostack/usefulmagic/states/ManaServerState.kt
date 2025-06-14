@@ -28,6 +28,7 @@ class ManaServerState : PersistentState() {
                 PacketS2CManaDataToggle(data, it.uuid)
             )
         }
+        markDirty()
     }
 
     companion object {
@@ -40,8 +41,8 @@ class ManaServerState : PersistentState() {
                 val value = players.getCompound(it)
                 val data = PlayerManaData(uuid)
                 data.apply {
-                    mana = value.getInt("mana")
                     maxMana = value.getInt("maxMana")
+                    mana = value.getInt("mana")
                     manaRegeneration = value.getInt("manaRegeneration")
                 }
                 loader.playerManaData[uuid] = data

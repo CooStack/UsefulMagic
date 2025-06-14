@@ -45,20 +45,6 @@ class LightStyle(
             RelativeLocation(0.0, maxHeight, 0.0),
             (4 * maxHeight * options).roundToInt()
         )
-//        .addWith {
-//            val res = arrayListOf<RelativeLocation>()
-//            generateExplosionCurve(power, maxHeight, maxRadius, 0.4, 4 * options, 20 * options)
-//                .forEach {
-//                    res.addAll(
-//                        getLineLocations(
-//                            it.clone().also { it.y = 0.1 },
-//                            it,
-//                            (it.length() * options).toInt()
-//                        )
-//                    )
-//                }
-//            res
-//        }
         .create()
     var current = 0
     val helper = HelperUtil.scaleStyle(

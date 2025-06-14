@@ -18,16 +18,16 @@
       "item": "usefulmagic:red_mana_star"
     },
     "4": {
-      "item": "usefulmagic:red_mana_star"
+      "item": "minecraft:redstone_block"
     },
     "5": {
-      "item": "minecraft:redstone_block"
-    },
-    "6": {
       "item": "usefulmagic:red_mana_star"
     },
-    "7": {
+    "6": {
       "item": "minecraft:redstone_block"
+    },
+    "7": {
+      "item": "usefulmagic:red_mana_star"
     }
   },
   "center": {

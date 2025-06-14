@@ -50,7 +50,6 @@ class RedManaCrystal : Item(Settings()) {
         }
         data.manaRegeneration += 3
         stack.decrement(1)
-        user.itemCooldownManager.set(this, 10)
         return super.use(world, user, hand)
     }
 

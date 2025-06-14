@@ -18,16 +18,16 @@
       "item": "minecraft:netherite_ingot"
     },
     "4": {
-      "item": "minecraft:netherite_ingot"
+      "item": "minecraft:amethyst_shard"
     },
     "5": {
-      "item": "minecraft:amethyst_shard"
-    },
-    "6": {
       "item": "minecraft:netherite_ingot"
     },
-    "7": {
+    "6": {
       "item": "minecraft:amethyst_shard"
+    },
+    "7": {
+      "item": "minecraft:netherite_ingot"
     }
   },
   "center": {

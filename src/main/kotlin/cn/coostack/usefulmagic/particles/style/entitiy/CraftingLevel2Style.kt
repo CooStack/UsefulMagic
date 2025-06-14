@@ -34,15 +34,15 @@ class CraftingLevel2Style(
     val options: Int
         get() = ParticleOption.getParticleCounts()
     val alphaHelper = HelperUtil.alphaStyle(0.0, 1.0, 20)
-    val status = HelperUtil.styleStatus(20) as StyleStatusHelper
+    val status = HelperUtil.styleStatus(20)
     override fun getCurrentFrames(): Map<StyleData, RelativeLocation> {
         return PointsBuilder()
-            .addCircle(4.0, 60)
-            .addPolygonInCircle(4, 10, 4.0)
-            .addPolygonInCircle(4, 10, 3.0)
+            .addDiscreteCircleXZ(2.0, 60,0.5)
+            .addPolygonInCircle(4, 30, 7.0)
+            .addPolygonInCircle(4, 30, 6.0)
             .rotateAsAxis(PI / 4)
-            .addPolygonInCircle(4, 10, 4.0)
-            .addPolygonInCircle(4, 10, 3.0)
+            .addPolygonInCircle(4, 30, 7.0)
+            .addPolygonInCircle(4, 30, 6.0)
             .createWithStyleData {
                 StyleData {
                     ParticleDisplayer.withSingle(

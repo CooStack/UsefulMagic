@@ -49,7 +49,6 @@ class ManaStar : Item(Settings()) {
         }
         data.maxMana += 20
         stack.decrement(1)
-        user.itemCooldownManager.set(this, 5)
         return super.use(world, user, hand)
     }
 

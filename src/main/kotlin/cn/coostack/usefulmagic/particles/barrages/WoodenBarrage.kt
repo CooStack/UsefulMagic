@@ -13,12 +13,12 @@ import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.Vec3d
 
 class WoodenBarrage(
-    val damage: Double,
-    override var shooter: LivingEntity?,
+    damage: Double,
+    shooter: PlayerEntity,
     loc: Vec3d,
     world: ServerWorld,
-    val burn: Boolean
-) : AbstractBarrage(
+    val burn: Boolean,
+) : PlayerDamagedBarrage(
     loc, world, HitBox.of(1.0, 1.0, 1.0), SingleBarrageParticleServer(), BarrageOption()
         .apply {
             acrossBlock = false
@@ -26,7 +26,8 @@ class WoodenBarrage(
             enableSpeed = true
             speed = 1.5
             noneHitBoxTick = 0
-        }) {
+        }, damage, shooter
+) {
     override fun filterHitEntity(livingEntity: LivingEntity): Boolean {
         return livingEntity.uuid != shooter?.uuid
     }
@@ -43,14 +44,12 @@ class WoodenBarrage(
         }
     }
 
-    override fun onHit(result: BarrageHitResult) {
+    override fun onHitDamaged(result: BarrageHitResult) {
+        if (!burn) {
+            return
+        }
         result.entities.forEach {
-            if (burn) {
-                it.setOnFireForTicks(120)
-            }
-            val source = it.damageSources.playerAttack(shooter!! as PlayerEntity)
-            it.damage(source, damage.toFloat())
-
+            it.setOnFireForTicks(120)
         }
     }
 }

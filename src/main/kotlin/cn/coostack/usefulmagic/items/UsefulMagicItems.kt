@@ -13,16 +13,22 @@ import cn.coostack.usefulmagic.items.consumer.RedManaCrystal
 import cn.coostack.usefulmagic.items.consumer.RedManaStar
 import cn.coostack.usefulmagic.items.consumer.SmallManaRevive
 import cn.coostack.usefulmagic.items.consumer.SmallManaGlassBottle
-import cn.coostack.usefulmagic.items.wands.AntiEntityWand
-import cn.coostack.usefulmagic.items.wands.CopperWand
-import cn.coostack.usefulmagic.items.wands.DiamondWand
-import cn.coostack.usefulmagic.items.wands.GoldenWand
-import cn.coostack.usefulmagic.items.wands.HealthReviveWand
-import cn.coostack.usefulmagic.items.wands.IronWand
-import cn.coostack.usefulmagic.items.wands.NetheriteWand
-import cn.coostack.usefulmagic.items.wands.WandOfMeteorite
-import cn.coostack.usefulmagic.items.wands.StoneWand
-import cn.coostack.usefulmagic.items.wands.WoodenWand
+import cn.coostack.usefulmagic.items.prop.DefendCoreItem
+import cn.coostack.usefulmagic.items.prop.FlyingRuneItem
+import cn.coostack.usefulmagic.items.weapon.MagicAxe
+import cn.coostack.usefulmagic.items.weapon.wands.AntiEntityWand
+import cn.coostack.usefulmagic.items.weapon.wands.CopperWand
+import cn.coostack.usefulmagic.items.weapon.wands.DiamondWand
+import cn.coostack.usefulmagic.items.weapon.wands.ExplosionWand
+import cn.coostack.usefulmagic.items.weapon.wands.GoldenWand
+import cn.coostack.usefulmagic.items.weapon.wands.HealthReviveWand
+import cn.coostack.usefulmagic.items.weapon.wands.IronWand
+import cn.coostack.usefulmagic.items.weapon.wands.LightningWand
+import cn.coostack.usefulmagic.items.weapon.wands.NetheriteWand
+import cn.coostack.usefulmagic.items.weapon.wands.WandOfMeteorite
+import cn.coostack.usefulmagic.items.weapon.wands.StoneWand
+import cn.coostack.usefulmagic.items.weapon.wands.WoodenWand
+import net.minecraft.item.AxeItem
 import net.minecraft.item.Item
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
@@ -91,6 +97,19 @@ object UsefulMagicItems {
         )
     )
 
+    val MAGIC_AXE = register(
+        "magic_axe", MagicAxe(
+            Item.Settings()
+                .attributeModifiers(
+                    AxeItem.createAttributeModifiers(
+                        UsefulMagicToolMaterials.MAGIC,
+                        2.0F, -2.2F
+                    )
+                ).fireproof()
+                .rarity(Rarity.EPIC)
+        )
+    )
+
     val WAND_OF_METEORITE = register(
         "wand_of_meteorite", WandOfMeteorite(
             Item.Settings()
@@ -106,7 +125,7 @@ object UsefulMagicItems {
         HealthReviveWand(
             Item.Settings()
                 .maxCount(1)
-                .maxDamage(500)
+                .maxDamage(1500)
                 .rarity(Rarity.EPIC)
         )
     )
@@ -116,6 +135,24 @@ object UsefulMagicItems {
             Item.Settings()
                 .maxCount(1)
                 .maxDamage(3600)
+                .rarity(Rarity.EPIC)
+        )
+    )
+
+    val LIGHTNING_WAND = register(
+        "lightning_wand", LightningWand(
+            Item.Settings()
+                .maxCount(1)
+                .maxDamage(1200)
+                .rarity(Rarity.EPIC)
+        )
+    )
+
+    val EXPLOSION_WAND = register(
+        "explosion_wand", ExplosionWand(
+            Item.Settings()
+                .maxCount(1)
+                .maxDamage(7200)
                 .rarity(Rarity.EPIC)
         )
     )
@@ -176,6 +213,13 @@ object UsefulMagicItems {
     )
     val RED_MANA_CRYSTAL = register(
         "red_mana_crystal", RedManaCrystal()
+    )
+    val DEFEND_CORE = register(
+        "defend_core", DefendCoreItem()
+    )
+
+    val FLYING_RUNE = register(
+        "flying_rune", FlyingRuneItem()
     )
 
     fun register(id: String, item: Item): Item {

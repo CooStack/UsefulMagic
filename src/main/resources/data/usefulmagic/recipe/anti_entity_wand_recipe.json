@@ -18,16 +18,16 @@
       "item": "minecraft:dragon_breath"
     },
     "4": {
-      "item": "minecraft:dragon_breath"
+      "item": "minecraft:netherite_block"
     },
     "5": {
-      "item": "minecraft:netherite_block"
-    },
-    "6": {
       "item": "minecraft:dragon_breath"
     },
-    "7": {
+    "6": {
       "item": "minecraft:netherite_block"
+    },
+    "7": {
+      "item": "minecraft:dragon_breath"
     }
   },
   "center": {

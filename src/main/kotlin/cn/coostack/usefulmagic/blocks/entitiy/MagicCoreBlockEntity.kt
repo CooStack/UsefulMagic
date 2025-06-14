@@ -3,7 +3,6 @@ package cn.coostack.usefulmagic.blocks.entitiy
 import cn.coostack.cooparticlesapi.CooParticleAPI
 import cn.coostack.cooparticlesapi.barrages.HitBox
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
-import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.network.particle.emitters.impl.PhysicsParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.impl.SimpleParticleEmitters
@@ -14,6 +13,7 @@ import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEnchantmentEffect
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
+import cn.coostack.usefulmagic.entity.util.MagicBookSpawner
 import cn.coostack.usefulmagic.particles.style.entitiy.CraftingLevel1Style
 import cn.coostack.usefulmagic.particles.style.entitiy.CraftingLevel2Style
 import cn.coostack.usefulmagic.particles.style.entitiy.CraftingLevel3Style
@@ -22,17 +22,13 @@ import cn.coostack.usefulmagic.recipe.AltarStackRecipeInput
 import cn.coostack.usefulmagic.utils.ParticleOption
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
-import net.minecraft.block.Blocks
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.listener.ClientPlayPacketListener
 import net.minecraft.network.packet.Packet
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket
-import net.minecraft.particle.DustParticleEffect
 import net.minecraft.particle.ParticleTypes
-import net.minecraft.recipe.Ingredient
 import net.minecraft.recipe.RecipeEntry
 import net.minecraft.registry.RegistryWrapper
 import net.minecraft.server.world.ServerWorld
@@ -42,11 +38,8 @@ import net.minecraft.util.collection.DefaultedList
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
-import org.joml.Vector3f
 import java.util.Optional
 import java.util.Random
-import kotlin.jvm.optionals.getOrElse
-import kotlin.math.max
 import kotlin.math.min
 
 class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
@@ -56,7 +49,7 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
     var currentReviveSpeed = 0
     var crafting = false
     var craftingTick = 0
-
+    val magicBookSpawner = MagicBookSpawner(this)
     override fun writeNbt(nbt: NbtCompound?, registryLookup: RegistryWrapper.WrapperLookup?) {
         super.writeNbt(nbt, registryLookup)
         nbt?.putInt("current_mana", currentMana)
@@ -80,41 +73,6 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
     }
 
     private fun getCurrentRecipe(): Optional<RecipeEntry<AltarRecipeType>> {
-        val pos = pos.down(3)
-        val origin = world!!.getBlockEntity(pos)
-        val east = world!!.getBlockEntity(pos.east(3))
-        val west = world!!.getBlockEntity(pos.west(3))
-        val south = world!!.getBlockEntity(pos.south(3))
-        val north = world!!.getBlockEntity(pos.north(3))
-        val se = world!!.getBlockEntity(pos.south(2).east(2))
-        val sw = world!!.getBlockEntity(pos.south(2).west(2))
-        val ne = world!!.getBlockEntity(pos.north(2).east(2))
-        val nw = world!!.getBlockEntity(pos.north(2).west(2))
-        val input = DefaultedList.ofSize(8, ItemStack.EMPTY)
-        if (nw is AltarEntity) {
-            input[0] = nw.getAltarStack()
-        }
-        if (north is AltarEntity) {
-            input[1] = north.getAltarStack()
-        }
-        if (ne is AltarEntity) {
-            input[2] = ne.getAltarStack()
-        }
-        if (west is AltarEntity) {
-            input[3] = west.getAltarStack()
-        }
-        if (east is AltarEntity) {
-            input[4] = east.getAltarStack()
-        }
-        if (sw is AltarEntity) {
-            input[5] = sw.getAltarStack()
-        }
-        if (south is AltarEntity) {
-            input[6] = south.getAltarStack()
-        }
-        if (se is AltarEntity) {
-            input[7] = se.getAltarStack()
-        }
         return world!!.recipeManager.getFirstMatch(
             AltarRecipeType.Type, getRecipeInput(), world
         )
@@ -156,20 +114,20 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
         if (ne is AltarEntity) {
             input[2] = ne.getAltarStack()
         }
-        if (west is AltarEntity) {
-            input[3] = west.getAltarStack()
-        }
         if (east is AltarEntity) {
-            input[4] = east.getAltarStack()
-        }
-        if (sw is AltarEntity) {
-            input[5] = sw.getAltarStack()
-        }
-        if (south is AltarEntity) {
-            input[6] = south.getAltarStack()
+            input[3] = east.getAltarStack()
         }
         if (se is AltarEntity) {
-            input[7] = se.getAltarStack()
+            input[4] = se.getAltarStack()
+        }
+        if (south is AltarEntity) {
+            input[5] = south.getAltarStack()
+        }
+        if (sw is AltarEntity) {
+            input[6] = sw.getAltarStack()
+        }
+        if (west is AltarEntity) {
+            input[7] = west.getAltarStack()
         }
         var center = ItemStack.EMPTY
         if (origin is AltarEntity) {
@@ -182,6 +140,15 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
 
     private fun hasRecipe(): Boolean {
         return getCurrentRecipe().isPresent
+    }
+
+    fun getCenterAltarBlockEntity(): AltarBlockCoreEntity? {
+        val pos = pos.down(3)
+        val entity = world!!.getBlockEntity(pos)
+        if (entity !is AltarBlockCoreEntity) {
+            return null
+        }
+        return entity
     }
 
     fun getAnotherAltarBlockEntities(): Set<AltarEntity> {
@@ -283,6 +250,17 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
 
         maxMana = anotherMaxMana
         currentReviveSpeed = anotherRevive
+
+        // 尝试生成
+        // 只在服务器调用
+        if (!world.isClient) {
+            magicBookSpawner.tick()
+            if (magicBookSpawner.start){
+                tick++
+                return
+            }
+        }
+
         if (crafting) {
             // 合成中不能聚集魔力
             tick++
@@ -387,7 +365,6 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
             loop++
             if (!crafting && !cancel) {
                 cancel = true
-//                over(loop >= tick)
                 over(loop >= tick)
                 emitters.forEach {
                     it.stop()
@@ -550,9 +527,7 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
                     }
             )
             up.apply {
-//                evalEmittersXWithT = "3*(RANDOM() - RANDOM())"
-//                evalEmittersZWithT = "3*(RANDOM() - RANDOM())"
-                wind = Vec3d(0.0, 10.0, 0.0)
+                wind.direction = Vec3d(0.0, 10.0, 0.0)
                 count = 30
                 shootType = EmittersShootTypes.box(
                     HitBox.of(1.0, 1.0, 1.0)
@@ -571,9 +546,7 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
                     }
             )
             centerUP.apply {
-//                evalEmittersXWithT = "3*(RANDOM() - RANDOM())"
-//                evalEmittersZWithT = "3*(RANDOM() - RANDOM())"
-                wind = Vec3d(0.0, 10.0, 0.0)
+                wind.direction = Vec3d(0.0, 10.0, 0.0)
                 count = 30
                 shootType = EmittersShootTypes.box(
                     HitBox.of(1.0, 1.0, 1.0)

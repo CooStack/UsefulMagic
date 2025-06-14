@@ -11,8 +11,6 @@ import java.util.concurrent.FutureTask
 
 @Environment(EnvType.CLIENT)
 object ClientManaManager {
-
-
     val data by lazy {
         val data = PlayerManaData(MinecraftClient.getInstance().player!!.uuid)
         data

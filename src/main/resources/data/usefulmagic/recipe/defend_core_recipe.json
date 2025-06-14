@@ -1,0 +1,38 @@
+{
+  "type": "usefulmagic:altar_recipe",
+  "output": {
+    "id": "usefulmagic:flying_rune",
+    "count": 1
+  },
+  "data": {
+    "0": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "1": {
+      "item": "minecraft:turtle_scute"
+    },
+    "2": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "3": {
+      "item": "minecraft:redstone_block"
+    },
+    "4": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "5": {
+      "item": "minecraft:turtle_scute"
+    },
+    "6": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "7": {
+      "item": "minecraft:redstone_block"
+    }
+  },
+  "center": {
+    "item": "minecraft:nether_star"
+  },
+  "mana_need": 15000,
+  "tick": 2400
+}

@@ -3,6 +3,8 @@ package cn.coostack.usefulmagic.items.consumer
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.blocks.entitiy.AltarBlockCoreEntity
 import cn.coostack.usefulmagic.blocks.entitiy.MagicCoreBlockEntity
+import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes
+import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes.LARGE_REVIVE_USE_COUNT
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import cn.coostack.usefulmagic.managers.ClientManaManager
 import com.mojang.serialization.Codec
@@ -35,12 +37,6 @@ class LargeManaRevive(settings: Settings) : Item(settings) {
 
     companion object {
         const val MAX_USAGE = 3
-
-        @JvmStatic
-        val LARGE_REVIVE_USE_COUNT = Registry.register(
-            Registries.DATA_COMPONENT_TYPE, Identifier.of(UsefulMagic.MOD_ID, "large_revive_usage"),
-            ComponentType.builder<Int>().codec(Codec.INT).build()
-        )
     }
 
     override fun appendTooltip(
