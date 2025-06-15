@@ -1,7 +1,7 @@
 {
   "type": "usefulmagic:altar_recipe",
   "output": {
-    "id": "usefulmagic:flying_rune",
+    "id": "usefulmagic:defend_core",
     "count": 1
   },
   "data": {
