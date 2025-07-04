@@ -92,7 +92,7 @@ class FlyingRuneCloudEmitters(var player: UUID, pos: Vec3d, world: World?) : Cla
                 random.nextInt(200, 255),
             )
         data.alpha = random.nextDouble(0.35, 0.85).toFloat()
-        data.textureSheet = ParticleTextureSheet.PARTICLE_SHEET_TRANSLUCENT
+        data.setTextureSheet(ParticleTextureSheet.PARTICLE_SHEET_TRANSLUCENT)
         controler.addPreTickAction {
             updatePhysics(this.pos, data)
             val r = (color.x * 255).toInt()

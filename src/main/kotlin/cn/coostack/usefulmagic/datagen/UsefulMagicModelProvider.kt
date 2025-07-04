@@ -16,6 +16,7 @@ class UsefulMagicModelProvider(output: FabricDataOutput) : FabricModelProvider(o
     }
 
     override fun generateItemModels(gen: ItemModelGenerator) {
+
         gen.register(UsefulMagicItems.DEBUGGER, Models.GENERATED)
         gen.register(UsefulMagicItems.SMALL_MANA_REVIVE, Models.GENERATED)
         gen.register(UsefulMagicItems.SMALL_MANA_BOTTLE, Models.GENERATED)
@@ -30,6 +31,6 @@ class UsefulMagicModelProvider(output: FabricDataOutput) : FabricModelProvider(o
         gen.register(UsefulMagicItems.RED_MANA_CRYSTAL, Models.GENERATED)
         gen.register(UsefulMagicItems.DEFEND_CORE, Models.GENERATED)
         gen.register(UsefulMagicItems.FLYING_RUNE, Models.GENERATED)
-        gen.register(UsefulMagicItems.MAGIC_AXE, Models.HANDHELD)
+        gen.register(UsefulMagicItems.TUTORIAL_BOOK, Models.GENERATED)
     }
 }

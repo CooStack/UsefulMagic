@@ -16,7 +16,7 @@ abstract class MobSpawner {
     /**
      * 此方法需要将spawnCondition返回的结果设置为false 否则会不断生成
      */
-    abstract fun onSpawn()
+    abstract fun onSpawn(entity: LivingEntity)
 
     abstract fun getSpawnedEntity(): LivingEntity
 
@@ -34,13 +34,11 @@ abstract class MobSpawner {
      */
     abstract fun onCancelSpawn()
 
-
     fun spawn() {
         val entity = getSpawnedEntity()
-        val spawnLoc = getSpawnLocation()
         val world = entity.world
         world.spawnEntity(entity)
-        entity.setPosition(spawnLoc)
+        onSpawn(entity)
     }
 
     /**
@@ -53,7 +51,6 @@ abstract class MobSpawner {
             doSpawnTick()
             if (currentTick++ > getSpawnTicks()) {
                 spawn()
-                onSpawn()
                 currentTick = 0
                 start = false
             }

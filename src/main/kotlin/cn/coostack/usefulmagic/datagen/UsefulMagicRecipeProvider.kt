@@ -12,6 +12,7 @@ import net.minecraft.recipe.book.RecipeCategory
 import net.minecraft.registry.RegistryWrapper
 import net.minecraft.registry.tag.ItemTags
 import java.util.concurrent.CompletableFuture
+import kotlin.math.exp
 
 class UsefulMagicRecipeProvider(
     output: FabricDataOutput,
@@ -19,6 +20,18 @@ class UsefulMagicRecipeProvider(
 ) :
     FabricRecipeProvider(output, registriesFuture) {
     override fun generate(exporter: RecipeExporter) {
+        ShapedRecipeJsonBuilder
+            .create(RecipeCategory.MISC, UsefulMagicItems.TUTORIAL_BOOK, 1)
+            .pattern(" T ")
+            .pattern("YBR")
+            .pattern(" H ")
+            .input('T', Items.SUGAR)
+            .input('Y', Items.GLOWSTONE_DUST)
+            .input('R', Items.REDSTONE)
+            .input('H', Items.GUNPOWDER)
+            .input('B', Items.BOOK)
+            .criterion("has_item", conditionsFromItem(Items.BOOK))
+            .offerTo(exporter)
         ShapedRecipeJsonBuilder
             .create(RecipeCategory.COMBAT, UsefulMagicItems.WOODEN_WAND, 1)
             .pattern(" WW")

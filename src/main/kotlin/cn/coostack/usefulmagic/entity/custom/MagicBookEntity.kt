@@ -52,7 +52,6 @@ import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvent
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
-import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import kotlin.math.*
@@ -241,6 +240,12 @@ class MagicBookEntity(entityType: EntityType<out PathAwareEntity>, world: World)
     override fun onStoppedTrackingBy(player: ServerPlayerEntity?) {
         super.onStoppedTrackingBy(player)
         bossBar.removePlayer(player)
+        // 没有玩家看得到bossBar, 说明他妈的这个区块应该快GG了
+//        println("stopped tracking by $player")
+//        if (bossBar.players.isEmpty()) {
+//            // 移除实体必然需要中断技能使用
+//            skillManager.resetActiveSkill(false)
+//        }
     }
 
     override fun onDeath(damageSource: DamageSource?) {
@@ -419,6 +424,17 @@ class MagicBookEntity(entityType: EntityType<out PathAwareEntity>, world: World)
         dropStack(UsefulMagicItems.EXPLOSION_WAND.defaultStack)
     }
 
+    override fun remove(reason: RemovalReason?) {
+        super.remove(reason)
+        // 移除实体必然需要中断技能使用
+//        println("移除实体: $reason")
+        skillManager.resetActiveSkill(false)
+    }
+
+    override fun checkDespawn() {
+        super.checkDespawn()
+    }
+
     override fun tick() {
         if (entitySpawning) {
             val step = bookMaxHealth / spawningTick
@@ -571,6 +587,7 @@ class MagicBookEntity(entityType: EntityType<out PathAwareEntity>, world: World)
         barrage.shooter = this
         BarrageManager.spawn(barrage)
     }
+
 
     fun getHealthState(): Int {
         val max = getUnlimitMaxHealth()

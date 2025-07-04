@@ -189,6 +189,7 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
             if (currentRecipe == null) {
                 this.currentRecipe = value
             }
+
             if (currentRecipe != null && currentRecipe != value) {
                 this.currentRecipe = value
                 craftingTick = 0
@@ -255,7 +256,7 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
         // 只在服务器调用
         if (!world.isClient) {
             magicBookSpawner.tick()
-            if (magicBookSpawner.start){
+            if (magicBookSpawner.start) {
                 tick++
                 return
             }

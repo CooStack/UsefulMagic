@@ -57,6 +57,6 @@ class UsefulMagicItemTagProvider(
             .add(RED_MANA_STAR)
 
         getOrCreateTagBuilder(UsefulMagicItemTags.CRYSTAL)
-            .add(RED_MANA_CRYSTAL, PURPLE_MANA_CRYSTAL, RED_MANA_CRYSTAL)
+            .add(UsefulMagicItems.MANA_CRYSTAL, PURPLE_MANA_CRYSTAL, RED_MANA_CRYSTAL)
     }
 }

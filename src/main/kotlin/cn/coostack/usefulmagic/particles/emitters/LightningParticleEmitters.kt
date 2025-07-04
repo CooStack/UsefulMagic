@@ -80,7 +80,7 @@ class LightningParticleEmitters(pos: Vec3d, world: World?) : ClassParticleEmitte
         val g = (data.color.y * 255).toInt()
         val b = (data.color.z * 255).toInt()
         data.alpha = 0.8f
-        data.textureSheet = ParticleTextureSheet.PARTICLE_SHEET_TRANSLUCENT
+        data.setTextureSheet(ParticleTextureSheet.PARTICLE_SHEET_TRANSLUCENT)
         data.color = Math3DUtil.colorOf(
             (r + random.nextInt(10, 60)).coerceIn(0, 255),
             (g + random.nextInt(10, 60)).coerceIn(0, 255),

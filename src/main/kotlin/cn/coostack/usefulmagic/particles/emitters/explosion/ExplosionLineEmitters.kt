@@ -82,7 +82,7 @@ class ExplosionLineEmitters(pos: Vec3d, world: World?) : ClassParticleEmitters(p
                 255,
             )
         data.alpha = random.nextDouble(0.4, 0.7).toFloat()
-        data.textureSheet = ParticleTextureSheet.PARTICLE_SHEET_TRANSLUCENT
+        data.setTextureSheet(ParticleTextureSheet.PARTICLE_SHEET_TRANSLUCENT)
         val a = PhysicConstant.EARTH_GRAVITY / 10
         controler.addPreTickAction {
             data.speed = (data.speed - a).coerceAtLeast(0.5)

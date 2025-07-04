@@ -71,6 +71,7 @@ interface AltarEntity {
             )
         }
     }
+
     fun getDownActiveBlocksMaxMana(): Int
 
     fun getDownActiveBlocksManaReviveSpeed(): Int

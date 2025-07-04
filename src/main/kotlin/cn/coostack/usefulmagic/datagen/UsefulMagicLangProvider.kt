@@ -48,6 +48,7 @@ class UsefulMagicLangProvider(
             add(UsefulMagicItems.RED_MANA_CRYSTAL, "三级聚魔水晶")
             add(UsefulMagicItems.DEFEND_CORE, "魔法防御核心")
             add(UsefulMagicItems.FLYING_RUNE, "飞行符文")
+            add(UsefulMagicItems.TUTORIAL_BOOK, "实用魔法手册")
             // group
             add("item.useful_magic_main", "实用魔法")
             // block 信息

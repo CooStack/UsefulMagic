@@ -55,6 +55,7 @@ object UsefulMagic : ModInitializer {
     }
 
     private fun loadListeners() {
+
         DefendMagicListener.init()
     }
 
@@ -79,6 +80,7 @@ object UsefulMagic : ModInitializer {
         }
         logger.debug("服务器随机刻加载完成")
     }
+
 
     private fun loadFuel() {
         FuelRegistry.INSTANCE.add(UsefulMagicItems.WOODEN_WAND, 200)

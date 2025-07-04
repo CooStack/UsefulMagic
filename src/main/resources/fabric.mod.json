@@ -43,7 +43,7 @@
 		"java": ">=21",
 		"fabric-api": "*",
 		"fabric-language-kotlin": "*",
-		"cooparticlesapi": ">=1.10.0"
+		"cooparticlesapi": ">=1.10.1"
 	},
 	"suggests": {
 		"another-mod": "*"

@@ -47,7 +47,8 @@ class MagicBookSpawner(val block: MagicCoreBlockEntity) : MobSpawner() {
         return 20 * 30
     }
 
-    override fun onSpawn() {
+    override fun onSpawn(entity: LivingEntity) {
+        entity as MagicBookEntity
         val centerEntity = block.getCenterAltarBlockEntity() ?: return
         centerEntity.setAltarStack(ItemStack.EMPTY)
         block.currentMana -= 30000
@@ -75,6 +76,9 @@ class MagicBookSpawner(val block: MagicCoreBlockEntity) : MobSpawner() {
 
     override fun getSpawnedEntity(): LivingEntity {
         return MagicBookEntity(block.world!!)
+            .apply {
+                this.setPosition(getSpawnLocation())
+            }
     }
 
     override fun getSpawnLocation(): Vec3d {
