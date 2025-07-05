@@ -113,7 +113,7 @@ class MagicCoreBlock(settings: Settings) : BlockWithEntity(settings), Waterlogga
                 )
             )
         }
-        return ActionResult.CONSUME
+        return res
     }
 
     override fun getOutlineShape(
