@@ -1,14 +1,12 @@
 package cn.coostack.usefulmagic.items.prop
 
-import cn.coostack.cooparticlesapi.barrages.AbstractBarrage
 import cn.coostack.cooparticlesapi.barrages.BarrageHitResult
 import cn.coostack.cooparticlesapi.barrages.BarrageManager
-import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import cn.coostack.usefulmagic.listener.DefendMagicListener
-import cn.coostack.usefulmagic.particles.barrages.EntityDamagedBarrage
-import cn.coostack.usefulmagic.particles.barrages.PlayerDamagedBarrage
+import cn.coostack.usefulmagic.particles.barrages.api.EntityDamagedBarrage
+import cn.coostack.usefulmagic.particles.barrages.api.PlayerDamagedBarrage
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item

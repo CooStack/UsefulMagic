@@ -5,9 +5,9 @@ import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.network.particle.util.ServerParticleUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import cn.coostack.usefulmagic.particles.barrages.WandMeteoriteBarrage
+import cn.coostack.usefulmagic.particles.barrages.wand.WandMeteoriteBarrage
 import cn.coostack.usefulmagic.particles.style.EnchantLineStyle
-import cn.coostack.usefulmagic.particles.style.WandMeteoriteSpellcasterStyle
+import cn.coostack.usefulmagic.particles.style.barrage.wand.WandMeteoriteSpellcasterStyle
 import cn.coostack.usefulmagic.utils.ParticleOption
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity

@@ -1,0 +1,38 @@
+{
+  "type": "usefulmagic:altar_recipe",
+  "output": {
+    "id": "usefulmagic:sky_falling_rune",
+    "count": 1
+  },
+  "data": {
+    "0": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "1": {
+      "item": "usefulmagic:red_mana_star"
+    },
+    "2": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "3": {
+      "item": "usefulmagic:red_mana_star"
+    },
+    "4": {
+      "item": "minecraft:ender_pearl"
+    },
+    "5": {
+      "item": "usefulmagic:red_mana_star"
+    },
+    "6": {
+      "item": "minecraft:dragon_breath"
+    },
+    "7": {
+      "item": "usefulmagic:red_mana_star"
+    }
+  },
+  "center": {
+    "item": "minecraft:nether_star"
+  },
+  "mana_need": 90000,
+  "tick": 6000
+}

@@ -15,5 +15,6 @@ class UsefulMagicLootableProvider(
         addDrop(UsefulMagicBlocks.ALTAR_BLOCK)
         addDrop(UsefulMagicBlocks.ALTAR_BLOCK_CORE)
         addDrop(UsefulMagicBlocks.MAGIC_CORE)
+        addDrop(UsefulMagicBlocks.FORMATION_CORE_BLOCK)
     }
 }

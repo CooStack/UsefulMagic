@@ -1,7 +1,7 @@
 package cn.coostack.usefulmagic.items.consumer
 
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.managers.ClientManaManager
+import cn.coostack.usefulmagic.managers.client.ClientManaManager
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -31,7 +31,7 @@ class RedManaStar : Item(Settings()) {
         val data = if (world.isClient) {
             ClientManaManager.getSelfMana()
         } else {
-            UsefulMagic.state.playerManaData[user.uuid]
+            UsefulMagic.state.magicPlayerData[user.uuid]
         }
         val mana = data!!.maxMana
 

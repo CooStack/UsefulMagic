@@ -1,6 +1,11 @@
 package cn.coostack.usefulmagic.blocks
 
 import cn.coostack.usefulmagic.UsefulMagic
+import cn.coostack.usefulmagic.blocks.formation.DefendCrystalBlock
+import cn.coostack.usefulmagic.blocks.formation.EnergyCrystalsBlock
+import cn.coostack.usefulmagic.blocks.formation.FormationCoreBlock
+import cn.coostack.usefulmagic.blocks.formation.RecoverCrystalBlock
+import cn.coostack.usefulmagic.blocks.formation.SwordAttackCrystalsBlock
 import net.minecraft.block.AbstractBlock
 import net.minecraft.block.Block
 import net.minecraft.item.BlockItem
@@ -41,6 +46,46 @@ object UsefulMagicBlocks {
         )
     )
 
+    @JvmStatic
+    val FORMATION_CORE_BLOCK = register(
+        "formation_core", FormationCoreBlock(
+            AbstractBlock.Settings.create()
+                .nonOpaque()
+                .strength(10f, 1200f)
+        )
+    )
+
+    @JvmStatic
+    val ENERGY_CRYSTAL_BLOCK = register(
+        "energy_crystal", EnergyCrystalsBlock(
+            AbstractBlock.Settings.create().nonOpaque()
+                .strength(5f, 1200f)
+        )
+    )
+
+    @JvmStatic
+    val SWORD_ATTACK_CRYSTAL_BLOCK = register(
+        "sword_attack_crystal", SwordAttackCrystalsBlock(
+            AbstractBlock.Settings.create().nonOpaque()
+                .strength(5f, 1200f)
+        )
+    )
+
+    @JvmStatic
+    val DEFEND_CRYSTAL_BLOCK = register(
+        "defend_crystal", DefendCrystalBlock(
+            AbstractBlock.Settings.create().nonOpaque()
+                .strength(5f, 1200f)
+        )
+    )
+
+    @JvmStatic
+    val RECOVER_CRYSTAL_BLOCK = register(
+        "recover_crystal", RecoverCrystalBlock(
+            AbstractBlock.Settings.create().nonOpaque()
+                .strength(5f, 1200f)
+        )
+    )
 
     private fun registerBlockItem(id: String, block: Block): Item {
         val blockItem =

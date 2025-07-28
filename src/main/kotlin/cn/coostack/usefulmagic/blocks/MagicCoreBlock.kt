@@ -1,9 +1,7 @@
 package cn.coostack.usefulmagic.blocks
 
-import cn.coostack.usefulmagic.blocks.entitiy.AltarBlockCoreEntity
-import cn.coostack.usefulmagic.blocks.entitiy.AltarBlockEntity
-import cn.coostack.usefulmagic.blocks.entitiy.MagicCoreBlockEntity
-import cn.coostack.usefulmagic.blocks.entitiy.UsefulMagicBlockEntities
+import cn.coostack.usefulmagic.blocks.entity.MagicCoreBlockEntity
+import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
 import com.mojang.serialization.MapCodec
 import net.minecraft.block.Block
 import net.minecraft.block.BlockRenderType
@@ -14,11 +12,7 @@ import net.minecraft.block.Waterloggable
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityTicker
 import net.minecraft.block.entity.BlockEntityType
-import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvents
 import net.minecraft.state.StateManager
 import net.minecraft.state.property.BooleanProperty
 import net.minecraft.state.property.IntProperty
@@ -26,9 +20,6 @@ import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Box
-import net.minecraft.util.shape.CroppedVoxelSet
-import net.minecraft.util.shape.SimpleVoxelShape
 import net.minecraft.util.shape.VoxelShape
 import net.minecraft.util.shape.VoxelShapes
 import net.minecraft.world.BlockView

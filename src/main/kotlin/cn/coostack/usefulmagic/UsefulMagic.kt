@@ -1,8 +1,8 @@
 package cn.coostack.usefulmagic
 
-import cn.coostack.usefulmagic.beans.PlayerManaData
+import cn.coostack.usefulmagic.beans.MagicPlayerData
 import cn.coostack.usefulmagic.blocks.UsefulMagicBlocks
-import cn.coostack.usefulmagic.blocks.entitiy.UsefulMagicBlockEntities
+import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
 import cn.coostack.usefulmagic.entity.custom.MagicBookEntity
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes
@@ -10,22 +10,35 @@ import cn.coostack.usefulmagic.items.UsefulMagicItemGroups
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import cn.coostack.usefulmagic.items.weapon.MagicAxe
 import cn.coostack.usefulmagic.listener.DefendMagicListener
+import cn.coostack.usefulmagic.managers.server.ServerFormationManager
 import cn.coostack.usefulmagic.meteorite.MeteoriteFallingBlockEntity
-import cn.coostack.usefulmagic.meteorite.MeteoriteFallingBlockRenderer
 import cn.coostack.usefulmagic.meteorite.MeteoriteManager
-import cn.coostack.usefulmagic.packet.c2s.PacketC2SManaDataRequest
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CManaDataResponse
+import cn.coostack.usefulmagic.packet.c2s.PacketC2SFormationSettingChangeRequest
+import cn.coostack.usefulmagic.packet.c2s.PacketC2SFormationSettingRequest
+import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendAddRequest
+import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendListRequest
+import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendRemoveRequest
+import cn.coostack.usefulmagic.packet.listener.server.FormationSettingChangePacketListener
+import cn.coostack.usefulmagic.packet.listener.server.FormationSettingRequestPacketListener
+import cn.coostack.usefulmagic.packet.listener.server.FriendAddListRequestHandler
+import cn.coostack.usefulmagic.packet.listener.server.FriendListRequestHandler
+import cn.coostack.usefulmagic.packet.listener.server.FriendRemoveListRequestHandler
+import cn.coostack.usefulmagic.packet.s2c.PacketS2CEnergyCrystalChange
+import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationBreak
+import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationCreate
+import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationSettingsResponse
+import cn.coostack.usefulmagic.packet.s2c.PacketS2CFriendChangeResponse
+import cn.coostack.usefulmagic.packet.s2c.PacketS2CFriendListResponse
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CManaDataToggle
 import cn.coostack.usefulmagic.recipe.UsefulMagicRecipeTypes
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import cn.coostack.usefulmagic.states.ManaServerState
 import cn.coostack.usefulmagic.utils.ComboUtil
 import net.fabricmc.api.ModInitializer
-import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.fabricmc.fabric.api.`object`.builder.v1.entity.FabricDefaultAttributeRegistry
 import net.fabricmc.fabric.api.registry.FuelRegistry
 import net.minecraft.server.MinecraftServer
@@ -47,6 +60,7 @@ object UsefulMagic : ModInitializer {
         loadListeners()
         loadSounds()
         loadEntityAttributes()
+        loadPacketListener()
     }
 
 
@@ -55,16 +69,16 @@ object UsefulMagic : ModInitializer {
     }
 
     private fun loadListeners() {
-
         DefendMagicListener.init()
     }
 
     private fun loadTickers() {
         ServerTickEvents.START_SERVER_TICK.register { s ->
-            state.playerManaData.values.forEach(PlayerManaData::tick)
+            state.magicPlayerData.values.forEach(MagicPlayerData::tick)
             state.sendToggle()
             MeteoriteManager.doTick()
             ComboUtil.tick()
+            ServerFormationManager.removeNotActiveFormations()
             MagicAxe.postPlayerAxeSkillTick()
         }
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
@@ -100,9 +114,39 @@ object UsefulMagic : ModInitializer {
 
     private fun loadPacket() {
         PacketS2CManaDataToggle.init()
-        PacketS2CManaDataResponse.init()
-        PacketC2SManaDataRequest.init()
+        PacketS2CFriendListResponse.init()
+        PacketS2CFriendChangeResponse.init()
+        PacketS2CFormationSettingsResponse.init()
+        PacketS2CEnergyCrystalChange.init()
+        PacketS2CFormationCreate.init()
+        PacketS2CFormationBreak.init()
+        PacketC2SFormationSettingRequest.init()
+        PacketC2SFormationSettingChangeRequest.init()
+        PacketC2SFriendListRequest.init()
+        PacketC2SFriendAddRequest.init()
+        PacketC2SFriendRemoveRequest.init()
         logger.debug("数据包注册完成")
+    }
+
+    /**
+     * 处理客户端请求, 并发送回信
+     */
+    private fun loadPacketListener() {
+        ServerPlayNetworking.registerGlobalReceiver(
+            PacketC2SFriendListRequest.payloadID, FriendListRequestHandler
+        )
+        ServerPlayNetworking.registerGlobalReceiver(
+            PacketC2SFriendAddRequest.payloadID, FriendAddListRequestHandler
+        )
+        ServerPlayNetworking.registerGlobalReceiver(
+            PacketC2SFriendRemoveRequest.payloadID, FriendRemoveListRequestHandler
+        )
+        ServerPlayNetworking.registerGlobalReceiver(
+            PacketC2SFormationSettingRequest.payloadID, FormationSettingRequestPacketListener
+        )
+        ServerPlayNetworking.registerGlobalReceiver(
+            PacketC2SFormationSettingChangeRequest.payloadID, FormationSettingChangePacketListener
+        )
     }
 
     private fun loadEntityAttributes() {

@@ -1,15 +1,11 @@
 package cn.coostack.usefulmagic.items.consumer
 
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.blocks.entitiy.AltarBlockCoreEntity
-import cn.coostack.usefulmagic.blocks.entitiy.MagicCoreBlockEntity
-import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes
+import cn.coostack.usefulmagic.blocks.entity.MagicCoreBlockEntity
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes.LARGE_REVIVE_USE_COUNT
 import cn.coostack.usefulmagic.items.UsefulMagicItems
-import cn.coostack.usefulmagic.managers.ClientManaManager
-import com.mojang.serialization.Codec
+import cn.coostack.usefulmagic.managers.client.ClientManaManager
 import net.minecraft.advancement.criterion.Criteria
-import net.minecraft.component.ComponentType
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
@@ -17,8 +13,6 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.ItemUsage
 import net.minecraft.item.ItemUsageContext
 import net.minecraft.item.tooltip.TooltipType
-import net.minecraft.registry.Registries
-import net.minecraft.registry.Registry
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvent
@@ -26,7 +20,6 @@ import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
-import net.minecraft.util.Identifier
 import net.minecraft.util.TypedActionResult
 import net.minecraft.util.UseAction
 import net.minecraft.world.World

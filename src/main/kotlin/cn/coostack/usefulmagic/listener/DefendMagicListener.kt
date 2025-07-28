@@ -7,6 +7,7 @@ import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.items.prop.DefendCoreItem
 import cn.coostack.usefulmagic.particles.emitters.CircleEmitters
 import cn.coostack.usefulmagic.particles.emitters.ExplodeMagicEmitters
+import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.minecraft.entity.Entity
 import net.minecraft.entity.damage.DamageSource
@@ -46,9 +47,15 @@ object DefendMagicListener {
             circleDirection = direction
         }
         ParticleEmittersManager.spawnEmitters(emitters)
-        world.playSound(
-            null, damagedEntity.x, damagedEntity.y, damagedEntity.z,
-            SoundEvents.ITEM_SHIELD_BLOCK, SoundCategory.PLAYERS, 2f, 2f
+        world!!.playSound(
+            null,
+            damagedEntity.x,
+            damagedEntity.y,
+            damagedEntity.z,
+            UsefulMagicSoundEvents.DEFEND_SHIELD_HIT,
+            SoundCategory.PLAYERS,
+            2f,
+            1f
         )
         if (!barrage) {
             sourceEntity!!.velocityModified = true

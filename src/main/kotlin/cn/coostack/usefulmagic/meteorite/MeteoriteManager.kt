@@ -3,11 +3,11 @@ package cn.coostack.usefulmagic.meteorite
 import java.util.UUID
 
 object MeteoriteManager {
-    private val meteorites = HashSet<Meteorite>()
+    private val meteorites = HashMap<UUID, Meteorite>()
 
     fun clearAll() {
         meteorites.onEach {
-            it.clear()
+            it.value.clear()
         }.clear()
     }
 
@@ -15,13 +15,20 @@ object MeteoriteManager {
         if (!meteorite.spawned || !meteorite.valid) {
             return
         }
-        meteorites.add(meteorite)
+        meteorites[meteorite.uuid] = meteorite
     }
+
+    fun getFromSingleEntity(entity: MeteoriteFallingBlockEntity): Meteorite? {
+        return meteorites.filter {
+            it.value.entities.containsKey(entity.uuid)
+        }.values.firstOrNull()
+    }
+
 
     fun doTick() {
         val iterator = meteorites.iterator()
         while (iterator.hasNext()) {
-            val meteorite = iterator.next()
+            val meteorite = iterator.next().value
             if (!meteorite.valid || !meteorite.spawned || meteorite.hit) {
                 iterator.remove()
                 continue

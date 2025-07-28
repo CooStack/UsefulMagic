@@ -13,6 +13,11 @@ class UsefulMagicModelProvider(output: FabricDataOutput) : FabricModelProvider(o
         gen.registerSimpleState(UsefulMagicBlocks.ALTAR_BLOCK)
         gen.registerSimpleState(UsefulMagicBlocks.ALTAR_BLOCK_CORE)
         gen.registerSimpleState(UsefulMagicBlocks.MAGIC_CORE)
+        gen.registerSimpleState(UsefulMagicBlocks.ENERGY_CRYSTAL_BLOCK)
+        gen.registerSimpleState(UsefulMagicBlocks.SWORD_ATTACK_CRYSTAL_BLOCK)
+        gen.registerSimpleState(UsefulMagicBlocks.RECOVER_CRYSTAL_BLOCK)
+        gen.registerSimpleState(UsefulMagicBlocks.FORMATION_CORE_BLOCK)
+        gen.registerSimpleState(UsefulMagicBlocks.DEFEND_CRYSTAL_BLOCK)
     }
 
     override fun generateItemModels(gen: ItemModelGenerator) {
@@ -32,5 +37,8 @@ class UsefulMagicModelProvider(output: FabricDataOutput) : FabricModelProvider(o
         gen.register(UsefulMagicItems.DEFEND_CORE, Models.GENERATED)
         gen.register(UsefulMagicItems.FLYING_RUNE, Models.GENERATED)
         gen.register(UsefulMagicItems.TUTORIAL_BOOK, Models.GENERATED)
+        gen.register(UsefulMagicItems.FRIEND_BOARD, Models.GENERATED)
+        gen.register(UsefulMagicItems.SKY_FALLING_RUNE, Models.GENERATED)
+
     }
 }

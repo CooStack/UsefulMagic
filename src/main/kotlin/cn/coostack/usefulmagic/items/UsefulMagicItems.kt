@@ -16,6 +16,8 @@ import cn.coostack.usefulmagic.items.consumer.SmallManaGlassBottle
 import cn.coostack.usefulmagic.items.prop.DefendCoreItem
 import cn.coostack.usefulmagic.items.prop.FlyingRuneItem
 import cn.coostack.usefulmagic.items.misc.TutorialBookItem
+import cn.coostack.usefulmagic.items.prop.FriendBoardItem
+import cn.coostack.usefulmagic.items.prop.SkyFallingRuneItem
 import cn.coostack.usefulmagic.items.weapon.MagicAxe
 import cn.coostack.usefulmagic.items.weapon.wands.AntiEntityWand
 import cn.coostack.usefulmagic.items.weapon.wands.CopperWand
@@ -225,6 +227,14 @@ object UsefulMagicItems {
 
     val TUTORIAL_BOOK = register(
         "tutorial_book", TutorialBookItem()
+    )
+
+    val FRIEND_BOARD = register(
+        "friend_board", FriendBoardItem()
+    )
+
+    val SKY_FALLING_RUNE = register(
+        "sky_falling_rune", SkyFallingRuneItem()
     )
 
     fun register(id: String, item: Item): Item {

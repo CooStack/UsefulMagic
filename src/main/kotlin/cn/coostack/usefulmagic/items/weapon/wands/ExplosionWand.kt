@@ -9,6 +9,9 @@ import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.UsefulMagic
+import cn.coostack.usefulmagic.formation.CrystalFormation
+import cn.coostack.usefulmagic.formation.target.LivingEntityTargetOption
+import cn.coostack.usefulmagic.managers.server.ServerFormationManager
 import cn.coostack.usefulmagic.particles.animation.EmitterAnimate
 import cn.coostack.usefulmagic.particles.animation.EmittersAnimate
 import cn.coostack.usefulmagic.particles.animation.ParticleAnimation
@@ -141,6 +144,11 @@ class ExplosionWand(settings: Settings) : WandItem(settings, 3500, 1024.0) {
             World.ExplosionSourceType.TNT
         )
 
+        ServerFormationManager.getFormationFromPos(target, world)?.let {
+            if (it is CrystalFormation && it.hasDefend) {
+                it.attack(damage.toFloat() / 4f, null, target)
+            }
+        }
         entities.forEach { entry ->
             val it = entry.first
             val len = entry.second / 2
@@ -298,7 +306,7 @@ class ExplosionWand(settings: Settings) : WandItem(settings, 3500, 1024.0) {
         if (user is PlayerEntity) {
             user.itemCooldownManager.set(this, 10)
             // 有减速 所以相当于在扣款
-            if (!user.isInCreativeMode) {
+            if (!user.isInCreativeMode && user is ServerPlayerEntity) {
                 val step = (use.toDouble() / max).coerceAtLeast(0.01)
                 val data = UsefulMagic.state.getDataFromServer(user.uuid)
                 data.mana -= (cost * step).toInt()
@@ -344,6 +352,11 @@ class ExplosionWand(settings: Settings) : WandItem(settings, 3500, 1024.0) {
             if (!block.isAir && !block.getCollisionShape(world, blockPos).isEmpty) {
                 break
             }
+            val cant = ServerFormationManager.getFormationFromPos(currentPos, world as ServerWorld)?.let {
+                val option = LivingEntityTargetOption(user, false)
+                it is CrystalFormation && it.hasDefend && !it.isFriendly(option)
+            } ?: false
+            if (cant) break
             currentPos = currentPos.add(direction)
             count++
         }
@@ -380,6 +393,7 @@ class ExplosionWand(settings: Settings) : WandItem(settings, 3500, 1024.0) {
                         )
                         maxTick = random.nextInt(1, 5)
                         templateData.also {
+                            it.maxAge = 5
                             it.color = Math3DUtil.colorOf(
                                 121, 211, 249
                             )

@@ -3,7 +3,10 @@ package cn.coostack.usefulmagic.items.weapon.wands
 import cn.coostack.cooparticlesapi.network.particle.util.ServerParticleUtil
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.managers.ClientManaManager
+import cn.coostack.usefulmagic.formation.CrystalFormation
+import cn.coostack.usefulmagic.formation.target.LivingEntityTargetOption
+import cn.coostack.usefulmagic.managers.client.ClientManaManager
+import cn.coostack.usefulmagic.managers.server.ServerFormationManager
 import net.minecraft.entity.LivingEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.tooltip.TooltipType
@@ -108,7 +111,10 @@ class StoneWand(settings: Settings) : WandItem(settings, 10, 5.0) {
                 var nextPos = prePos
                 for (j in 1..2) {
                     val next = world.getEntitiesByClass(LivingEntity::class.java, Box.of(prePos, 16.0, 10.0, 16.0)) {
-                        it.uuid != user.uuid && it !in damagedEntitySet
+                        val cant = ServerFormationManager.getFormationFromPos(currentPos, world)?.let { it ->
+                            it is CrystalFormation && it.hasDefend
+                        } ?: false
+                        it.uuid != user.uuid && it !in damagedEntitySet && !cant
                     }.firstOrNull() ?: continue
                     prePos = nextPos
                     nextPos = next.eyePos
@@ -125,6 +131,14 @@ class StoneWand(settings: Settings) : WandItem(settings, 10, 5.0) {
                 }
                 break
             }
+            val cant = ServerFormationManager.getFormationFromPos(currentPos, world)?.let {
+                val option = LivingEntityTargetOption(user, false)
+                if (it is CrystalFormation && it.hasDefend && !it.isFriendly(option)) {
+                    it.attack(5f, option, currentPos)
+                    true
+                } else false
+            } ?: false
+            if (cant) break
         }
         // 生成直线
         PointsBuilder().addLine(

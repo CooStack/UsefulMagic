@@ -4,18 +4,17 @@ import cn.coostack.cooparticlesapi.CooParticleAPI
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.network.particle.emitters.impl.PresetLaserEmitters
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
-import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.blocks.entitiy.AltarEntity
-import cn.coostack.usefulmagic.blocks.entitiy.MagicCoreBlockEntity
-import cn.coostack.usefulmagic.managers.ClientManaManager
+import cn.coostack.usefulmagic.blocks.entity.AltarEntity
+import cn.coostack.usefulmagic.blocks.entity.MagicCoreBlockEntity
+import cn.coostack.usefulmagic.blocks.entity.formation.EnergyCrystalsBlockEntity
+import cn.coostack.usefulmagic.blocks.entity.formation.FormationCoreBlockEntity
+import cn.coostack.usefulmagic.managers.client.ClientManaManager
 import cn.coostack.usefulmagic.meteorite.impl.TestMeteorite
-import cn.coostack.usefulmagic.particles.emitters.explosion.ExplosionAnimateLaserMagicEmitters
 import cn.coostack.usefulmagic.particles.emitters.explosion.ExplosionLineEmitters
-import cn.coostack.usefulmagic.particles.emitters.explosion.ExplosionWaveEmitters
 import cn.coostack.usefulmagic.particles.style.LightStyle
 import cn.coostack.usefulmagic.particles.style.TestStyle
 import cn.coostack.usefulmagic.particles.style.explosion.ExplosionMagicBallStyle
@@ -35,7 +34,6 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import kotlin.math.PI
-import kotlin.math.sin
 import kotlin.random.Random
 
 class DebuggerItem : Item(Settings()) {
@@ -56,7 +54,7 @@ class DebuggerItem : Item(Settings()) {
 //        CooParticleAPI.scheduler.runTaskTimerMaxTick(5, 60) {
 //            repeat(3) {
 //        testExplosion(world, user)
-        testMagic(world, user)
+//        testMagic(world, user)
 //        testExplosionMagicStyle(world, user, RelativeLocation.yAxis())
 //            }
 //        }
@@ -76,12 +74,60 @@ class DebuggerItem : Item(Settings()) {
         val block = context.blockPos
         val user = context.player ?: return ActionResult.PASS
         val world = context.world
-        testBlock(world, user, block)
+        if (world.isClient) return ActionResult.PASS
+        testFormation(world as ServerWorld, user as ServerPlayerEntity, block)
         return super.useOnBlock(context)
     }
 
     val random = Random(System.currentTimeMillis())
 
+
+    fun testFormation(world: ServerWorld, user: ServerPlayerEntity, block: BlockPos) {
+        val entity = world.getBlockEntity(block) ?: return
+        when (entity) {
+            is FormationCoreBlockEntity -> testFormationCore(world, user, entity)
+            is EnergyCrystalsBlockEntity -> testFormationEnergy(world, user, entity)
+        }
+
+    }
+
+    private fun testFormationEnergy(
+        world: ServerWorld,
+        user: ServerPlayerEntity,
+        entity: EnergyCrystalsBlockEntity
+    ) {
+        user.sendMessage(
+            Text.literal(
+                """
+                    能量水晶信息
+                    蕴含能量: ${entity.currentMana}
+                    最大能量: ${entity.maxMana}
+                """.trimIndent()
+            )
+        )
+    }
+
+
+    fun testFormationCore(world: ServerWorld, user: ServerPlayerEntity, entity: FormationCoreBlockEntity) {
+        user.sendMessage(
+            Text.literal(
+                """
+                    核心方块信息
+                    阵法规模: ${entity.formation.scale.name}
+                    阵法生命值: ${entity.formation.formationHealth}
+                    阵法是否激活 ${entity.formation.isActiveFormation()}
+                    阵法是否可激活 ${entity.formation.canBeFormation()}
+                    阵法中水晶个数 ${entity.formation.activeCrystals.size}
+                    阵法激活主人${
+                    if (entity.formation.owner == null) "" else {
+                        world.server.playerManager.getPlayer(entity.formation.owner)?.name
+                    }}
+                    阵法范围: ${entity.formation.getFormationTriggerRange()}
+                  
+                """.trimIndent()
+            )
+        )
+    }
 
     fun testMagic(world: ServerWorld, user: ServerPlayerEntity) {
         CooParticleAPI.scheduler.runTaskTimerMaxTick(5, 240) {
@@ -271,7 +317,7 @@ class DebuggerItem : Item(Settings()) {
                 """.trimIndent()
                 )
             )
-            UsefulMagic.state.playerManaData.forEach {
+            UsefulMagic.state.magicPlayerData.forEach {
                 val player = world.server!!.playerManager.getPlayer(it.key) ?: return@forEach
                 val data = it.value
                 user.sendMessage(

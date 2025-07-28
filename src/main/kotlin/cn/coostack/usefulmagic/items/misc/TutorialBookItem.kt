@@ -1,6 +1,6 @@
 package cn.coostack.usefulmagic.items.misc
 
-import cn.coostack.usefulmagic.gui.TutorialBookScreen
+import cn.coostack.usefulmagic.gui.guildbook.TutorialBookScreen
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.entity.player.PlayerEntity

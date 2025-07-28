@@ -12,7 +12,7 @@ import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.entity.custom.MagicBookEntity
-import cn.coostack.usefulmagic.particles.barrages.MagicBookSwordBarrage
+import cn.coostack.usefulmagic.particles.barrages.entity.MagicBookSwordBarrage
 import cn.coostack.usefulmagic.particles.emitters.DirectionShootEmitters
 import cn.coostack.usefulmagic.particles.emitters.ParticleWaveEmitters
 import cn.coostack.usefulmagic.skill.api.Skill
@@ -50,7 +50,8 @@ class MagicSwordSkill : Skill, SkillCondition, SkillCancelCondition {
             .pointsOnEach { it.y += 2.0 }
             .addPolygonInCircleVertices(3, 6.0)
             .pointsOnEach { it.y += 2.0 }
-            .create().forEach {
+            .create()
+            .forEach {
                 val barrage = MagicBookSwordBarrage(
                     source.pos.add(it.toVector()),
                     source.world as ServerWorld,

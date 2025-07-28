@@ -7,8 +7,8 @@ import cn.coostack.cooparticlesapi.network.particle.util.ServerParticleUtil
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import cn.coostack.usefulmagic.particles.barrages.DiamondSwordBarrage
-import cn.coostack.usefulmagic.particles.style.DiamondWandStyle
+import cn.coostack.usefulmagic.particles.barrages.wand.DiamondSwordBarrage
+import cn.coostack.usefulmagic.particles.style.barrage.wand.DiamondWandStyle
 import cn.coostack.usefulmagic.utils.ParticleOption
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity

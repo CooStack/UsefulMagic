@@ -7,13 +7,11 @@ import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersMan
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
-import cn.coostack.usefulmagic.particles.barrages.skill.GiantSwordLightBarrage
+import cn.coostack.usefulmagic.particles.barrages.entity.skill.GiantSwordLightBarrage
 import cn.coostack.usefulmagic.particles.emitters.ParticleWaveEmitters
-import cn.coostack.usefulmagic.particles.style.skill.GiantSwordStyle
 import cn.coostack.usefulmagic.particles.style.skill.SwordLightStyle
 import cn.coostack.usefulmagic.skill.api.Skill
 import cn.coostack.usefulmagic.utils.ComboUtil
-import net.fabricmc.fabric.mixin.event.lifecycle.ServerWorldMixin
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.world.ServerWorld

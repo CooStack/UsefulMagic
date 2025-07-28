@@ -61,7 +61,7 @@ class ParticleWaveEmitters(pos: Vec3d, world: World?) : ClassParticleEmitters(po
     val random = Random(System.currentTimeMillis())
     override fun genParticles(): Map<ControlableParticleData, RelativeLocation> {
         return PointsBuilder()
-            .addCircle(waveSize, random.nextInt(waveCircleCountMin, waveCircleCountMax))
+            .addDiscreteCircleXZ(waveSize, random.nextInt(waveCircleCountMin, waveCircleCountMax),0.5)
             .rotateTo(waveAxis)
             .create().associateBy {
                 templateData.clone()

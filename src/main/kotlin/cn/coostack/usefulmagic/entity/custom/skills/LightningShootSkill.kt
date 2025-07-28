@@ -58,6 +58,7 @@ class LightningShootSkill : Skill {
                 endPos = RelativeLocation.of(source.eyePos.relativize(target.eyePos.add(dir)))
                 maxTick = random.nextInt(1, 6)
                 templateData.also {
+                    it.maxAge = 5
                     it.color = Math3DUtil.colorOf(
                         121, 211, 249
                     )

@@ -34,7 +34,6 @@ class LightningParticleEmitters(pos: Vec3d, world: World?) : ClassParticleEmitte
                 encodeBase(data, buf)
                 buf.writeVec3d(data.endPos.toVector())
                 ControlableParticleData.PACKET_CODEC.encode(buf, data.templateData)
-
             }, {
                 val instance = LightningParticleEmitters(Vec3d.ZERO, null)
                 decodeBase(instance, it)
@@ -75,11 +74,11 @@ class LightningParticleEmitters(pos: Vec3d, world: World?) : ClassParticleEmitte
         spawnPos: Vec3d,
         spawnWorld: World
     ) {
-        data.maxAge = 5
+        data.maxAge = templateData.maxAge
         val r = (data.color.x * 255).toInt()
         val g = (data.color.y * 255).toInt()
         val b = (data.color.z * 255).toInt()
-        data.alpha = 0.8f
+        data.alpha = templateData.alpha
         data.setTextureSheet(ParticleTextureSheet.PARTICLE_SHEET_TRANSLUCENT)
         data.color = Math3DUtil.colorOf(
             (r + random.nextInt(10, 60)).coerceIn(0, 255),

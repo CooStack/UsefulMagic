@@ -8,7 +8,7 @@ import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import cn.coostack.usefulmagic.particles.style.EnchantLineStyle
-import cn.coostack.usefulmagic.particles.style.HealthReviveStyle
+import cn.coostack.usefulmagic.particles.style.barrage.wand.HealthReviveStyle
 import cn.coostack.usefulmagic.utils.ParticleOption
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.effect.StatusEffectInstance

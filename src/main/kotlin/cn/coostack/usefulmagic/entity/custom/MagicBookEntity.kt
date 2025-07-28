@@ -16,10 +16,11 @@ import cn.coostack.usefulmagic.entity.custom.goal.MagicAttackGoal
 import cn.coostack.usefulmagic.entity.custom.goal.MagicCloseTargetGoal
 import cn.coostack.usefulmagic.entity.custom.skills.*
 import cn.coostack.usefulmagic.items.UsefulMagicItems
+import cn.coostack.usefulmagic.managers.server.SkillManagerManager
 import cn.coostack.usefulmagic.particles.animation.EmittersAnimate
 import cn.coostack.usefulmagic.particles.animation.ParticleAnimation
 import cn.coostack.usefulmagic.particles.animation.StyleAnimate
-import cn.coostack.usefulmagic.particles.barrages.EntityWoodenBarrage
+import cn.coostack.usefulmagic.particles.barrages.entity.EntityWoodenBarrage
 import cn.coostack.usefulmagic.particles.emitters.DirectionShootEmitters
 import cn.coostack.usefulmagic.particles.emitters.ExplodeMagicEmitters
 import cn.coostack.usefulmagic.particles.emitters.LightningParticleEmitters
@@ -64,7 +65,7 @@ import kotlin.random.Random
 class MagicBookEntity(entityType: EntityType<out PathAwareEntity>, world: World) : PathAwareEntity(entityType, world),
     RangedAttackMob, UnlimitHealthEntity {
     val bossBar = ServerBossBar(displayName, BossBar.Color.RED, BossBar.Style.PROGRESS)
-    val skillManager = EntitySkillManager(this)
+    var skillManager = EntitySkillManager(this)
     var bookMaxHealth: Float
         get() = dataTracker.get(LARGE_MAX_HEALTH)
         set(field) {
@@ -123,12 +124,18 @@ class MagicBookEntity(entityType: EntityType<out PathAwareEntity>, world: World)
     val deathAnimation = ParticleAnimation()
 
     init {
+        health = 1f
+
+        initSkillManager()
+    }
+
+    private fun initSkillManager() {
         skillManager.addSkill(MagicSwordSkill())
         skillManager.addSkill(HealthReverseSkill())
         skillManager.addSkill(BookShootSkill(2))
         skillManager.addSkill(BookCannonballsSkill(18f))
         skillManager.addSkill(BookSwordSlashSkill(8f))
-        health = 1f
+        SkillManagerManager.setCache(skillManager)
     }
 
     override fun initDataTracker(builder: DataTracker.Builder?) {
@@ -150,7 +157,6 @@ class MagicBookEntity(entityType: EntityType<out PathAwareEntity>, world: World)
     }
 
     override fun readCustomDataFromNbt(nbt: NbtCompound) {
-        super.readCustomDataFromNbt(nbt)
         if (this.hasCustomName()) {
             this.bossBar.setName(this.displayName)
         }
@@ -159,12 +165,22 @@ class MagicBookEntity(entityType: EntityType<out PathAwareEntity>, world: World)
             ENTITY_SPAWNING,
             if (nbt.contains("entity_spawning")) nbt.getBoolean("entity_spawning") else true
         )
+        runCatching {
+            val cache = nbt.getUuid("cache_uuid")
+            val fromCache = SkillManagerManager.loadFromCache(cache)
+            if (fromCache != null) {
+                skillManager = fromCache
+                skillManager.owner = this
+            }
+        }
+        super.readCustomDataFromNbt(nbt)
     }
 
     override fun writeCustomDataToNbt(nbt: NbtCompound) {
-        super.writeCustomDataToNbt(nbt)
         nbt.putBoolean("entity_death", isEntityDeath())
         nbt.putBoolean("entity_spawning", entitySpawning)
+        nbt.putUuid("cache_uuid", skillManager.cacheUUID)
+        super.writeCustomDataToNbt(nbt)
     }
 
     override fun setCustomName(name: Text?) {
@@ -217,7 +233,6 @@ class MagicBookEntity(entityType: EntityType<out PathAwareEntity>, world: World)
             super.tickMovement()
             return
         }
-
         if (target!!.y + 6.0 > y) {
             velocity = velocity.add(0.0, 0.05, 0.0)
         } else if (target!!.y + 4 < y) {
@@ -257,6 +272,7 @@ class MagicBookEntity(entityType: EntityType<out PathAwareEntity>, world: World)
             skillManager.setEntityDeath()
             cancelAllAI()
             health = 1f
+            SkillManagerManager.clearCacheIfOwnerDead()
             return
         }
         super.onDeath(damageSource)
@@ -292,6 +308,7 @@ class MagicBookEntity(entityType: EntityType<out PathAwareEntity>, world: World)
                     )
                     maxTick = random.nextInt(1, 5)
                     templateData.also {
+                        it.maxAge = 5
                         it.color = Math3DUtil.colorOf(
                             121, 211, 249
                         )
@@ -358,8 +375,8 @@ class MagicBookEntity(entityType: EntityType<out PathAwareEntity>, world: World)
                         it.color = Math3DUtil.colorOf(255, 100, 80)
                         it.effect = ControlableCloudEffect(it.uuid)
                     }
-                    waveCircleCountMin = 120
-                    waveCircleCountMax = 240
+                    waveCircleCountMin = 240
+                    waveCircleCountMax = 480
                     waveSize = 40.0
                     waveSpeed = -1.0
                     maxTick = 1

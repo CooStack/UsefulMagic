@@ -26,10 +26,11 @@ abstract class Meteorite {
     var spawned = false
         protected set
     var speed = 1.0
-    protected val entities = HashMap<UUID, MeteoriteFallingBlockEntity>()
+    val entities = HashMap<UUID, MeteoriteFallingBlockEntity>()
     protected val entityLocations = HashMap<RelativeLocation, MeteoriteFallingBlockEntity>()
     var maxAge = 240
     var age = 0
+    var uuid = UUID.randomUUID()
 
     /**
      * 陨石组成
@@ -91,7 +92,7 @@ abstract class Meteorite {
     }
 
 
-    private fun hit(pos: Vec3d) {
+    fun hit(pos: Vec3d) {
         hit = true
         // 解散
         clear()

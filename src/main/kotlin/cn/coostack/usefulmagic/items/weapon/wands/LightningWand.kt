@@ -4,7 +4,10 @@ import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersMan
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.managers.ClientManaManager
+import cn.coostack.usefulmagic.formation.CrystalFormation
+import cn.coostack.usefulmagic.formation.target.LivingEntityTargetOption
+import cn.coostack.usefulmagic.managers.client.ClientManaManager
+import cn.coostack.usefulmagic.managers.server.ServerFormationManager
 import cn.coostack.usefulmagic.particles.emitters.LightningParticleEmitters
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import net.minecraft.entity.LivingEntity
@@ -101,7 +104,10 @@ class LightningWand(settings: Settings) : WandItem(settings, 20, 8.0) {
                 val dir = prePos.relativize(nextPos).normalize().multiply(4.5)
                 for (j in 1..5) {
                     val next = world.getEntitiesByClass(LivingEntity::class.java, Box.of(prePos, 48.0, 48.0, 48.0)) {
-                        it.uuid != user.uuid && it !in damagedEntitySet
+                        val cant = ServerFormationManager.getFormationFromPos(currentPos, world)?.let { it ->
+                            it is CrystalFormation && it.hasDefend
+                        } ?: false
+                        it.uuid != user.uuid && it !in damagedEntitySet && !cant
                     }.minByOrNull {
                         prePos.distanceTo(it.pos)
                     } ?: continue
@@ -121,6 +127,7 @@ class LightningWand(settings: Settings) : WandItem(settings, 20, 8.0) {
                                 it.color = Math3DUtil.colorOf(
                                     121, 211, 249
                                 )
+                                it.maxAge = 5
                             }
                         }
                     ParticleEmittersManager.spawnEmitters(lightning)
@@ -132,6 +139,14 @@ class LightningWand(settings: Settings) : WandItem(settings, 20, 8.0) {
             if (!state.isAir && !state.getCollisionShape(world, blockPos).isEmpty) {
                 break
             }
+            val cant = ServerFormationManager.getFormationFromPos(currentPos, world)?.let {
+                val option = LivingEntityTargetOption(user, false)
+                if (it is CrystalFormation && it.hasDefend && !it.isFriendly(option)) {
+                    it.attack(5f, option, currentPos)
+                    true
+                } else false
+            } ?: false
+            if (cant) break
         }
         val dir = user.eyePos.relativize(currentPos).normalize().multiply(4.5)
         val lightning = LightningParticleEmitters(
@@ -148,6 +163,7 @@ class LightningWand(settings: Settings) : WandItem(settings, 20, 8.0) {
                     it.color = Math3DUtil.colorOf(
                         121, 211, 249
                     )
+                    it.maxAge = 5
                 }
             }
         ParticleEmittersManager.spawnEmitters(lightning)

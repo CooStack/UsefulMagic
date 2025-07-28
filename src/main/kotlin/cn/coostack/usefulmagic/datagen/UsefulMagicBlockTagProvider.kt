@@ -16,6 +16,11 @@ class UsefulMagicBlockTagProvider(output: FabricDataOutput, registriesFuture: Co
             UsefulMagicBlocks.MAGIC_CORE,
             UsefulMagicBlocks.ALTAR_BLOCK_CORE,
             UsefulMagicBlocks.ALTAR_BLOCK,
+            UsefulMagicBlocks.RECOVER_CRYSTAL_BLOCK,
+            UsefulMagicBlocks.DEFEND_CRYSTAL_BLOCK,
+            UsefulMagicBlocks.SWORD_ATTACK_CRYSTAL_BLOCK,
+            UsefulMagicBlocks.ENERGY_CRYSTAL_BLOCK,
+            UsefulMagicBlocks.FORMATION_CORE_BLOCK,
         )
     }
 }

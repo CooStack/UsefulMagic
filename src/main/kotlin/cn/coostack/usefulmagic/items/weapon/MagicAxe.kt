@@ -8,7 +8,7 @@ import cn.coostack.cooparticlesapi.network.particle.emitters.PhysicConstant
 import cn.coostack.cooparticlesapi.network.particle.emitters.type.EmittersShootTypes
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.usefulmagic.items.UsefulMagicToolMaterials
-import cn.coostack.usefulmagic.particles.barrages.NetheriteSwordBarrage
+import cn.coostack.usefulmagic.particles.barrages.wand.NetheriteSwordBarrage
 import cn.coostack.usefulmagic.particles.emitters.DirectionShootEmitters
 import cn.coostack.usefulmagic.particles.emitters.LineEmitters
 import cn.coostack.usefulmagic.skill.api.EntitySkillManager

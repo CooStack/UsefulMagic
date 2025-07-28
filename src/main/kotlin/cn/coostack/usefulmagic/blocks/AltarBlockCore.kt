@@ -1,8 +1,7 @@
 package cn.coostack.usefulmagic.blocks
 
-import cn.coostack.usefulmagic.blocks.entitiy.AltarBlockCoreEntity
-import cn.coostack.usefulmagic.blocks.entitiy.AltarBlockEntity
-import cn.coostack.usefulmagic.blocks.entitiy.UsefulMagicBlockEntities
+import cn.coostack.usefulmagic.blocks.entity.AltarBlockCoreEntity
+import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
 import com.mojang.serialization.MapCodec
 import net.minecraft.block.BlockRenderType
 import net.minecraft.block.BlockState
@@ -19,9 +18,6 @@ import net.minecraft.sound.SoundEvents
 import net.minecraft.util.ActionResult
 import net.minecraft.util.hit.BlockHitResult
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Box
-import net.minecraft.util.shape.CroppedVoxelSet
-import net.minecraft.util.shape.SimpleVoxelShape
 import net.minecraft.util.shape.VoxelShape
 import net.minecraft.util.shape.VoxelShapes
 import net.minecraft.world.BlockView

@@ -8,6 +8,7 @@ import cn.coostack.cooparticlesapi.particles.control.ParticleControler
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.cooparticlesapi.utils.helper.emitters.LinearResistanceHelper
+import net.fabricmc.loader.impl.lib.sat4j.core.Vec
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
@@ -31,6 +32,11 @@ class ExplosionWaveEmitters(pos: Vec3d, world: World?) : ClassParticleEmitters(p
     var waveCircleCountMin = 60
     var waveCircleCountMax = 120
 
+    var discrete = 0.1
+
+    var randomVector = false
+    var randomSpeed = 0.1
+
     companion object {
         const val ID = "explosion-wave-magic-emitters"
         val CODEC = PacketCodec.ofStatic<PacketByteBuf, ParticleEmitters>(
@@ -43,7 +49,9 @@ class ExplosionWaveEmitters(pos: Vec3d, world: World?) : ClassParticleEmitters(p
                 buf.writeDouble(data.speedDrag)
                 buf.writeInt(data.waveCircleCountMin)
                 buf.writeInt(data.waveCircleCountMax)
-
+                buf.writeDouble(data.discrete)
+                buf.writeBoolean(data.randomVector)
+                buf.writeDouble(data.randomSpeed)
             }, {
                 val container = ExplosionWaveEmitters(Vec3d.ZERO, null)
                 decodeBase(container, it)
@@ -53,6 +61,9 @@ class ExplosionWaveEmitters(pos: Vec3d, world: World?) : ClassParticleEmitters(p
                 container.speedDrag = it.readDouble()
                 container.waveCircleCountMin = it.readInt()
                 container.waveCircleCountMax = it.readInt()
+                container.discrete = it.readDouble()
+                container.randomVector = it.readBoolean()
+                container.randomSpeed = it.readDouble()
                 container
             }
         )
@@ -65,11 +76,12 @@ class ExplosionWaveEmitters(pos: Vec3d, world: World?) : ClassParticleEmitters(p
     val random = Random(System.currentTimeMillis())
     override fun genParticles(): Map<ControlableParticleData, RelativeLocation> {
         return PointsBuilder()
-            .addCircle(waveSize, random.nextInt(waveCircleCountMin, waveCircleCountMax))
+            .addDiscreteCircleXZ(1.0, random.nextInt(waveCircleCountMin, waveCircleCountMax), discrete)
             .create().associateBy {
+                it.multiply(waveSize)
                 templateData.clone()
                     .apply {
-                        velocity = it.normalize().multiply(waveSpeed).toVector()
+                        velocity = it.clone().multiply(waveSpeed).toVector()
                     }
             }
     }
@@ -84,6 +96,15 @@ class ExplosionWaveEmitters(pos: Vec3d, world: World?) : ClassParticleEmitters(p
             data.velocity = LinearResistanceHelper.setPercentageVelocity(
                 data.velocity, speedDrag
             )
+            if (randomVector) {
+                data.velocity = data.velocity.add(
+                    Vec3d(
+                        random.nextDouble(-1.0, 1.0),
+                        random.nextDouble(-1.0, 1.0),
+                        random.nextDouble(-1.0, 1.0),
+                    ).normalize().multiply(random.nextDouble(-randomSpeed, randomSpeed))
+                )
+            }
             updatePhysics(pos, data)
         }
     }

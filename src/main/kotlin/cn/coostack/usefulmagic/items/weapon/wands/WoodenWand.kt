@@ -2,8 +2,8 @@ package cn.coostack.usefulmagic.items.weapon.wands
 
 import cn.coostack.cooparticlesapi.barrages.BarrageManager
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.managers.ClientManaManager
-import cn.coostack.usefulmagic.particles.barrages.WoodenBarrage
+import cn.coostack.usefulmagic.managers.client.ClientManaManager
+import cn.coostack.usefulmagic.particles.barrages.wand.WoodenBarrage
 import net.minecraft.entity.LivingEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.tooltip.TooltipType

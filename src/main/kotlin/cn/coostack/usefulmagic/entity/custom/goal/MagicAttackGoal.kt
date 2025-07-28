@@ -1,11 +1,9 @@
 package cn.coostack.usefulmagic.entity.custom.goal
 
 import cn.coostack.usefulmagic.entity.custom.MagicBookEntity
-import cn.coostack.usefulmagic.particles.barrages.EntityDamagedBarrage
 import net.minecraft.entity.ai.goal.Goal
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
-import java.util.EnumSet
 
 class MagicAttackGoal(
     val entity: MagicBookEntity,

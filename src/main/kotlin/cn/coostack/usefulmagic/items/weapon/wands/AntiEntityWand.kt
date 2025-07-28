@@ -7,9 +7,9 @@ import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.network.particle.util.ServerParticleUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import cn.coostack.usefulmagic.particles.barrages.AntiEntityWandBarrage
-import cn.coostack.usefulmagic.particles.style.AntiEntityWandSpellcasterStyle
-import cn.coostack.usefulmagic.particles.style.AntiEntityWandStyle
+import cn.coostack.usefulmagic.particles.barrages.wand.AntiEntityWandBarrage
+import cn.coostack.usefulmagic.particles.style.barrage.wand.AntiEntityWandSpellcasterStyle
+import cn.coostack.usefulmagic.particles.style.barrage.wand.AntiEntityWandStyle
 import cn.coostack.usefulmagic.utils.ParticleOption
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity

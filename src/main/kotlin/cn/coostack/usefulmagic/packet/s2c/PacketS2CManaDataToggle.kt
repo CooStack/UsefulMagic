@@ -1,7 +1,7 @@
 package cn.coostack.usefulmagic.packet.s2c
 
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.beans.PlayerManaData
+import cn.coostack.usefulmagic.beans.MagicPlayerData
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.packet.CustomPayload
@@ -11,7 +11,7 @@ import java.util.UUID
 /**
  * 服务器同步给单个客户端 魔力值改变信息
  */
-class PacketS2CManaDataToggle(val data: PlayerManaData, val who: UUID) : CustomPayload {
+class PacketS2CManaDataToggle(val data: MagicPlayerData, val who: UUID) : CustomPayload {
     companion object {
         val payloadID = CustomPayload.Id<PacketS2CManaDataToggle>(
             Identifier.of(UsefulMagic.MOD_ID, "mana_data_toggle")
@@ -27,7 +27,7 @@ class PacketS2CManaDataToggle(val data: PlayerManaData, val who: UUID) : CustomP
             val manaRegeneration = it.readInt()
             val uuid = it.readUuid()
             return@codecOf PacketS2CManaDataToggle(
-                PlayerManaData(uuid).apply {
+                MagicPlayerData(uuid).apply {
                     this.maxMana = maxMana
                     this.mana = mana
                     this.manaRegeneration = manaRegeneration

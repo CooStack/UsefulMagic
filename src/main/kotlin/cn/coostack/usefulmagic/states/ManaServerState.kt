@@ -1,9 +1,10 @@
 package cn.coostack.usefulmagic.states
 
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.beans.PlayerManaData
+import cn.coostack.usefulmagic.beans.MagicPlayerData
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CManaDataToggle
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import net.minecraft.component.type.NbtComponent
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.RegistryWrapper
 import net.minecraft.server.MinecraftServer
@@ -12,16 +13,16 @@ import net.minecraft.world.World
 import java.util.UUID
 
 class ManaServerState : PersistentState() {
-    val playerManaData = HashMap<UUID, PlayerManaData>()
+    val magicPlayerData = HashMap<UUID, MagicPlayerData>()
 
-    fun getDataFromServer(uuid: UUID): PlayerManaData {
-        return playerManaData.getOrPut(uuid) { PlayerManaData(uuid) }
+    fun getDataFromServer(uuid: UUID): MagicPlayerData {
+        return magicPlayerData.getOrPut(uuid) { MagicPlayerData(uuid) }
     }
 
     fun sendToggle() {
         UsefulMagic.server.playerManager.playerList.forEach {
-            val data = playerManaData.getOrPut(it.uuid) {
-                PlayerManaData(it.uuid)
+            val data = magicPlayerData.getOrPut(it.uuid) {
+                MagicPlayerData(it.uuid)
             }
             ServerPlayNetworking.send(
                 it,
@@ -39,13 +40,18 @@ class ManaServerState : PersistentState() {
             players.keys.forEach {
                 val uuid = UUID.fromString(it)
                 val value = players.getCompound(it)
-                val data = PlayerManaData(uuid)
+                val data = MagicPlayerData(uuid)
                 data.apply {
                     maxMana = value.getInt("maxMana")
                     mana = value.getInt("mana")
                     manaRegeneration = value.getInt("manaRegeneration")
+                    val friendsNBT = value.getCompound("friends")
+                    friendsNBT.keys.forEach { index ->
+                        val uuid = friendsNBT.getUuid(index)
+                        data.addFriend(uuid)
+                    }
                 }
-                loader.playerManaData[uuid] = data
+                loader.magicPlayerData[uuid] = data
             }
             return loader
         }
@@ -71,13 +77,18 @@ class ManaServerState : PersistentState() {
         registryLookup: RegistryWrapper.WrapperLookup?
     ): NbtCompound {
         val playersNBT = NbtCompound()
-        playerManaData.forEach {
+        magicPlayerData.forEach {
             val key = it.key.toString()
             val value = it.value
             val dataNbt = NbtCompound()
             dataNbt.putInt("mana", value.mana)
             dataNbt.putInt("maxMana", value.maxMana)
             dataNbt.putInt("manaRegeneration", value.manaRegeneration)
+            val friends = NbtCompound()
+            value.friends.forEachIndexed { index, f ->
+                friends.putUuid("$index", f)
+            }
+            dataNbt.put("friends", friends)
             playersNBT.put(key, dataNbt)
         }
         nbt.put("players", playersNBT)

@@ -4,8 +4,8 @@ import cn.coostack.cooparticlesapi.barrages.BarrageManager
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.network.particle.util.ServerParticleUtil
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import cn.coostack.usefulmagic.particles.barrages.GoldenMagicBallBarrage
-import cn.coostack.usefulmagic.particles.style.GoldenWandStyle
+import cn.coostack.usefulmagic.particles.barrages.wand.GoldenMagicBallBarrage
+import cn.coostack.usefulmagic.particles.style.barrage.wand.GoldenWandStyle
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack

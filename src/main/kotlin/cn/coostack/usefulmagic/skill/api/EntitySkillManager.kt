@@ -1,10 +1,12 @@
 package cn.coostack.usefulmagic.skill.api
 
 import net.minecraft.entity.LivingEntity
+import java.util.UUID
 import java.util.function.Predicate
 import kotlin.random.Random
 
 class EntitySkillManager(var owner: LivingEntity) {
+    val cacheUUID = UUID.randomUUID()
     private val skills = HashMap<String, Skill>()
 
     private val countdownStorage = HashMap<String, Int>()

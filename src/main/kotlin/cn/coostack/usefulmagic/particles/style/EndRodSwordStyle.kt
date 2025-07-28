@@ -9,15 +9,17 @@ import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.TestEndRodEffect
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
+import cn.coostack.cooparticlesapi.utils.helper.HelperUtil
 import cn.coostack.cooparticlesapi.utils.helper.buffer.ControlableBuffer
 import cn.coostack.cooparticlesapi.utils.helper.buffer.ControlableBufferHelper
 import cn.coostack.usefulmagic.utils.ParticleOption
+import net.minecraft.client.particle.ParticleTextureSheet
 import net.minecraft.util.math.Vec3d
 import java.util.Random
 import java.util.UUID
 import kotlin.math.PI
 
-class EndRodSwordStyle(uuid: UUID = UUID.randomUUID()) : ParticleGroupStyle(64.0, uuid) {
+class EndRodSwordStyle(uuid: UUID = UUID.randomUUID()) : ParticleGroupStyle(512.0, uuid) {
     class Provider : ParticleStyleProvider {
         override fun createStyle(
             uuid: UUID,
@@ -46,6 +48,20 @@ class EndRodSwordStyle(uuid: UUID = UUID.randomUUID()) : ParticleGroupStyle(64.0
         .addLine(RelativeLocation(-weight, 0, 0), RelativeLocation(weight, 0, 0), 40 * options)
         .addLine(RelativeLocation(0, lowest, 0), RelativeLocation(0, height, 0), 40 * options)
 
+    @ControlableBuffer("enable_scale")
+    var enableScale = false
+
+    @ControlableBuffer("scale_tick")
+    var scaleTick = 10
+
+    @ControlableBuffer("enable_alpha")
+    var enableAlpha = false
+
+    @ControlableBuffer("alpha_tick")
+    var alphaTick = 10
+    val alphaHelper = HelperUtil.alphaStyle(0.0, 1.0, alphaTick)
+    val scaleHelper = HelperUtil.scaleStyle(0.01, 1.0, scaleTick)
+
     override fun getCurrentFrames(): Map<StyleData, RelativeLocation> {
         return swordPoints.createWithStyleData {
             StyleData {
@@ -53,6 +69,9 @@ class EndRodSwordStyle(uuid: UUID = UUID.randomUUID()) : ParticleGroupStyle(64.0
                     TestEndRodEffect(it)
                 )
             }.withParticleHandler {
+                if (enableAlpha) {
+                    this.textureSheet = ParticleTextureSheet.PARTICLE_SHEET_TRANSLUCENT
+                }
                 colorOfRGB(
                     this@EndRodSwordStyle.color.x.toInt(),
                     this@EndRodSwordStyle.color.y.toInt(),
@@ -62,7 +81,31 @@ class EndRodSwordStyle(uuid: UUID = UUID.randomUUID()) : ParticleGroupStyle(64.0
         }
     }
 
+    override fun beforeDisplay(styles: Map<StyleData, RelativeLocation>) {
+        if (enableScale) {
+            scaleHelper.loadControler(this)
+        }
+        if (enableAlpha) {
+            alphaHelper.loadControler(this)
+        }
+        super.beforeDisplay(styles)
+    }
+
     override fun onDisplay() {
+        scaleHelper.scaleTick = scaleTick
+        scaleHelper.recalculateStep()
+        scaleHelper.resetScaleMin()
+        alphaHelper.alphaTick = alphaTick
+        alphaHelper.recalculateStep()
+        alphaHelper.resetAlphaMin()
+        addPreTickAction {
+            if (enableScale) {
+                scaleHelper.doScale()
+            }
+            if (enableAlpha) {
+                alphaHelper.increaseAlpha()
+            }
+        }
     }
 
     override fun writePacketArgs(): Map<String, ParticleControlerDataBuffer<*>> {

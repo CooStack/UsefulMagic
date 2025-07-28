@@ -1,11 +1,9 @@
 package cn.coostack.usefulmagic.items.consumer
 
-import cn.coostack.usefulmagic.blocks.entitiy.AltarBlockCoreEntity
-import cn.coostack.usefulmagic.blocks.entitiy.MagicCoreBlockEntity
+import cn.coostack.usefulmagic.blocks.entity.MagicCoreBlockEntity
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes.LARGE_REVIVE_USE_COUNT
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import net.minecraft.item.Item
-import net.minecraft.item.Item.TooltipContext
 import net.minecraft.item.ItemStack
 import net.minecraft.item.ItemUsageContext
 import net.minecraft.item.tooltip.TooltipType

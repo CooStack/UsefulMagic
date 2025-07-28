@@ -13,7 +13,6 @@ import cn.coostack.cooparticlesapi.utils.helper.HelperUtil
 import cn.coostack.cooparticlesapi.utils.helper.buffer.ControlableBuffer
 import cn.coostack.cooparticlesapi.utils.helper.buffer.ControlableBufferHelper
 import cn.coostack.cooparticlesapi.utils.helper.impl.StyleStatusHelper
-import cn.coostack.usefulmagic.particles.style.AntiEntityWandSpellcasterStyle
 import cn.coostack.usefulmagic.utils.ParticleOption
 import net.minecraft.client.particle.ParticleTextureSheet
 import java.util.SortedMap

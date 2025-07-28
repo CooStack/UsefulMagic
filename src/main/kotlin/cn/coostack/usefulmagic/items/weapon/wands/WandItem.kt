@@ -1,8 +1,7 @@
 package cn.coostack.usefulmagic.items.weapon.wands
 
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.managers.ClientManaManager
-import net.minecraft.client.gui.screen.Screen
+import cn.coostack.usefulmagic.managers.client.ClientManaManager
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack

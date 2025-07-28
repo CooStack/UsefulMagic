@@ -3,7 +3,7 @@ package cn.coostack.usefulmagic.items.weapon.wands
 import cn.coostack.cooparticlesapi.barrages.BarrageManager
 import cn.coostack.cooparticlesapi.network.particle.util.ServerParticleUtil
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import cn.coostack.usefulmagic.particles.barrages.CopperBarrage
+import cn.coostack.usefulmagic.particles.barrages.wand.CopperBarrage
 import net.minecraft.entity.LivingEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items

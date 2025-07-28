@@ -4,8 +4,8 @@ import cn.coostack.cooparticlesapi.barrages.BarrageManager
 import cn.coostack.cooparticlesapi.barrages.BarrageOption
 import cn.coostack.cooparticlesapi.barrages.HitBox
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.managers.ClientManaManager
-import cn.coostack.usefulmagic.particles.barrages.SplitBarrage
+import cn.coostack.usefulmagic.managers.client.ClientManaManager
+import cn.coostack.usefulmagic.particles.barrages.wand.SplitBarrage
 import cn.coostack.usefulmagic.particles.group.server.EnchantBallParticleServer
 import net.minecraft.entity.LivingEntity
 import net.minecraft.item.ItemStack
