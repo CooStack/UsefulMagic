@@ -1,5 +1,6 @@
 package cn.coostack.usefulmagic.meteorite
 
+import net.minecraft.util.math.BlockPos
 import java.util.UUID
 
 object MeteoriteManager {
@@ -33,7 +34,10 @@ object MeteoriteManager {
                 iterator.remove()
                 continue
             }
-            meteorite.tick()
+            val world = meteorite.world ?: continue
+            if (world.shouldTick(BlockPos.ofFloored(meteorite.origin))) {
+                meteorite.tick()
+            }
         }
     }
 

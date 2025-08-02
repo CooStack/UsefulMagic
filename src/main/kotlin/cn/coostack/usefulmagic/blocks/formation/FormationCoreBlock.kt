@@ -1,5 +1,6 @@
 package cn.coostack.usefulmagic.blocks.formation
 
+import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
 import cn.coostack.usefulmagic.blocks.entity.formation.FormationCoreBlockEntity
 import cn.coostack.usefulmagic.gui.formation.FormationSettingScreen
@@ -54,18 +55,22 @@ class FormationCoreBlock(settings: Settings) : BlockWithEntity(settings) {
             return super.onUse(state, world, pos, player, hit)
         }
         if (world.isClient) {
+            UsefulMagic.logger.info("try send request")
             ClientRequestManager.sendRequest(
                 PacketC2SFormationSettingRequest(pos), PacketS2CFormationSettingsResponse.payloadID
             ).recall {
                 it as PacketS2CFormationSettingsResponse
                 if (!it.isOwner) {
+                    UsefulMagic.logger.info("request failed")
                     return@recall
                 }
-                MinecraftClient.getInstance().setScreen(
-                    FormationSettingScreen(pos, it.settings)
-                )
+                UsefulMagic.logger.info("try set screen")
+                MinecraftClient.getInstance().executeTask {
+                    MinecraftClient.getInstance().setScreen(
+                        FormationSettingScreen(pos, it.settings)
+                    )
+                }
             }
-
             return ActionResult.SUCCESS_NO_ITEM_USED
         }
         val notHoldItem = player.handItems.all { it.isEmpty }

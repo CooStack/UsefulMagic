@@ -9,6 +9,7 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.ButtonTextures
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.tooltip.Tooltip
+import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.item.Items
 import net.minecraft.sound.SoundCategory
@@ -54,6 +55,7 @@ open class TutorialBookScreen() : Screen(Text.literal("bb")) {
         }
         initTypeIcons()
         initContentIcons()
+//        addDrawableChild(ButtonWidget.builder(Text.literal("你好")) {}.dimensions(0,0,32,32).build())
         addDrawableChild(next)
         addDrawableChild(preview)
         super.init()

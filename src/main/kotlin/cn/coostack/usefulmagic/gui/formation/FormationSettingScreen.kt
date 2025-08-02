@@ -1,28 +1,31 @@
 package cn.coostack.usefulmagic.gui.formation
 
+import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.formation.api.FormationSettings
 import cn.coostack.usefulmagic.managers.client.ClientRequestManager
 import cn.coostack.usefulmagic.packet.c2s.PacketC2SFormationSettingChangeRequest
 import cn.coostack.usefulmagic.packet.c2s.PacketC2SFormationSettingRequest
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationSettingsResponse
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ButtonWidget
-import net.minecraft.client.gui.widget.PlayerSkinWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.text.Text
 import net.minecraft.util.math.BlockPos
 
 class FormationSettingScreen(val clickPos: BlockPos, var settings: FormationSettings) :
-    Screen(Text.literal("formation setting")) {
+    Screen(Text.literal("formation-setting")) {
     val elements = ArrayList<Element>()
     lateinit var textField: TextFieldWidget
     override fun init() {
+        UsefulMagic.logger.info("try flushing buttons")
         flush(settings)
         super.init()
+        UsefulMagic.logger.info("init finished")
     }
 
 
@@ -38,7 +41,13 @@ class FormationSettingScreen(val clickPos: BlockPos, var settings: FormationSett
     private fun flush(data: FormationSettings) {
         this.settings = data
         elements.onEach(::remove).clear()
-        val scaled = 3.0 / client!!.options.guiScale.value
+        var v = client!!.options.guiScale.value
+        v = if (v == 0) {
+            3
+        } else {
+            v
+        }
+        val scaled = 3.0 / v
         val originX = width / 2
         elements.add(
             addDrawableChild(
@@ -268,7 +277,7 @@ class FormationSettingScreen(val clickPos: BlockPos, var settings: FormationSett
                 )
             )
         )
-
+        UsefulMagic.logger.info("FLUSH FINISHED")
     }
 
     private fun genToggleButton(
@@ -282,16 +291,24 @@ class FormationSettingScreen(val clickPos: BlockPos, var settings: FormationSett
             ClientRequestManager.sendRequest(
                 PacketC2SFormationSettingChangeRequest(clickPos, settings), PacketS2CFormationSettingsResponse.payloadID
             ).recall {
-                flush(settings)
+                MinecraftClient.getInstance().executeTask {
+                    flush(settings)
+                }
             }
         }
+    }
+
+    override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
+        super.render(context, mouseX, mouseY, delta)
     }
 
     override fun close() {
         ClientRequestManager.sendRequest(
             PacketC2SFormationSettingChangeRequest(clickPos, settings), PacketS2CFormationSettingsResponse.payloadID
         ).recall {
-            flush(settings)
+            MinecraftClient.getInstance().executeTask {
+                flush(settings)
+            }
         }
         super.close()
     }

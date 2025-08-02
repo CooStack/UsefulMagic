@@ -11,6 +11,8 @@ import cn.coostack.usefulmagic.blocks.entity.formation.renderer.CrystalEntityRen
 import cn.coostack.usefulmagic.entity.MagicBookEntityModel
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityLayers
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
+import cn.coostack.usefulmagic.entity.custom.formation.FormationCoreEntity
+import cn.coostack.usefulmagic.entity.custom.renderer.FormationCoreRenderer
 import cn.coostack.usefulmagic.entity.custom.renderer.MagicBookEntityRenderer
 import cn.coostack.usefulmagic.gui.friend.FriendManagerScreen
 import cn.coostack.usefulmagic.gui.mana.ManaBarCallback
@@ -73,23 +75,33 @@ import cn.coostack.usefulmagic.particles.style.formation.crystal.SwordAttackCrys
 import cn.coostack.usefulmagic.particles.style.skill.BookShootSkillStyle
 import cn.coostack.usefulmagic.particles.style.skill.GiantSwordStyle
 import cn.coostack.usefulmagic.particles.style.skill.SwordLightStyle
+import cn.coostack.usefulmagic.renderer.shader.TestShader
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
+import net.fabricmc.fabric.impl.client.rendering.FabricShaderProgram
+import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gl.ShaderProgramSetupView
 import net.minecraft.client.item.ModelPredicateProviderRegistry
 import net.minecraft.client.option.KeyBinding
+import net.minecraft.client.render.GameRenderer
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories
 import net.minecraft.client.util.InputUtil
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.Vec3d
+import org.joml.Vector3f
 import org.lwjgl.glfw.GLFW
+import org.lwjgl.opengl.GL20
 
 object UsefulMagicClient : ClientModInitializer {
     lateinit var friendUIBinding: KeyBinding
@@ -156,6 +168,7 @@ object UsefulMagicClient : ClientModInitializer {
             return@register MeteoriteFallingBlockRenderer(it)
         })
 
+        EntityRendererRegistry.register(UsefulMagicEntityTypes.FORMATION_CORE_ENTITY, ::FormationCoreRenderer)
         EntityModelLayerRegistry.registerModelLayer(
             UsefulMagicEntityLayers.MAGIC_BOOK_ENTITY_LAYER,
             MagicBookEntityModel::getTexturedModelData
@@ -291,7 +304,6 @@ object UsefulMagicClient : ClientModInitializer {
         ) { payload, context ->
             FormationPacketListener.handleBreak(payload, context)
         }
-
         UsefulMagic.logger.debug("客户端自定义数据包处理器注册完成")
     }
 

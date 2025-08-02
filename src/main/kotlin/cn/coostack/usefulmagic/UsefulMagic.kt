@@ -8,6 +8,7 @@ import cn.coostack.usefulmagic.entity.custom.MagicBookEntity
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes
 import cn.coostack.usefulmagic.items.UsefulMagicItemGroups
 import cn.coostack.usefulmagic.items.UsefulMagicItems
+import cn.coostack.usefulmagic.items.prop.SkyFallingRuneItem
 import cn.coostack.usefulmagic.items.weapon.MagicAxe
 import cn.coostack.usefulmagic.listener.DefendMagicListener
 import cn.coostack.usefulmagic.managers.server.ServerFormationManager
@@ -88,6 +89,11 @@ object UsefulMagic : ModInitializer {
         ServerPlayConnectionEvents.JOIN.register { h, _, _ ->
             val player = h.player
             state.getDataFromServer(player.uuid)
+        }
+        ServerPlayConnectionEvents.DISCONNECT.register { handler, server ->
+            val player = handler.player ?: return@register
+            SkyFallingRuneItem.playerMagicStyles.remove(player.uuid)
+            SkyFallingRuneItem.playerTasks.remove(player.uuid)
         }
         ServerLifecycleEvents.SERVER_STOPPED.register { server ->
             MeteoriteManager.clearAll()

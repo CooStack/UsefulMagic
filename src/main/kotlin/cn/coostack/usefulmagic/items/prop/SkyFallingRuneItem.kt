@@ -5,6 +5,7 @@ import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersMan
 import cn.coostack.cooparticlesapi.network.particle.emitters.impl.PresetLaserEmitters
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
+import cn.coostack.cooparticlesapi.scheduler.CooScheduler
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
 import cn.coostack.usefulmagic.UsefulMagic
@@ -33,12 +34,14 @@ import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
 import net.minecraft.util.Hand
 import net.minecraft.util.TypedActionResult
+import net.minecraft.util.UseAction
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import net.minecraft.world.explosion.Explosion
 import java.util.*
+import kotlin.math.exp
 
 /**
  * 天空坠落魔法
@@ -52,6 +55,8 @@ class SkyFallingRuneItem : Item(Settings().maxCount(16)) {
         private val playerGuildStyles = HashMap<UUID, GuildCircleStyle>()
         const val knockbackHitDamage = 100f
         const val hitDamage = 200f
+        internal val playerTasks = HashMap<UUID, MutableList<CooScheduler.TickRunnable>>()
+        internal val playerMagicStyles = HashMap<UUID, SkyFallingStyle>()
 
         @JvmStatic
         fun getTargetLocation(user: PlayerEntity): Vec3d {
@@ -134,13 +139,27 @@ class SkyFallingRuneItem : Item(Settings().maxCount(16)) {
         }
     }
 
-    override fun use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult<ItemStack?> {
+
+    override fun getUseAction(stack: ItemStack?): UseAction? {
+        return UseAction.BOW
+    }
+
+    override fun getMaxUseTime(stack: ItemStack?, user: LivingEntity?): Int {
+        return 5
+    }
+
+
+    override fun finishUsing(stack: ItemStack, world: World, user: LivingEntity): ItemStack {
+        if (user !is PlayerEntity) return stack
+
+        val hand = user.activeHand
+
         user.itemCooldownManager.set(this, 20 * 60 * 20)
         val stack = user.getStackInHand(hand)
         if (!user.isCreative) {
             stack.decrement(1)
         }
-        if (world.isClient) return super.use(world, user, hand)
+        if (world.isClient) return stack
         world.playSound(
             null, user.x, user.y, user.z,
             UsefulMagicSoundEvents.SKY_FALLING_MAGIC_START,
@@ -148,18 +167,25 @@ class SkyFallingRuneItem : Item(Settings().maxCount(16)) {
             10f, 1f
         )
         val world = world as ServerWorld
-        val style = SkyFallingStyle()
-        style.bindPlayer = user.uuid
-        ParticleStyleManager.spawnStyle(world, user.pos, style)
+        if (!playerMagicStyles.containsKey(user.uuid) || !(playerMagicStyles[user.uuid]?.valid ?: false)) {
+            val style = SkyFallingStyle()
+            style.bindPlayer = user.uuid
+            ParticleStyleManager.spawnStyle(world, user.pos, style)
+            playerMagicStyles[user.uuid] = style
+        }
         // 设置target
         val target = getTargetLocation(user)
-        CooParticleAPI.scheduler.runTask(12 * 20) {
+        val tasks = playerTasks[user.uuid] ?: ArrayList()
+        if (tasks.isNotEmpty() && tasks.any { !it.canceled }) {
+            return stack
+        }
+        val explodeTask = CooParticleAPI.scheduler.runTask(12 * 20) {
             handleExplodeParticle(world, user as ServerPlayerEntity, target)
             handleExplode(world, user, target)
         }
-
+        tasks.add(explodeTask)
         val data = UsefulMagic.state.getDataFromServer(user.uuid)
-        CooParticleAPI.scheduler.runTaskTimerMaxTick(1, 12 * 20) {
+        val attackTask = CooParticleAPI.scheduler.runTaskTimerMaxTick(1, 12 * 20) {
             val r = 12.0
             val box = Box.of(target, r * 2, r * 2, r * 2)
             val entities = world.getEntitiesByClass(LivingEntity::class.java, box) {
@@ -184,6 +210,19 @@ class SkyFallingRuneItem : Item(Settings().maxCount(16)) {
             user.abilities.allowFlying = true
             user.abilities.flying = true
         }
+        tasks.add(attackTask)
+        playerTasks[user.uuid] = tasks
+        return super.finishUsing(stack, world, user)
+    }
+
+    override fun use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult<ItemStack?> {
+        // 防止重复执行 (然后第二个无效)
+        val styleAlive = playerMagicStyles.containsKey(user.uuid) && playerMagicStyles[user.uuid]?.valid ?: false
+        val taskAlive = (playerTasks[user.uuid] ?: ArrayList()).all { it.canceled }
+        if (styleAlive && taskAlive) {
+            return super.use(world, user, hand)
+        }
+        user.setCurrentHand(hand)
         return super.use(world, user, hand)
     }
 

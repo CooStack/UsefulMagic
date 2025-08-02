@@ -57,13 +57,13 @@ class FormationCoreEntity(type: EntityType<*>, world: World) : Entity(type, worl
         val posX = nbt.getInt("core_pos_x")
         val posY = nbt.getInt("core_pos_y")
         val posZ = nbt.getInt("core_pos_z")
-        core = BlockPos(posX,posY,posZ)
+        core = BlockPos(posX, posY, posZ)
     }
 
     override fun writeCustomDataToNbt(nbt: NbtCompound) {
-        nbt.putInt("core_pos_x",core.x)
-        nbt.putInt("core_pos_y",core.y)
-        nbt.putInt("core_pos_z",core.z)
+        nbt.putInt("core_pos_x", core.x)
+        nbt.putInt("core_pos_y", core.y)
+        nbt.putInt("core_pos_z", core.z)
     }
 
     override fun tick() {
@@ -71,6 +71,7 @@ class FormationCoreEntity(type: EntityType<*>, world: World) : Entity(type, worl
         setPosition(core.up(3).toCenterPos())
         super.tick()
     }
+
 
     /**
      * 如果方块中心不是目标BlockEntity 则直接死亡

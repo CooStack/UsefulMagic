@@ -125,7 +125,6 @@ class MagicBookEntity(entityType: EntityType<out PathAwareEntity>, world: World)
 
     init {
         health = 1f
-
         initSkillManager()
     }
 

@@ -1,6 +1,7 @@
 package cn.coostack.usefulmagic.particles.fall.style
 
 import cn.coostack.cooparticlesapi.network.buffer.ParticleControlerDataBuffer
+import cn.coostack.cooparticlesapi.network.buffer.ParticleControlerDataBuffers
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleGroupStyle
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleShapeStyle
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleProvider
@@ -100,7 +101,7 @@ class SkyFallingStyle(
             uuid: UUID,
             args: Map<String, ParticleControlerDataBuffer<*>>
         ): ParticleGroupStyle {
-            return SkyFallingStyle()
+            return SkyFallingStyle(uuid)
         }
     }
 
@@ -367,7 +368,6 @@ class SkyFallingStyle(
         return HashMap(
             ControlableBufferHelper.getPairs(this)
         ).apply {
-            this.putAll(animationHelper.getArgs())
         }
     }
 
@@ -391,11 +391,10 @@ class SkyFallingStyle(
 
     override fun readPacketArgsSequenced(args: Map<String, ParticleControlerDataBuffer<*>>) {
         ControlableBufferHelper.setPairs(this, args)
-        animationHelper.setFromArgs(args)
     }
 
-    var next = false
     override fun onDisplay() {
+        autoToggle = true  // 开启后 第二阶段会生成多余的粒子  原因未知
         addPreTickAction {
             if (age % 80 == 0) {
                 world!!.playSound(
@@ -406,6 +405,11 @@ class SkyFallingStyle(
                 )
             }
             age++
+//            change(
+//                { age++ }, mapOf(
+//                    "age" to ParticleControlerDataBuffers.int(age + 1)
+//                )
+//            )
             if (age > 12 * 20) {
                 status.setStatus(2)
             }
@@ -421,15 +425,6 @@ class SkyFallingStyle(
                         SoundCategory.PLAYERS,
                         10f, 1f
                     )
-                }
-                if (!next) {
-                    world!!.playSound(
-                        null, pos.x, pos.y, pos.z,
-                        UsefulMagicSoundEvents.SKY_FALLING_MAGIC_START,
-                        SoundCategory.PLAYERS,
-                        10f, 1f
-                    )
-                    next = true
                 }
             }
 

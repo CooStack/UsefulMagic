@@ -32,7 +32,7 @@ import java.util.function.Predicate
 import kotlin.math.PI
 
 class NetheriteWandStyle(val bindPlayer: UUID, uuid: UUID = UUID.randomUUID()) :
-    SequencedParticleStyle(64.0, uuid) {
+    SequencedParticleStyle(128.0, uuid) {
 
 
     private val conditions = ArrayList<Pair<Predicate<NetheriteWandStyle>, Int>>()
@@ -52,6 +52,7 @@ class NetheriteWandStyle(val bindPlayer: UUID, uuid: UUID = UUID.randomUUID()) :
             return NetheriteWandStyle(player, uuid).also { it.readPacketArgs(args) }
         }
 
+
     }
 
     private val options: Int
@@ -62,6 +63,7 @@ class NetheriteWandStyle(val bindPlayer: UUID, uuid: UUID = UUID.randomUUID()) :
     val displayHelper = HelperUtil.styleStatus(20)
 
     init {
+        autoToggle = true
         displayHelper.loadControler(this)
         with(conditions) {
             add(Predicate<NetheriteWandStyle> {

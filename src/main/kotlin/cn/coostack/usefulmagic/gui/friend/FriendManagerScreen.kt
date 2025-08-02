@@ -57,7 +57,13 @@ class FriendManagerScreen : Screen(Text.translatable("screen.title.friend_manage
     }
 
     override fun init() {
-        val scale = 3.0 / client!!.options.guiScale.value
+        var v = client!!.options.guiScale.value
+        v = if (v == 0) {
+            3
+        } else {
+            v
+        }
+        val scale = 3.0 / v
         val originX = width / 2
         addDrawableChild(
             ButtonWidget.Builder(Text.literal("下一页")) {
