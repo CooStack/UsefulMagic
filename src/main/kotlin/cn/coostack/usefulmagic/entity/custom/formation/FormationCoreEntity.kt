@@ -68,7 +68,7 @@ class FormationCoreEntity(type: EntityType<*>, world: World) : Entity(type, worl
 
     override fun tick() {
         assertFormationCoreEntity()
-        setPosition(core.up(3).toCenterPos())
+//        setPosition(core.up(3).toCenterPos())
         super.tick()
     }
 
@@ -77,25 +77,25 @@ class FormationCoreEntity(type: EntityType<*>, world: World) : Entity(type, worl
      * 如果方块中心不是目标BlockEntity 则直接死亡
      */
     private fun assertFormationCoreEntity() {
-        val entity = world.getBlockEntity(core) ?: let {
-            kill()
-            return
-        }
-
-        if (entity !is FormationCoreBlockEntity) {
-            kill()
-            return
-        }
-
-        if (!entity.formation.isActiveFormation()) {
-            kill()
-            return
-        }
-        // 强制设置距离
-        // 如果距离大于16 则判定是不正常的实体生成
-        if (pos.distanceTo(entity.pos.toCenterPos()) > 16) {
-            kill()
-            return
-        }
+//        val entity = world.getBlockEntity(core) ?: let {
+//            kill()
+//            return
+//        }
+//
+//        if (entity !is FormationCoreBlockEntity) {
+//            kill()
+//            return
+//        }
+//
+//        if (!entity.formation.isActiveFormation()) {
+//            kill()
+//            return
+//        }
+//        // 强制设置距离
+//        // 如果距离大于16 则判定是不正常的实体生成
+//        if (pos.distanceTo(entity.pos.toCenterPos()) > 16) {
+//            kill()
+//            return
+//        }
     }
 }

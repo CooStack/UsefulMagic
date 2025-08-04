@@ -1,7 +1,8 @@
-#version 150 core
-uniform float u_time;
-uniform vec3 u_pos;
+#version 330 core
+uniform mat4 transform;
 uniform mat4 ModelViewMat;
-uniform mat4 ProjMat;
+layout (location = 0) in vec3 pos;
+
 void main() {
+    gl_Position = ModelViewMat * transform  * vec4(pos, 1.);
 }
