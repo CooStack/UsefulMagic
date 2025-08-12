@@ -1,0 +1,23 @@
+plugins {
+    // see https://fabricmc.net/develop/ for new versions
+    id 'fabric-loom' version '1.10-SNAPSHOT' apply false
+    // see https://projects.neoforged.net/neoforged/moddevgradle for new versions
+    id 'net.neoforged.moddev' version '2.0.49-beta' apply false
+    id 'org.jetbrains.kotlin.jvm' version '2.2.0' apply false
+}
+
+
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'kotlin'
+
+    sourceSets {
+        main.kotlin.srcDirs = ['src/main/java', 'src/main/kotlin']
+    }
+
+    compileKotlin {
+        source(project(":common").sourceSets.main.allSource)
+        inputs.file "../gradle.properties"
+    }
+}
