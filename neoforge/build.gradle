@@ -2,7 +2,10 @@ plugins {
     id 'multiloader-loader'
     id 'net.neoforged.moddev'
 }
-
+tasks.javadoc {
+    // fuck javadoc encode error
+    enabled = false
+}
 neoForge {
     version = neoforge_version
     // Automatically enable neoforge AccessTransformers if the file exists
@@ -34,6 +37,17 @@ neoForge {
             sourceSet sourceSets.main
         }
     }
+}
+
+repositories {
+    maven {
+        name = "Kotlin for Forge"
+        setUrl("https://thedarkcolour.github.io/KotlinForForge/")
+    }
+}
+
+dependencies {
+    jarJar(implementation "thedarkcolour:kotlinforforge-neoforge:5.9.0")
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }

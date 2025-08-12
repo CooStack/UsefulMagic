@@ -1,6 +1,7 @@
 plugins {
     id 'multiloader-common'
     id 'net.neoforged.moddev'
+    id 'org.jetbrains.kotlin.jvm'
 }
 
 neoForge {
@@ -15,7 +16,10 @@ neoForge {
         mappingsVersion = parchment_version
     }
 }
-
+tasks.javadoc {
+    // fuck javadoc encode error
+    enabled = false
+}
 dependencies {
     compileOnly group: 'org.spongepowered', name: 'mixin', version: '0.8.5'
     // fabric and neoforge both bundle mixinextras, so it is safe to use it in common
