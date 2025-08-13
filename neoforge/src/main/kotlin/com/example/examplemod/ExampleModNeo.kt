@@ -1,17 +1,37 @@
 package com.example.examplemod
 
 import net.neoforged.bus.api.IEventBus
+import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.common.Mod
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent
+import net.neoforged.fml.event.lifecycle.FMLDedicatedServerSetupEvent
+import thedarkcolour.kotlinforforge.neoforge.forge.MOD_BUS
 
 @Mod(Constants.MOD_ID)
-class ExampleModNeo(val bus: IEventBus) {
+object ExampleModNeo {
     init {
         // This method is invoked by the NeoForge mod loader when it is ready
         // to load your mod. You can access NeoForge and Common code in this
         // project.
-
+        MOD_BUS.addListener(::onSetup)
+        MOD_BUS.addListener(::onServerSetup)
+        MOD_BUS.addListener(::onCommonSetup)
         // Use NeoForge to bootstrap the Common mod.
         Constants.LOG.info("Hello NeoForge world!")
         CommonClass.init()
+    }
+
+    private fun onSetup(event: FMLClientSetupEvent) {
+        Constants.LOG.info("Initializing client...")
+    }
+
+    private fun onServerSetup(event: FMLDedicatedServerSetupEvent) {
+        Constants.LOG.info("Initializing server...")
+
+    }
+
+    private fun onCommonSetup(event: FMLCommonSetupEvent) {
+        Constants.LOG.info("Hello This is working...")
     }
 }
