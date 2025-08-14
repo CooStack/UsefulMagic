@@ -8,6 +8,11 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent
 import net.neoforged.fml.event.lifecycle.FMLDedicatedServerSetupEvent
 import thedarkcolour.kotlinforforge.neoforge.forge.MOD_BUS
 
+/**
+ * 没有找到能够直接注入 object作为 event的方法
+ * 如果注解了 EventBusSubscriber 则一定要是class 而不是 object
+ * 要不然就会报大错 :)
+ */
 @Mod(Constants.MOD_ID)
 object ExampleModNeo {
     init {
