@@ -1,0 +1,12 @@
+{
+  "values": [
+    "usefulmagic:magic_core",
+    "usefulmagic:altar_block_core",
+    "usefulmagic:altar_block",
+    "usefulmagic:recover_crystal",
+    "usefulmagic:defend_crystal",
+    "usefulmagic:sword_attack_crystal",
+    "usefulmagic:energy_crystal",
+    "usefulmagic:formation_core"
+  ]
+}

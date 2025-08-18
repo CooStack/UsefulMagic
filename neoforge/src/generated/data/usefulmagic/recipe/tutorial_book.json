@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:book"
+    },
+    "H": {
+      "item": "minecraft:gunpowder"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "T": {
+      "item": "minecraft:sugar"
+    },
+    "Y": {
+      "item": "minecraft:glowstone_dust"
+    }
+  },
+  "pattern": [
+    " T ",
+    "YBR",
+    " H "
+  ],
+  "result": {
+    "count": 1,
+    "id": "usefulmagic:tutorial_book"
+  }
+}

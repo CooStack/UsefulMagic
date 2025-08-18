@@ -1,0 +1,38 @@
+{
+  "type": "usefulmagic:altar_recipe",
+  "output": {
+    "id": "usefulmagic:red_mana_star",
+    "count": 1
+  },
+  "data": {
+    "0": {
+      "item": "minecraft:ender_eye"
+    },
+    "1": {
+      "item": "minecraft:diamond"
+    },
+    "2": {
+      "item": "minecraft:ender_eye"
+    },
+    "3": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "4": {
+      "item": "minecraft:ender_eye"
+    },
+    "5": {
+      "item": "minecraft:diamond"
+    },
+    "6": {
+      "item": "minecraft:ender_eye"
+    },
+    "7": {
+      "item": "minecraft:netherite_ingot"
+    }
+  },
+  "center": {
+    "item": "usefulmagic:purple_mana_star"
+  },
+  "mana_need": 500,
+  "tick": 200
+}

@@ -1,0 +1,114 @@
+package cn.coostack.usefulmagic.particles.emitters
+
+import cn.coostack.cooparticlesapi.extend.relativize
+import cn.coostack.cooparticlesapi.network.particle.emitters.ClassParticleEmitters
+import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
+import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmitters
+import cn.coostack.cooparticlesapi.particles.control.ParticleControler
+import cn.coostack.cooparticlesapi.utils.RelativeLocation
+import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
+import cn.coostack.usefulmagic.extend.multiply
+import cn.coostack.usefulmagic.utils.MathUtil
+import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.codec.StreamCodec
+import net.minecraft.world.phys.Vec3
+import net.minecraft.world.level.Level
+import kotlin.random.Random
+
+class DiscreteCylinderEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, world) {
+    companion object {
+        const val ID = "discrete-cylinder-emitters"
+        val CODEC = StreamCodec.of<FriendlyByteBuf, ParticleEmitters>(
+            { buf, data ->
+                data as DiscreteCylinderEmitters
+                encodeBase(data, buf)
+                ControlableParticleData.PACKET_CODEC.encode(
+                    buf, data.templateData
+                )
+                buf.writeDouble(data.minDiscrete)
+                buf.writeDouble(data.maxDiscrete)
+                buf.writeDouble(data.maxRadius)
+                buf.writeDouble(data.height)
+                buf.writeDouble(data.heightStep)
+                buf.writeDouble(data.radiusStep)
+                buf.writeInt(data.minCount)
+                buf.writeInt(data.maxCount)
+                buf.writeVec3(data.direction)
+            }, {
+                val container = DiscreteCylinderEmitters(Vec3.ZERO, null)
+                decodeBase(container, it)
+                container.templateData = ControlableParticleData.PACKET_CODEC.decode(it)
+                container.minDiscrete = it.readDouble()
+                container.maxDiscrete = it.readDouble()
+                container.maxRadius = it.readDouble()
+                container.height = it.readDouble()
+                container.heightStep = it.readDouble()
+                container.radiusStep = it.readDouble()
+                container.minCount = it.readInt()
+                container.maxCount = it.readInt()
+                container.direction = it.readVec3()
+                container
+            }
+        )
+
+    }
+
+    var templateData = ControlableParticleData()
+    val random = Random(System.currentTimeMillis())
+    var minDiscrete = 1.0
+    var maxDiscrete = 10.0
+    var maxRadius = 10.0
+    var height = 100.0
+    var heightStep = 1.0
+    var radiusStep = 1.0
+    var minCount = 20
+    var maxCount = 120
+    var direction = Vec3(0.0, 1.0, 0.0)
+    override fun doTick() {
+    }
+
+    override fun genParticles(): Map<ControlableParticleData, RelativeLocation> {
+        return PointsBuilder.of(
+            MathUtil.discreteCylinderGenerator(
+                minDiscrete, maxDiscrete, maxRadius, height, heightStep, radiusStep, minCount, maxCount
+            )
+        ).rotateTo(direction)
+            .create().associateBy { templateData.clone() }
+    }
+
+    override fun singleParticleAction(
+        controler: ParticleControler,
+        data: ControlableParticleData,
+        spawnPos: Vec3,
+        spawnWorld: Level
+    ) {
+        data.velocity = pos.relativize(spawnPos)
+            .normalize().add(
+                Vec3(
+                    random.nextDouble(-0.5, 0.5),
+                    random.nextDouble(-0.5, 0.5),
+                    random.nextDouble(-0.5, 0.5),
+                )
+            ).normalize().multiply(0.1)
+        controler.addPreTickAction {
+            updatePhysics(pos, data)
+        }
+    }
+
+    override fun getEmittersID(): String {
+        return ID
+    }
+
+    override fun getCodec(): StreamCodec<FriendlyByteBuf, ParticleEmitters> {
+        return CODEC
+    }
+
+    override fun update(emitters: ParticleEmitters) {
+        super.update(emitters)
+        if (emitters !is DiscreteCylinderEmitters) {
+            return
+        }
+        direction = emitters.direction
+    }
+
+}

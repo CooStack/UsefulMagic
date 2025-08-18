@@ -1,0 +1,38 @@
+{
+  "type": "usefulmagic:altar_recipe",
+  "output": {
+    "id": "usefulmagic:wand_of_meteorite",
+    "count": 1
+  },
+  "data": {
+    "0": {
+      "item": "minecraft:diamond_block"
+    },
+    "1": {
+      "item": "minecraft:netherite_block"
+    },
+    "2": {
+      "item": "minecraft:diamond_block"
+    },
+    "3": {
+      "item": "minecraft:netherite_block"
+    },
+    "4": {
+      "item": "minecraft:dragon_breath"
+    },
+    "5": {
+      "item": "minecraft:heart_of_the_sea"
+    },
+    "6": {
+      "item": "minecraft:dragon_breath"
+    },
+    "7": {
+      "item": "minecraft:netherite_block"
+    }
+  },
+  "center": {
+    "item": "minecraft:nether_star"
+  },
+  "mana_need": 70000,
+  "tick": 3000
+}

@@ -1,0 +1,38 @@
+{
+  "type": "usefulmagic:altar_recipe",
+  "output": {
+    "id": "usefulmagic:purple_mana_star",
+    "count": 1
+  },
+  "data": {
+    "0": {
+      "item": "minecraft:ender_pearl"
+    },
+    "1": {
+      "item": "minecraft:gold_ingot"
+    },
+    "2": {
+      "item": "minecraft:ender_pearl"
+    },
+    "3": {
+      "item": "minecraft:iron_ingot"
+    },
+    "4": {
+      "item": "minecraft:ender_pearl"
+    },
+    "5": {
+      "item": "minecraft:gold_ingot"
+    },
+    "6": {
+      "item": "minecraft:ender_pearl"
+    },
+    "7": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "center": {
+    "item": "usefulmagic:mana_star"
+  },
+  "mana_need": 200,
+  "tick": 100
+}

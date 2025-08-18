@@ -12,11 +12,20 @@ subprojects {
     apply plugin: 'kotlin'
 
     sourceSets {
-        main.kotlin.srcDirs = ['src/main/java', 'src/main/kotlin']
+        main.kotlin.srcDirs = ['src/main/kotlin']
+        main.java.srcDirs = ['src/main/java']
     }
 
     compileKotlin {
         source(project(":common").sourceSets.main.allSource)
         inputs.file "../gradle.properties"
+    }
+}
+/**
+ * 脑瘫IDEA的傻逼BUG
+ */
+tasks.register("idePostSync") {
+    doLast {
+        println("Skipping idePostSync — not needed for this project.")
     }
 }

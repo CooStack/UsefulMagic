@@ -1,0 +1,40 @@
+{
+  "electric_effect": {
+    "subtitle": "sounds.usefulmagic.electric_effect",
+    "sounds": [
+      "usefulmagic:electric_effect"
+    ]
+  },
+  "magic_sword": {
+    "subtitle": "sounds.usefulmagic.magic_sword",
+    "sounds": [
+      "usefulmagic:magic_sword"
+    ]
+  },
+  "magic_activate": {
+    "subtitle": "sounds.usefulmagic.magic_activate",
+    "sounds": [
+      "usefulmagic:magic_activate"
+    ]
+  },
+  "sky_falling_magic_idle": {
+    "subtitle": "sounds.usefulmagic.sky_falling_magic_idle",
+    "sounds": [
+      "usefulmagic:sky_falling_magic_idle"
+    ]
+  },
+  "sky_falling_magic_start": {
+    "subtitle": "sounds.usefulmagic.sky_falling_magic_start",
+    "sounds": [
+      "usefulmagic:sky_falling_magic_start"
+    ]
+  },
+  "defend_shield_hit": {
+    "subtitle": "sounds.usefulmagic.defend_shield_hit",
+    "sounds": [
+      "usefulmagic:defend_shield_hit_1",
+      "usefulmagic:defend_shield_hit_2",
+      "usefulmagic:defend_shield_hit_3"
+    ]
+  }
+}

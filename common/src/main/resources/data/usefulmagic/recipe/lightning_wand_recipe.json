@@ -1,0 +1,38 @@
+{
+  "type": "usefulmagic:altar_recipe",
+  "output": {
+    "id": "usefulmagic:lightning_wand",
+    "count": 1
+  },
+  "data": {
+    "0": {
+      "item": "minecraft:lapis_block"
+    },
+    "1": {
+      "item": "minecraft:copper_block"
+    },
+    "2": {
+      "item": "minecraft:netherite_block"
+    },
+    "3": {
+      "item": "minecraft:redstone_block"
+    },
+    "4": {
+      "item": "minecraft:diamond_block"
+    },
+    "5": {
+      "item": "minecraft:copper_block"
+    },
+    "6": {
+      "item": "minecraft:emerald_block"
+    },
+    "7": {
+      "item": "minecraft:redstone_block"
+    }
+  },
+  "center": {
+    "item": "usefulmagic:diamond_wand"
+  },
+  "mana_need": 20000,
+  "tick": 2000
+}

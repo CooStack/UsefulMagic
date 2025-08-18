@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "usefulmagic:item/sky_falling_rune"
+  }
+}

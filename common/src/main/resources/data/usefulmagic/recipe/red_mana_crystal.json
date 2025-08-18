@@ -1,0 +1,38 @@
+{
+  "type": "usefulmagic:altar_recipe",
+  "output": {
+    "id": "usefulmagic:red_mana_crystal",
+    "count": 1
+  },
+  "data": {
+    "0": {
+      "item": "minecraft:redstone_block"
+    },
+    "1": {
+      "item": "usefulmagic:red_mana_star"
+    },
+    "2": {
+      "item": "minecraft:redstone_block"
+    },
+    "3": {
+      "item": "usefulmagic:red_mana_star"
+    },
+    "4": {
+      "item": "minecraft:redstone_block"
+    },
+    "5": {
+      "item": "usefulmagic:red_mana_star"
+    },
+    "6": {
+      "item": "minecraft:redstone_block"
+    },
+    "7": {
+      "item": "usefulmagic:red_mana_star"
+    }
+  },
+  "center": {
+    "item": "usefulmagic:purple_mana_crystal"
+  },
+  "mana_need": 500,
+  "tick": 200
+}

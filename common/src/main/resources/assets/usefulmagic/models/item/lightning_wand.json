@@ -1,0 +1,48 @@
+{
+	"credit": "Made with Blockbench",
+	"parent": "builtin/generated",
+	"textures": {
+		"layer0": "usefulmagic:item/lightning_wand"
+	},
+	"gui_light": "front",
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [10, -90, 45],
+			"translation": [-0.5, 8, 2.5],
+			"scale": [1.5, 1.5, 1]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [10, 90, -45],
+			"translation": [-0.5, 8, 2.5],
+			"scale": [1.5, 1.5, 1.1]
+		},
+		"firstperson_righthand": {
+			"rotation": [0, -90, 60],
+			"translation": [4, 5.5, -2]
+		},
+		"firstperson_lefthand": {
+			"rotation": [0, -90, -30],
+			"translation": [3.75, 4.25, -0.75]
+		},
+		"ground": {
+			"translation": [0, 2, 0],
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"head": {
+			"rotation": [0, 180, 0],
+			"translation": [0, 13, 7]
+		},
+		"fixed": {
+			"rotation": [0, 180, 0]
+		}
+	},
+	"neoforge_data": {
+		"layers": {
+			"0": {
+				"block_light": 15,
+				"sky_light": 15
+			}
+		}
+	},
+	"loader": "neoforge:item_layers"
+}

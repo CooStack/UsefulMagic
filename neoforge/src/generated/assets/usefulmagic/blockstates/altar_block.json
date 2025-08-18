@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "usefulmagic:block/altar_block"
+    }
+  }
+}

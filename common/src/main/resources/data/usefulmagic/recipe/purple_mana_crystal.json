@@ -1,0 +1,38 @@
+{
+  "type": "usefulmagic:altar_recipe",
+  "output": {
+    "id": "usefulmagic:purple_mana_crystal",
+    "count": 1
+  },
+  "data": {
+    "0": {
+      "item": "minecraft:ender_eye"
+    },
+    "1": {
+      "item": "usefulmagic:purple_mana_star"
+    },
+    "2": {
+      "item": "minecraft:ender_eye"
+    },
+    "3": {
+      "item": "usefulmagic:purple_mana_star"
+    },
+    "4": {
+      "item": "minecraft:ender_eye"
+    },
+    "5": {
+      "item": "usefulmagic:purple_mana_star"
+    },
+    "6": {
+      "item": "minecraft:ender_eye"
+    },
+    "7": {
+      "item": "usefulmagic:purple_mana_star"
+    }
+  },
+  "center": {
+    "item": "usefulmagic:mana_crystal"
+  },
+  "mana_need": 200,
+  "tick": 100
+}

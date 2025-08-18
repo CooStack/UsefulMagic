@@ -17,19 +17,19 @@
   "entrypoints": {
     "main": [
       {
-        "value": "com.example.examplemod.ExampleMod",
+        "value": "cn.coostack.usefulmagic.UsefulMagicFabric",
         "adapter": "kotlin"
       }
     ],
     "fabric-datagen": [
       {
-        "value": "com.example.examplemod.ExampleModDataGen",
+        "value": "cn.coostack.usefulmagic.UsefulMagicFabricDataGen",
         "adapter": "kotlin"
       }
     ],
     "client": [
       {
-        "value": "com.example.examplemod.ExampleModClient",
+        "value": "cn.coostack.usefulmagic.UsefulMagicFabricClient",
         "adapter": "kotlin"
       }
     ]
@@ -42,7 +42,8 @@
     "fabricloader": ">=${fabric_loader_version}",
     "fabric-api": "*",
     "minecraft": "${minecraft_version}",
-    "java": ">=${java_version}"
+    "java": ">=${java_version}",
+    "cooparticlesapi": ">=2.0.0"
   },
   "suggests": {
     "another-mod": "*"
