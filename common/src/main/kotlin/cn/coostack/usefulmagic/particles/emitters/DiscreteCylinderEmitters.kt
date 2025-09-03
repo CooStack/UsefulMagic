@@ -67,20 +67,22 @@ class DiscreteCylinderEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters
     override fun doTick() {
     }
 
-    override fun genParticles(): Map<ControlableParticleData, RelativeLocation> {
+    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
         return PointsBuilder.of(
             MathUtil.discreteCylinderGenerator(
                 minDiscrete, maxDiscrete, maxRadius, height, heightStep, radiusStep, minCount, maxCount
             )
         ).rotateTo(direction)
-            .create().associateBy { templateData.clone() }
+            .create().map { templateData.clone() to it }
     }
 
     override fun singleParticleAction(
         controler: ParticleControler,
         data: ControlableParticleData,
-        spawnPos: Vec3,
-        spawnWorld: Level
+        spawnPos: RelativeLocation,
+        spawnWorld: Level,
+        particleLerpProgress: Float,
+        posLerpProgress: Float
     ) {
         data.velocity = pos.relativize(spawnPos)
             .normalize().add(

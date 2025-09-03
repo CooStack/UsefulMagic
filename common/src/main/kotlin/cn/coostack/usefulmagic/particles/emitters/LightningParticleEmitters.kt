@@ -21,6 +21,7 @@ import kotlin.random.Random
 class LightningParticleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, world) {
     var templateData = ControlableParticleData()
     var endPos = RelativeLocation()
+    var offsetRange = 0.0
 
     companion object {
         const val ID = "lightning-particle-emitters"
@@ -31,11 +32,13 @@ class LightningParticleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitter
                 data as LightningParticleEmitters
                 encodeBase(data, buf)
                 buf.writeVec3(data.endPos.toVector())
+                buf.writeDouble(data.offsetRange)
                 ControlableParticleData.PACKET_CODEC.encode(buf, data.templateData)
             }, {
                 val instance = LightningParticleEmitters(Vec3.ZERO, null)
                 decodeBase(instance, it)
                 instance.endPos = RelativeLocation.of(it.readVec3())
+                instance.offsetRange = it.readDouble()
                 instance.templateData = ControlableParticleData.PACKET_CODEC.decode(it)
                 instance
             }
@@ -48,12 +51,25 @@ class LightningParticleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitter
     val options
         get() = ParticleOption.getParticleCounts()
 
-    override fun genParticles(): Map<ControlableParticleData, RelativeLocation> {
+    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
         val count = (endPos.length() / 10).roundToInt().coerceIn(3, 6)
+        val offsetPos = if (offsetRange > 0.0) {
+            RelativeLocation(
+                random.nextDouble(-1.0, 1.0),
+                random.nextDouble(-1.0, 1.0),
+                random.nextDouble(-1.0, 1.0),
+            ).normalize().multiply(random.nextDouble(offsetRange))
+        } else RelativeLocation()
         return PointsBuilder()
-            .addLightningAttenuationPoints(endPos, count, 5.5 * endPos.length() / 50, 0.3, options * 8 * 3 / count)
-            .create().associateBy {
-                templateData.clone()
+            .addLightningAttenuationPoints(
+                endPos.remove(offsetPos),
+                count,
+                5.5 * endPos.length() / 50,
+                0.3,
+                options * 8 * 3 / count
+            )
+            .create().map {
+                templateData.clone() to it.add(offsetPos)
             }
     }
 
@@ -69,8 +85,10 @@ class LightningParticleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitter
     override fun singleParticleAction(
         controler: ParticleControler,
         data: ControlableParticleData,
-        spawnPos: Vec3,
-        spawnWorld: Level
+        spawnPos: RelativeLocation,
+        spawnWorld: Level,
+        particleLerpProgress: Float,
+        posLerpProgress: Float
     ) {
         data.maxAge = templateData.maxAge
         val r = (data.color.x * 255).toInt()
@@ -88,6 +106,7 @@ class LightningParticleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitter
 
     override fun getEmittersID(): String {
         return ID
+
     }
 
     override fun getCodec(): StreamCodec<FriendlyByteBuf, ParticleEmitters> {

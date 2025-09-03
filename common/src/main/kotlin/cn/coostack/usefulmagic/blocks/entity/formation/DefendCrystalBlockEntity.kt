@@ -37,7 +37,7 @@ class DefendCrystalBlockEntity(pos: BlockPos, state: BlockState) :
         get() = worldPosition.center
         set(value) {
         }
-    val preDamageTake = 15f
+    val preDamageTake = 8f
     var style: CrystalStyle? = null
     override fun onFormationActive(formation: BlockFormation) {
         this.activeFormation = formation

@@ -56,7 +56,7 @@ class ExplosionLineEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(po
     }
 
     val random = Random(System.currentTimeMillis())
-    override fun genParticles(): Map<ControlableParticleData, RelativeLocation> {
+    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
         return PointsBuilder()
             .addBall(
                 0.5,
@@ -64,16 +64,18 @@ class ExplosionLineEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(po
             )
             .rotateAsAxis(random.nextDouble(-PI, PI), RelativeLocation.yAxis())
             .rotateAsAxis(random.nextDouble(-PI, PI), RelativeLocation.xAxis())
-            .create().associateBy {
-                templateData.clone()
+            .create().map {
+                templateData.clone() to it
             }
     }
 
     override fun singleParticleAction(
         controler: ParticleControler,
         data: ControlableParticleData,
-        spawnPos: Vec3,
-        spawnWorld: Level
+        spawnPos: RelativeLocation,
+        spawnWorld: Level,
+        particleLerpProgress: Float,
+        posLerpProgress: Float
     ) {
 //        data.maxAge = 10
         data.color = Math3DUtil

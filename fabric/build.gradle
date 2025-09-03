@@ -12,8 +12,8 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
-    modImplementation fileTree(dir: "../depend", includes: ["*.jar"])
-
+    modImplementation fileTree(dir: "../depend", includes: ["CooParticlesAPI-Fabric-1.21.1-2.0.1.jar"])
+//    modImplementation project(':common')
 }
 
 fabricApi {
@@ -25,7 +25,7 @@ tasks.javadoc {
     // fuck javadoc encode error
     enabled = false
 }
-tasks.named('jar', Jar) {
+tasks.named('remapJar') {
     destinationDirectory.set(file("../builds/jar")) // 输出到 build/customLibs
     archiveFileName.set("${rootProject.mod_name}-Fabric-${rootProject.minecraft_version}-${rootProject.version}.jar")
 }

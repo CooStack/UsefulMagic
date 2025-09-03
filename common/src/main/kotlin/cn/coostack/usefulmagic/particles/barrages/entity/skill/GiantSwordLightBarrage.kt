@@ -67,7 +67,7 @@ class GiantSwordLightBarrage(
         controlStyle?.status?.setStatus(2)
         shooter ?: return
         result.entities.forEach {
-            it.hurtTime = 0
+            it.invulnerableTime = 0
         }
         val blocks = FallingBlockHelper.getBoxIncludeBlockPosList(
             AABB.ofSize(loc, 8.0, 1.0, 8.0), world

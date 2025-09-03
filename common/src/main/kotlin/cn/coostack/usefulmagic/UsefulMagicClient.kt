@@ -2,6 +2,8 @@ package cn.coostack.usefulmagic
 
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.particles.control.group.ClientParticleGroupManager
+import cn.coostack.cooparticlesapi.renderer.client.ClientRenderEntityManager
+import cn.coostack.cooparticlesapi.renderer.client.ShaderPipeManagers
 import cn.coostack.usefulmagic.gui.friend.FriendManagerScreen
 import cn.coostack.usefulmagic.particles.emitters.UsefulMagicEmitters
 import cn.coostack.usefulmagic.particles.fall.style.GuildCircleStyle
@@ -15,17 +17,17 @@ import cn.coostack.usefulmagic.particles.style.EndRodLineStyle
 import cn.coostack.usefulmagic.particles.style.EndRodSwordStyle
 import cn.coostack.usefulmagic.particles.style.LightStyle
 import cn.coostack.usefulmagic.particles.style.TestStyle
-import cn.coostack.usefulmagic.particles.style.barrage.wand.AntiEntityWandBarrageStyle
-import cn.coostack.usefulmagic.particles.style.barrage.wand.AntiEntityWandSpellcasterStyle
-import cn.coostack.usefulmagic.particles.style.barrage.wand.AntiEntityWandStyle
-import cn.coostack.usefulmagic.particles.style.barrage.wand.CopperMagicStyle
-import cn.coostack.usefulmagic.particles.style.barrage.wand.DiamondWandStyle
-import cn.coostack.usefulmagic.particles.style.barrage.wand.GoldenWandStyle
-import cn.coostack.usefulmagic.particles.style.barrage.wand.HealthReviveStyle
-import cn.coostack.usefulmagic.particles.style.barrage.wand.NetheriteWandStyle
-import cn.coostack.usefulmagic.particles.style.barrage.wand.WandMeteoriteSpellcasterStyle
-import cn.coostack.usefulmagic.particles.style.barrage.wand.WandMeteoriteStyle
-import cn.coostack.usefulmagic.particles.style.barrage.wand.WandMeteoriteTargetStyle
+import cn.coostack.usefulmagic.particles.style.wand.anti.AntiEntityWandBarrageStyle
+import cn.coostack.usefulmagic.particles.style.wand.anti.AntiEntityWandSpellcasterStyle
+import cn.coostack.usefulmagic.particles.style.wand.anti.AntiEntityWandStyle
+import cn.coostack.usefulmagic.particles.style.wand.CopperMagicStyle
+import cn.coostack.usefulmagic.particles.style.wand.DiamondWandStyle
+import cn.coostack.usefulmagic.particles.style.wand.GoldenWandStyle
+import cn.coostack.usefulmagic.particles.style.wand.HealthReviveStyle
+import cn.coostack.usefulmagic.particles.style.wand.NetheriteWandStyle
+import cn.coostack.usefulmagic.particles.style.wand.meteorite.WandMeteoriteSpellcasterStyle
+import cn.coostack.usefulmagic.particles.style.wand.meteorite.WandMeteoriteStyle
+import cn.coostack.usefulmagic.particles.style.wand.meteorite.WandMeteoriteTargetStyle
 import cn.coostack.usefulmagic.particles.style.entitiy.BookEntityDeathStyle
 import cn.coostack.usefulmagic.particles.style.entitiy.CraftingLevel1Style
 import cn.coostack.usefulmagic.particles.style.entitiy.CraftingLevel2Style
@@ -44,12 +46,12 @@ import cn.coostack.usefulmagic.particles.style.skill.BookShootSkillStyle
 import cn.coostack.usefulmagic.particles.style.skill.GiantSwordStyle
 import cn.coostack.usefulmagic.particles.style.skill.SwordLightStyle
 import cn.coostack.usefulmagic.particles.style.skill.TaiChiStyle
-import com.mojang.authlib.minecraft.client.MinecraftClient
-import com.mojang.blaze3d.platform.InputConstants
+import cn.coostack.usefulmagic.particles.style.wand.starry.StarryMagicStyle
+import cn.coostack.usefulmagic.particles.style.wand.starry.StarrySpellcasterMagicStyle
+import cn.coostack.usefulmagic.renderer.DefendCrystalRenderEntity
+import cn.coostack.usefulmagic.renderer.SkyFallingRenderEntity
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
-import org.lwjgl.glfw.GLFW
-import java.awt.im.InputContext
 
 
 object UsefulMagicClient {
@@ -57,6 +59,7 @@ object UsefulMagicClient {
 
     fun init() {
         loadParticleStyles()
+        handleRenderEntity()
     }
 
     fun loadKeyBindings(key: KeyMapping) {
@@ -80,7 +83,6 @@ object UsefulMagicClient {
         ParticleStyleManager.register(
             CopperMagicStyle::class.java, CopperMagicStyle.Provider()
         )
-
         ParticleStyleManager.register(GoldenWandStyle::class.java, GoldenWandStyle.Provider())
         ParticleStyleManager.register(HealthReviveStyle::class.java, HealthReviveStyle.Provider())
         ParticleStyleManager.register(EnchantLineStyle::class.java, EnchantLineStyle.Provider())
@@ -123,8 +125,17 @@ object UsefulMagicClient {
         ParticleStyleManager.register(LargeFormationStyle::class.java, LargeFormationStyle.Provider())
         ParticleStyleManager.register(SkyFallingStyle::class.java, SkyFallingStyle.Provider())
         ParticleStyleManager.register(GuildCircleStyle::class.java, GuildCircleStyle.Provider())
+        ParticleStyleManager.register(StarryMagicStyle::class.java, StarryMagicStyle.Provider())
+        ParticleStyleManager.register(StarrySpellcasterMagicStyle::class.java, StarrySpellcasterMagicStyle.Provider())
         UsefulMagicEmitters.init()
         UsefulMagic.logger.debug("客户端粒子样式注册完成")
+    }
+
+    fun handleRenderEntity() {
+        ClientRenderEntityManager.register(SkyFallingRenderEntity.ID, SkyFallingRenderEntity.CODEC)
+        ClientRenderEntityManager.register(DefendCrystalRenderEntity.ID, DefendCrystalRenderEntity.CODEC)
+        ClientRenderEntityManager.bindEntityRenderPipe(SkyFallingRenderEntity.ID, ShaderPipeManagers.default.pipeID)
+        ClientRenderEntityManager.bindEntityRenderPipe(DefendCrystalRenderEntity.ID, ShaderPipeManagers.default.pipeID)
     }
 
     fun tickClient() {

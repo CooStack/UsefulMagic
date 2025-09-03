@@ -7,7 +7,7 @@ import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.particles.barrages.wand.WandMeteoriteBarrage
 import cn.coostack.usefulmagic.particles.style.EnchantLineStyle
-import cn.coostack.usefulmagic.particles.style.barrage.wand.WandMeteoriteSpellcasterStyle
+import cn.coostack.usefulmagic.particles.style.wand.meteorite.WandMeteoriteSpellcasterStyle
 import cn.coostack.usefulmagic.utils.ParticleOption
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.world.entity.LivingEntity
@@ -46,7 +46,7 @@ class WandOfMeteorite(settings: Properties) : WandItem(settings, 1000, 200.0) {
         super.appendHoverText(stack, context, tooltip, tooltipFlag)
     }
 
-     override fun getUseAnimation(stack: ItemStack): UseAnim {
+    override fun getUseAnimation(stack: ItemStack): UseAnim {
         return UseAnim.BOW
     }
 

@@ -77,7 +77,7 @@ class SwordAttackFormationBarrage(
             // 击中的实体
             entity.hurt(damageSource, damage.toFloat())
 //            entity.timeUntilRegen = 0
-            entity.hurtTime = 0
+            entity.invulnerableTime = 0
             // 不破坏方块 爆炸音效
             world.playSound(
                 null, loc.x, loc.y, loc.z, UsefulMagicSoundEvents.MAGIC_SWORD.get(), SoundSource.BLOCKS, 6f, 1.2f

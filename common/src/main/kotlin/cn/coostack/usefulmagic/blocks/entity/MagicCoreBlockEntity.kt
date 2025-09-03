@@ -191,6 +191,7 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
             }
             if (!crafting) {
                 crafting = true
+                level?.updateNeighbourForOutputSignal(getCenterEntity()!!.blockPos, blockState.block)
             }
             if (!status) {
                 startCrafting()

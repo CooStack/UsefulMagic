@@ -59,23 +59,25 @@ class ParticleWaveEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos
     }
 
     val random = Random(System.currentTimeMillis())
-    override fun genParticles(): Map<ControlableParticleData, RelativeLocation> {
+    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
         return PointsBuilder()
-            .addDiscreteCircleXZ(waveSize, random.nextInt(waveCircleCountMin, waveCircleCountMax),0.5)
+            .addDiscreteCircleXZ(waveSize, random.nextInt(waveCircleCountMin, waveCircleCountMax), 0.5)
             .rotateTo(waveAxis)
-            .create().associateBy {
+            .create().map {
                 templateData.clone()
                     .apply {
                         velocity = it.normalize().multiply(waveSpeed).toVector()
-                    }
+                    } to it
             }
     }
 
     override fun singleParticleAction(
         controler: ParticleControler,
         data: ControlableParticleData,
-        spawnPos: Vec3,
-        spawnWorld: Level
+        spawnPos: RelativeLocation,
+        spawnWorld: Level,
+        particleLerpProgress: Float,
+        posLerpProgress: Float
     ) {
         controler.addPreTickAction {
             updatePhysics(pos, data)

@@ -28,6 +28,11 @@ object UsefulMagicSoundEvents {
     val DEFEND_SHIELD_HIT = register("defend_shield_hit")
 
     @JvmStatic
+    val MAGIC_EXPLODE = register("magic_explode")
+    @JvmStatic
+    val STAR = register("star")
+
+    @JvmStatic
     fun register(name: String): CommonDeferredSoundEvent {
         val id = ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, name)
 

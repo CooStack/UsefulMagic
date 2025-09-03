@@ -24,6 +24,7 @@ neoForge {
         }
         client {
             client()
+
         }
         data {
             data()
@@ -46,6 +47,9 @@ repositories {
         setUrl("https://thedarkcolour.github.io/KotlinForForge/")
     }
 }
+tasks.withType(JavaExec).configureEach {
+    jvmArgs = ["-XX:+AllowEnhancedClassRedefinition"]
+}
 tasks.named('jar', Jar) {
 //    from("../fabric/src/main/generated") {
 //        exclude("cache/**") // 排除 cache 文件夹
@@ -54,8 +58,8 @@ tasks.named('jar', Jar) {
     archiveFileName.set("${rootProject.mod_name}-NeoForge-${rootProject.minecraft_version}-${rootProject.version}.jar")
 }
 dependencies {
-    jarJar(implementation "thedarkcolour:kotlinforforge-neoforge:5.9.0")
-    implementation fileTree(dir: "../depend", includes: ["CooParticlesAPI-NeoForge-1.21.1-2.0.0.jar"])
+    implementation "thedarkcolour:kotlinforforge-neoforge:5.9.0"
+    implementation fileTree(dir: "../depend", includes: ["CooParticlesAPI-NeoForge-1.21.1-2.0.1.jar"])
 }
 
 sourceSets.main.resources {

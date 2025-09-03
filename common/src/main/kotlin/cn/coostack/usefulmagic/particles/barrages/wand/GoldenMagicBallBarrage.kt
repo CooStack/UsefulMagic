@@ -67,7 +67,7 @@ class GoldenMagicBallBarrage(
                     )
             }
             it.hurt(source, damage.toFloat())
-            it.hurtTime = 0
+            it.invulnerableTime = 0
         }
         // 发出音效
         if (targets.isNotEmpty()) {

@@ -29,6 +29,7 @@ import cn.coostack.usefulmagic.items.weapon.wands.HealthReviveWand
 import cn.coostack.usefulmagic.items.weapon.wands.IronWand
 import cn.coostack.usefulmagic.items.weapon.wands.LightningWand
 import cn.coostack.usefulmagic.items.weapon.wands.NetheriteWand
+import cn.coostack.usefulmagic.items.weapon.wands.StarryWand
 import cn.coostack.usefulmagic.items.weapon.wands.WandOfMeteorite
 import cn.coostack.usefulmagic.items.weapon.wands.StoneWand
 import cn.coostack.usefulmagic.items.weapon.wands.WoodenWand
@@ -137,7 +138,17 @@ object UsefulMagicItems {
         WandOfMeteorite(
             Item.Properties()
                 .stacksTo(1)
-                .durability(3600)
+                .fireResistant()
+                .rarity(Rarity.EPIC)
+        )
+    }
+
+    val STARRY_WAND = register(
+        "starry_wand"
+    ) {
+        StarryWand(
+            Item.Properties()
+                .stacksTo(1)
                 .fireResistant()
                 .rarity(Rarity.EPIC)
         )
@@ -149,7 +160,6 @@ object UsefulMagicItems {
         HealthReviveWand(
             Item.Properties()
                 .stacksTo(1)
-                .durability(1500)
                 .rarity(Rarity.EPIC)
         )
     }
@@ -159,7 +169,6 @@ object UsefulMagicItems {
         AntiEntityWand(
             Item.Properties()
                 .stacksTo(1)
-                .durability(3600)
                 .rarity(Rarity.EPIC)
         )
     }
@@ -170,7 +179,6 @@ object UsefulMagicItems {
         LightningWand(
             Item.Properties()
                 .stacksTo(1)
-                .durability(1200)
                 .rarity(Rarity.EPIC)
         )
     }
@@ -181,7 +189,7 @@ object UsefulMagicItems {
         ExplosionWand(
             Item.Properties()
                 .stacksTo(1)
-                .durability(7200).rarity(Rarity.EPIC)
+                .rarity(Rarity.EPIC)
         )
     }
 

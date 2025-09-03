@@ -28,6 +28,12 @@ class FormationSettings {
     var displayParticleOnlyTrigger = true
 
     /**
+     * 只在阵法被激活时显示防御光球
+     * 设置为false则始终显示
+     */
+    var displayDefendBallOnlyTrigger = true
+
+    /**
      * 设置为-1.0 则和有效范围相同
      * 触发阵法时的范围
      *

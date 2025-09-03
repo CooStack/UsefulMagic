@@ -225,9 +225,43 @@ class FormationSettingScreen(val clickPos: BlockPos, var settings: FormationSett
 //                    (128 * scaled).toInt(), (32 * scaled).toInt(),
             )
         )
+
+        addRenderableOnly(
+            RealmsLabel(
+                Component.literal("防御光幕始终显示"),
+                originX - (64 * scaled).toInt(),
+                ((142 + alignCenterOffset) * scaled).toInt(),
+                0xFFFFFFFFU.toInt()
+//                    (128 * scaled).toInt(), (32 * scaled).toInt(),
+            )
+        )
+
+
+        addRenderableWidget(
+            genToggleButton(
+                { settings.displayDefendBallOnlyTrigger = it },
+                { settings.displayDefendBallOnlyTrigger },
+                Component.literal(if (settings.displayDefendBallOnlyTrigger) "§c关闭" else "§a开启")
+            ).bounds(
+                originX + (64 * scaled).toInt(),
+                (148 * scaled).toInt(),
+                (32 * scaled).toInt(), (16 * scaled).toInt()
+            ).tooltip(
+                Tooltip.create(
+                    Component.literal(
+                        """
+                            开启此选项时, 带有防御水晶的光球只会在阵法被激活时展示
+                            在阵法没有被激活后6秒则会消失
+                        """.trimIndent()
+                    )
+                )
+            )
+                .build()
+        )
+
         textField = EditBox(
             font, originX + (64 * scaled).toInt(),
-            (148 * scaled).toInt(),
+            (170 * scaled).toInt(),
             (32 * scaled).toInt(), (16 * scaled).toInt(), Component.literal("${settings.triggerRange}")
         )
         textField.tooltip = Tooltip.create(
@@ -262,10 +296,8 @@ class FormationSettingScreen(val clickPos: BlockPos, var settings: FormationSett
             RealmsLabel(
                 Component.literal("阵法生效范围"),
                 originX - (64 * scaled).toInt(),
-                ((142 + alignCenterOffset) * scaled).toInt(),
+                ((164 + alignCenterOffset) * scaled).toInt(),
                 0xFFFFFFFFU.toInt()
-//                    (128 * scaled).toInt(), (32 * scaled).toInt(),
-//                    textRenderer
             )
         )
         UsefulMagic.logger.debug("FLUSH FINISHED")

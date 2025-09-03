@@ -57,8 +57,8 @@ class ShrinkParticleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(p
     }
 
     val random = Random(System.currentTimeMillis())
-    override fun genParticles(): Map<ControlableParticleData, RelativeLocation> {
-        val res = HashMap<ControlableParticleData, RelativeLocation>()
+    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+        val res = ArrayList<Pair<ControlableParticleData, RelativeLocation>>()
         val actualCount = random.nextInt(countMin, countMax)
         val points = PointsBuilder()
             .addBall(startRange, ballCountPow)
@@ -67,9 +67,9 @@ class ShrinkParticleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(p
             .create()
         repeat(actualCount) {
             val rel = points.random()
-            res[templateData.clone().also {
+            res.add(templateData.clone().also {
                 it.velocity = rel.toVector().normalize().multiply(-startSpeed)
-            }] = rel.clone()
+            } to rel.clone())
         }
         return res
     }
@@ -77,8 +77,10 @@ class ShrinkParticleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(p
     override fun singleParticleAction(
         controler: ParticleControler,
         data: ControlableParticleData,
-        spawnPos: Vec3,
-        spawnWorld: Level
+        spawnPos: RelativeLocation,
+        spawnWorld: Level,
+        particleLerpProgress: Float,
+        posLerpProgress: Float
     ) {
         controler.addPreTickAction {
             data.velocity = LinearResistanceHelper.setPercentageVelocity(

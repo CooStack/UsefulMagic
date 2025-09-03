@@ -31,6 +31,7 @@ class LivingEntityTargetOption(val target: LivingEntity, val touch: Boolean = tr
 
     override fun damage(amount: Float, source: DamageSource) {
         target.hurt(source, amount)
+        target.invulnerableTime = 0
     }
 
     override fun setVelocity(dir: Vec3) {

@@ -78,7 +78,7 @@ class DiamondSwordBarrage(loc: Vec3, world: ServerLevel, damage: Double, shooter
 
     override fun onHitDamaged(result: BarrageHitResult) {
         for (entity in result.entities) {
-            entity.hurtTime = 0
+            entity.invulnerableTime = 0
         }
         // 不破坏方块 爆炸音效
         world.playSound(

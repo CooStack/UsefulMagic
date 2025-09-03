@@ -1,0 +1,38 @@
+{
+  "type": "usefulmagic:altar_recipe",
+  "output": {
+    "id": "usefulmagic:starry_wand",
+    "count": 1
+  },
+  "data": {
+    "0": {
+      "item": "usefulmagic:red_mana_star"
+    },
+    "1": {
+      "item": "usefulmagic:red_mana_crystal"
+    },
+    "2": {
+      "item": "usefulmagic:red_mana_star"
+    },
+    "3": {
+      "item": "usefulmagic:netherite_wand"
+    },
+    "4": {
+      "item": "usefulmagic:red_mana_star"
+    },
+    "5": {
+      "item": "usefulmagic:red_mana_crystal"
+    },
+    "6": {
+      "item": "usefulmagic:red_mana_star"
+    },
+    "7": {
+      "item": "usefulmagic:anti_entity_wand"
+    }
+  },
+  "center": {
+    "item": "usefulmagic:wand_of_meteorite"
+  },
+  "mana_need": 100000,
+  "tick": 10000
+}

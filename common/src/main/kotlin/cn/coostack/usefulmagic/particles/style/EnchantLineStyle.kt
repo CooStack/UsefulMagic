@@ -31,6 +31,7 @@ class EnchantLineStyle(
             return EnchantLineStyle(end, count, lifetime).also { it.readPacketArgs(args) }
         }
 
+        // 群星法杖
     }
 
     /**

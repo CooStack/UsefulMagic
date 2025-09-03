@@ -29,6 +29,7 @@ class UsefulMagicZHLangProvider(
             add(UsefulMagicItems.DIAMOND_WAND, "钻石法杖")
             add(UsefulMagicItems.NETHERITE_WAND, "下界合金法杖")
             add(UsefulMagicItems.WAND_OF_METEORITE, "陨星法杖")
+            add(UsefulMagicItems.STARRY_WAND, "群星法杖")
             add(UsefulMagicItems.ANTI_ENTITY_WAND, "反实体魔杖")
             add(UsefulMagicItems.HEALTH_REVIVE_WAND, "再生法杖")
             add(UsefulMagicItems.MAGIC_AXE, "注魔斧")
@@ -81,6 +82,7 @@ class UsefulMagicZHLangProvider(
             add("item.anti_entity_wand.description", "§7召唤巨大法阵,不断发射弹幕攻击敌人")
             add("item.lightning_wand.description", "§7化身雷电法王,电击周围的生物")
             add("item.explosion_wand.description", "§7蓄力施放爆裂魔法 Explosion!")
+            add("item.starry_wand.description", "§7你将召唤群星，攻向大地")
             add(
                 "item.health_revive_wand.description",
                 "§7蓄力给自己造成生命恢复效果 对着实体可以让实体恢复生命 对亡灵生物有奇效"
@@ -125,6 +127,8 @@ class UsefulMagicZHLangProvider(
             add("sounds.usefulmagic.sky_falling_magic_idle", "超位魔法充能")
             add("sounds.usefulmagic.sky_falling_magic_start", "超位魔法起手")
             add("sounds.usefulmagic.defend_shield_hit", "防御魔法防御")
+            add("sounds.usefulmagic.magic_explode", "魔力爆炸")
+            add("sounds.usefulmagic.star", "星星闪耀")
 
             // gui
             add("screen.title.friend_manager_title", "朋友管理器")

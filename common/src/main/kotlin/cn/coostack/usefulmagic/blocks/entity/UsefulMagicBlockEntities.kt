@@ -6,14 +6,11 @@ import cn.coostack.usefulmagic.blocks.UsefulMagicBlocks
 import cn.coostack.usefulmagic.blocks.entity.formation.DefendCrystalBlockEntity
 import cn.coostack.usefulmagic.blocks.entity.formation.EnergyCrystalsBlockEntity
 import cn.coostack.usefulmagic.blocks.entity.formation.FormationCoreBlockEntity
-import cn.coostack.usefulmagic.blocks.entity.formation.RecoverCrystalsBlockEntity
+import cn.coostack.usefulmagic.blocks.entity.formation.RecoverCrystalBlockEntity
 import cn.coostack.usefulmagic.blocks.entity.formation.SwordAttackCrystalsBlockEntity
-import com.mojang.datafixers.DSL
-import net.minecraft.Util
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityType
-import java.util.function.Supplier
 
 /**
  * 首次初始化需要在block注册之后
@@ -60,7 +57,7 @@ object UsefulMagicBlockEntities {
     @JvmStatic
     val RECOVER_CRYSTAL = create(
         "recover_crystal", BlockEntityType.Builder.of(
-            ::RecoverCrystalsBlockEntity, UsefulMagicBlocks.RECOVER_CRYSTAL_BLOCK.get()
+            ::RecoverCrystalBlockEntity, UsefulMagicBlocks.RECOVER_CRYSTAL_BLOCK.get()
         )
     )
 

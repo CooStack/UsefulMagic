@@ -1,5 +1,6 @@
 package cn.coostack.usefulmagic.particles.emitters
 
+import cn.coostack.cooparticlesapi.extend.multiply
 import cn.coostack.cooparticlesapi.network.particle.emitters.ClassParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmitters
@@ -59,27 +60,25 @@ class CircleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, worl
     override fun doTick() {
     }
 
-    override fun genParticles(): Map<ControlableParticleData, RelativeLocation> {
-        val res = HashMap<ControlableParticleData, RelativeLocation>()
+    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
         val velocityList = PointsBuilder()
             .addCircle(2.0, circleCount)
             .rotateTo(circleDirection)
             .create()
-
-        for (velocity in velocityList) {
-            res[templateData.clone().apply {
-                this.velocity = velocity.normalize().multiply(circleSpeed).toVector()
-            }] = RelativeLocation()
+        return velocityList.map {
+            templateData.clone().apply {
+                this.velocity = it.toVector().normalize().multiply(circleSpeed)
+            } to RelativeLocation()
         }
-
-        return res
     }
 
     override fun singleParticleAction(
         controler: ParticleControler,
         data: ControlableParticleData,
-        spawnPos: Vec3,
-        spawnWorld: Level
+        spawnPos: RelativeLocation,
+        spawnWorld: Level,
+        particleLerpProgress: Float,
+        posLerpProgress: Float
     ) {
         data.maxAge = particleMaxAge
         controler.addPreTickAction {

@@ -1,8 +1,7 @@
 package cn.coostack.usefulmagic.blocks.formation
 
 import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
-import cn.coostack.usefulmagic.blocks.entity.formation.RecoverCrystalsBlockEntity
-import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
+import cn.coostack.usefulmagic.blocks.entity.formation.RecoverCrystalBlockEntity
 import com.mojang.serialization.MapCodec
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.BlockGetter
@@ -50,6 +49,6 @@ class RecoverCrystalBlock(settings: BlockBehaviour.Properties) : BaseEntityBlock
         pos: BlockPos,
         state: BlockState
     ): BlockEntity {
-        return RecoverCrystalsBlockEntity(pos, state)
+        return RecoverCrystalBlockEntity(pos, state)
     }
 }

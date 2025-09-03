@@ -97,7 +97,7 @@ class MagicCoreBlock(settings: Properties) : BaseEntityBlock(settings), SimpleWa
                         §7| §f最大储存魔力值: ${entity.maxMana}
                         §7| §f合成进度: ${
                     if (entity.crafting) {
-                        "${"%.2d".format(entity.craftingTick.toDouble() / (entity.currentRecipe?.tick ?: 1))}%"
+                        "${"%.2f".format(entity.craftingTick.toDouble() * 100 / (entity.currentRecipe?.tick ?: 1))}%"
                     } else {
                         "未发现合成配方"
                     }

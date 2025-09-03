@@ -7,6 +7,7 @@ import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersMan
 import cn.coostack.cooparticlesapi.network.particle.emitters.impl.PresetLaserEmitters
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
+import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
 import cn.coostack.cooparticlesapi.scheduler.CooScheduler
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
@@ -19,6 +20,7 @@ import cn.coostack.usefulmagic.particles.emitters.explosion.ExplosionAnimateLase
 import cn.coostack.usefulmagic.particles.emitters.explosion.ExplosionWaveEmitters
 import cn.coostack.usefulmagic.particles.fall.style.GuildCircleStyle
 import cn.coostack.usefulmagic.particles.fall.style.SkyFallingStyle
+import cn.coostack.usefulmagic.renderer.SkyFallingRenderEntity
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import cn.coostack.usefulmagic.utils.EntityUtil
 import cn.coostack.usefulmagic.utils.ExplosionUtil
@@ -114,7 +116,7 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
     ) {
         tooltip.add(Component.literal("§7花费巨大的代价,迅速击溃敌人"))
         tooltip.add(Component.literal("§7超位魔法-天空坠落"))
-        tooltip.add(Component.literal("§f右键使用"))
+        tooltip.add(Component.literal("§e右键使用"))
         tooltip.add(Component.literal("§7消耗品"))
         tooltip.add(Component.literal("§7不消耗魔力值"))
         super.appendHoverText(stack, context, tooltip, tooltipFlag)
@@ -190,6 +192,7 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
         }
         tasks.add(explodeTask)
         val data = UsefulMagic.state.getDataFromServer(user.uuid)
+        val releasePos = user.position()
         val attackTask = CooParticlesAPI.scheduler.runTaskTimerMaxTick(1, 12 * 20) {
             val r = 12.0
             val box = AABB.ofSize(target, r * 2, r * 2, r * 2)
@@ -204,9 +207,9 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
                 )
                 EntityUtil.resetMovement(entity)
             }
-
             EntityUtil.resetMovement(user)
             user.abilities.mayfly = true
+            user.teleportTo(releasePos.x, releasePos.y, releasePos.z)
             user.onUpdateAbilities()
         }.setFinishCallback {
             user.abilities.mayfly = false
@@ -281,57 +284,40 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
         val formation = ServerFormationManager.getFormationFromPos(target, world)
         formation?.attack(128f, LivingEntityTargetOption(user), target)
         var currentRadius = 1
-        CooParticlesAPI.scheduler.runTaskTimerMaxTick(5, 6 * 20) {
-            ExplosionUtil.createHollowSphereExplosion(
+        CooParticlesAPI.scheduler.runTaskTimerMaxTick(2, 48) {
+            ExplosionUtil.createHollowSphereExplosionIgnoreWater(
                 currentRadius++,
                 world,
                 target,
                 user
             )
-            ExplosionUtil.createHollowSphereExplosion(
+            ExplosionUtil.createHollowSphereExplosionIgnoreWater(
                 currentRadius++,
                 world,
                 target,
                 user
             )
-            formation?.attack(64f, LivingEntityTargetOption(user), target)
-            world.getEntitiesOfClass(LivingEntity::class.java, AABB.ofSize(target, 24.0, 24.0, 24.0)) {
+        }
+        CooParticlesAPI.scheduler.runTaskTimerMaxTick(5, 8 * 20) {
+            formation?.attack(16f, LivingEntityTargetOption(user), target)
+            world.getEntitiesOfClass(LivingEntity::class.java, AABB.ofSize(target, 96.0, 96.0, 96.0)) {
                 !data.isFriend(it.uuid) && it.uuid != user.uuid
             }.forEach {
                 val playerAttack = it.damageSources().playerAttack(user)
-                it.hurt(playerAttack, hitDamage / 2)
-//                it.timeUntilRegen = 0
-                it.hurtTime = 0
+                it.hurt(playerAttack, hitDamage / 8)
+                it.invulnerableTime = 0
             }
         }
     }
 
     private fun handleExplodeParticle(world: ServerLevel, user: ServerPlayer, target: Vec3) {
-        val line = PresetLaserEmitters(target, world).apply {
-            targetPoint = Vec3(0.0, 200.0, 0.0)
-            lineStartScale = 1f
-            lineScaleMin = 0.01f
-            lineScaleMax = 50f
-            particleCountPreBlock = 1
-            lineStartIncreaseTick = 1
-            lineStartDecreaseTick = 140
-            increaseAcceleration = 0.5f
-            defaultIncreaseSpeed = 1f
-            defaultDecreaseSpeed = 0.2f
-            decreaseAcceleration = 0.5f
-            maxDecreaseSpeed = 3f
-            lineMaxTick = 180
-            markDeadWhenArriveMinScale = true
-            particleAge = lineMaxTick / 6 + 1
-            templateData.color = Math3DUtil.colorOf(120, 200, 200)
-        }
-        ParticleEmittersManager.spawnEmitters(line)
-
+        val entity = SkyFallingRenderEntity(world, target.add(0.0, -48.0, 0.0))
+        ServerRenderEntityManager.spawn(entity)
         // 爆炸粒子
         CooParticlesAPI.scheduler.runTaskTimerMaxTick(
-            10, 180
+            10, 150
         ) {
-            ServerCameraUtil.sendShake(world, target, 128.0, 1.0, 40)
+            ServerCameraUtil.sendShake(world, target, 128.0, 1.0, 20)
         }
         val explosion = ExplodeMagicEmitters(target.add(0.0, 5.0, 0.0), world).apply {
             this.templateData.also {
@@ -378,8 +364,8 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
                     this.templateData.also {
                         it.effect = ControlableCloudEffect(it.uuid)
                         it.size = 1f
-                        it.maxAge = 140
-                        it.velocity
+                        it.maxAge = 200
+                        it.velocity = Vec3(0.0, 0.01, 0.0)
                     }
                     discrete = 0.1
                     randomVector = true
@@ -401,7 +387,7 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
             user.x,
             user.y,
             user.z,
-            SoundEvents.BEACON_ACTIVATE,
+            UsefulMagicSoundEvents.MAGIC_EXPLODE.get(),
             SoundSource.PLAYERS,
             10f,
             2f

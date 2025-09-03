@@ -7,12 +7,14 @@ import cn.coostack.cooparticlesapi.particles.impl.ControlableFireworkEffect
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.usefulmagic.items.weapon.wands.WandItem
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
 import net.minecraft.core.HolderLookup
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ClientGamePacketListener
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket
 import net.minecraft.server.level.ServerLevel
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Block
@@ -34,6 +36,7 @@ class AltarBlockCoreEntity(pos: BlockPos, state: BlockState) :
         this.stack = stack
         setChanged()
         level!!.sendBlockUpdated(worldPosition, blockState, blockState, Block.UPDATE_ALL)
+
     }
 
     override fun getUpdateTag(registries: HolderLookup.Provider): CompoundTag {
@@ -134,5 +137,65 @@ class AltarBlockCoreEntity(pos: BlockPos, state: BlockState) :
             }
             ParticleEmittersManager.spawnEmitters(emitter)
         }
+    }
+
+    override fun getSlotsForFace(p0: Direction): IntArray {
+        return intArrayOf(0)
+    }
+
+    override fun canPlaceItemThroughFace(
+        p0: Int,
+        p1: ItemStack,
+        p2: Direction?
+    ): Boolean {
+        return !(getCore()?.crafting ?: false)
+    }
+
+    override fun canTakeItemThroughFace(
+        p0: Int,
+        p1: ItemStack,
+        p2: Direction
+    ): Boolean {
+        return !(getCore()?.crafting ?: false)
+    }
+
+    override fun getContainerSize(): Int {
+        return 1
+    }
+
+    override fun isEmpty(): Boolean {
+        return stack.isEmpty
+    }
+
+    override fun getItem(p0: Int): ItemStack {
+        return stack
+    }
+
+    override fun removeItem(slot: Int, amount: Int): ItemStack {
+        val old = stack
+        setAltarStack(ItemStack.EMPTY)
+        return old
+    }
+
+    override fun removeItemNoUpdate(p0: Int): ItemStack {
+        val old = stack
+        stack = ItemStack.EMPTY
+        return old
+    }
+
+    override fun setItem(p0: Int, stack: ItemStack) {
+        setAltarStack(stack)
+    }
+
+    override fun stillValid(p0: Player): Boolean {
+        return true
+    }
+
+    override fun clearContent() {
+        setAltarStack(ItemStack.EMPTY)
+    }
+
+    override fun getMaxStackSize(): Int {
+        return 1
     }
 }

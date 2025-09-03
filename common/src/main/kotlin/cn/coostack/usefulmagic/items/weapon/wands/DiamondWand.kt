@@ -9,7 +9,7 @@ import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.extend.isOf
 import cn.coostack.usefulmagic.particles.barrages.wand.DiamondSwordBarrage
-import cn.coostack.usefulmagic.particles.style.barrage.wand.DiamondWandStyle
+import cn.coostack.usefulmagic.particles.style.wand.DiamondWandStyle
 import cn.coostack.usefulmagic.utils.ParticleOption
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.world.entity.LivingEntity

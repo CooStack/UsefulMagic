@@ -26,6 +26,7 @@ class SkyFallingSub2Style(uuid: UUID, val parent: SkyFallingStyle) : SequencedPa
             .loadStyle(this)
             .addAnimate({ parent.age > 1 }, 1)
             .addAnimate({ parent.age > 114 }, 1)
+            .clientOnly()
     var direction = RelativeLocation.yAxis()
     override fun onDisplay() {
         addPreTickAction {
@@ -73,7 +74,7 @@ class SkyFallingSub2Style(uuid: UUID, val parent: SkyFallingStyle) : SequencedPa
                                     RelativeLocation(0.0, -8.0, 0.0), PointsBuilder()
                                         .addLine(
                                             RelativeLocation(),
-                                            RelativeLocation(0.0, 32.0, 0.0),
+                                            RelativeLocation(0.0, 128.0, 0.0),
                                             32 * 3 * ParticleOption.getParticleCounts()
                                         )
                                 )

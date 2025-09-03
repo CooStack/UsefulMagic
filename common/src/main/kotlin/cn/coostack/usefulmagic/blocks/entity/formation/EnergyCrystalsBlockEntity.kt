@@ -20,8 +20,8 @@ import net.minecraft.world.phys.Vec3
 
 class EnergyCrystalsBlockEntity(pos: BlockPos, state: BlockState) :
     BlockEntity(UsefulMagicBlockEntities.ENERGY_CRYSTAL.get(), pos, state), FormationCrystal {
-    var maxMana = 1000
-    var currentMana: Int = 1000
+    var maxMana = 5000
+    var currentMana: Int = 5000
         set(value) {
             field = value
             setChanged()

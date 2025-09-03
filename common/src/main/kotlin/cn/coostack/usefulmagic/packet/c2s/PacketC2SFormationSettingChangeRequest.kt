@@ -21,6 +21,7 @@ class PacketC2SFormationSettingChangeRequest(val clickPos: BlockPos, val changed
                     buf.writeBoolean(settings.playerEntityAttack)
                     buf.writeBoolean(settings.anotherEntityAttack)
                     buf.writeBoolean(settings.displayParticleOnlyTrigger)
+                    buf.writeBoolean(settings.displayDefendBallOnlyTrigger)
                     buf.writeDouble(settings.triggerRange)
                     buf.writeVec3(p.clickPos.center)
                 }, {
@@ -31,6 +32,7 @@ class PacketC2SFormationSettingChangeRequest(val clickPos: BlockPos, val changed
                         playerEntityAttack = it.readBoolean()
                         anotherEntityAttack = it.readBoolean()
                         displayParticleOnlyTrigger = it.readBoolean()
+                        displayDefendBallOnlyTrigger = it.readBoolean()
                         triggerRange = it.readDouble()
                     }
                     return@codec PacketC2SFormationSettingChangeRequest(ofFloored(it.readVec3()), settings)

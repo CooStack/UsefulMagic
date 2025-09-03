@@ -43,6 +43,7 @@ class UsefulMagicModelProvider(output: FabricDataOutput) : FabricModelProvider(o
         gen.register(UsefulMagicItems.TUTORIAL_BOOK, ModelTemplates.FLAT_ITEM)
         gen.register(UsefulMagicItems.FRIEND_BOARD, ModelTemplates.FLAT_ITEM)
         gen.register(UsefulMagicItems.SKY_FALLING_RUNE, ModelTemplates.FLAT_ITEM)
+        gen.register(UsefulMagicItems.STARRY_WAND, ModelTemplates.FLAT_HANDHELD_ITEM)
     }
 
     fun ItemModelGenerators.register(item: CommonDeferredItem, model: ModelTemplate) {

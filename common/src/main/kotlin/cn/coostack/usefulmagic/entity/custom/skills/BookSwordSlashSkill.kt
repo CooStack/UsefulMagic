@@ -152,7 +152,7 @@ class BookSwordSlashSkill(val damage: Float) : Skill, SkillCondition {
             }.forEach {
                 val source = it.damageSources().mobAttack(attacker)
                 it.hurt(source, damage)
-                it.hurtTime = 0
+                it.invulnerableTime = 0
             }
         }
     }

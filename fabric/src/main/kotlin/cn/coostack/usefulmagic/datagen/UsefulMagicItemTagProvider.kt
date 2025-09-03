@@ -42,6 +42,7 @@ class UsefulMagicItemTagProvider(
                 UsefulMagicItems.HEALTH_REVIVE_WAND,
                 UsefulMagicItems.LIGHTNING_WAND,
                 UsefulMagicItems.EXPLOSION_WAND,
+                UsefulMagicItems.STARRY_WAND,
             )
         getOrCreateTagBuilder(UsefulMagicItemTags.REVIVE)
             .add(

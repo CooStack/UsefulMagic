@@ -48,13 +48,9 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.fabricmc.fabric.api.`object`.builder.v1.client.model.FabricModelPredicateProviderRegistry
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.renderer.RenderType
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers
 import net.minecraft.resources.ResourceLocation
-import net.minecraft.world.level.block.entity.BlockEntity
 import org.lwjgl.glfw.GLFW
-import kotlin.collections.get
 
 object UsefulMagicFabricClient : ClientModInitializer {
     override fun onInitializeClient() {

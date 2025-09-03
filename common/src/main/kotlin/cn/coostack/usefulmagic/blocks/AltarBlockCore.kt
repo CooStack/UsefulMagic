@@ -5,6 +5,7 @@ import cn.coostack.usefulmagic.blocks.entity.AltarBlockEntity
 import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
 import com.mojang.serialization.MapCodec
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
 import net.minecraft.world.InteractionHand
@@ -105,4 +106,17 @@ class AltarBlockCore(settings: Properties) : BaseEntityBlock(settings) {
         super.onRemove(state, world, pos, newState, moved)
     }
 
+
+    override fun hasAnalogOutputSignal(state: BlockState): Boolean {
+        return true
+    }
+
+    override fun getAnalogOutputSignal(state: BlockState, level: Level, pos: BlockPos): Int {
+        val block =
+            level.getBlockEntity(pos) as? AltarBlockCoreEntity ?: return 0
+
+        val craft = block.getCore()?.crafting ?: false
+
+        return if (craft) 15 else 0
+    }
 }

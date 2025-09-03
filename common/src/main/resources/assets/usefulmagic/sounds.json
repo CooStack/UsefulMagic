@@ -29,6 +29,18 @@
       "usefulmagic:sky_falling_magic_start"
     ]
   },
+  "magic_explode": {
+    "subtitle": "sounds.usefulmagic.magic_explode",
+    "sounds": [
+      "usefulmagic:magic_explode"
+    ]
+  },
+  "star": {
+    "subtitle": "sounds.usefulmagic.star",
+    "sounds": [
+      "usefulmagic:star"
+    ]
+  },
   "defend_shield_hit": {
     "subtitle": "sounds.usefulmagic.defend_shield_hit",
     "sounds": [

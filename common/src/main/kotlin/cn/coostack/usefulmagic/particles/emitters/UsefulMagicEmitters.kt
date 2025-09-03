@@ -13,13 +13,18 @@ object UsefulMagicEmitters {
         ParticleEmittersManager.register(FlyingRuneCloudEmitters.ID, FlyingRuneCloudEmitters.CODEC)
         ParticleEmittersManager.register(LightningParticleEmitters.ID, LightningParticleEmitters.CODEC)
         ParticleEmittersManager.register(ExplosionLineEmitters.ID, ExplosionLineEmitters.CODEC)
-        ParticleEmittersManager.register(ExplosionAnimateLaserMagicEmitters.ID, ExplosionAnimateLaserMagicEmitters.CODEC)
+        ParticleEmittersManager.register(
+            ExplosionAnimateLaserMagicEmitters.ID,
+            ExplosionAnimateLaserMagicEmitters.CODEC
+        )
         ParticleEmittersManager.register(ExplosionWaveEmitters.ID, ExplosionWaveEmitters.CODEC)
         ParticleEmittersManager.register(ParticleWaveEmitters.ID, ParticleWaveEmitters.CODEC)
         ParticleEmittersManager.register(ShrinkParticleEmitters.ID, ShrinkParticleEmitters.CODEC)
         ParticleEmittersManager.register(DirectionShootEmitters.ID, DirectionShootEmitters.CODEC)
         ParticleEmittersManager.register(DiscreteCylinderEmitters.ID, DiscreteCylinderEmitters.CODEC)
         ParticleEmittersManager.register(LineEmitters.ID, LineEmitters.CODEC)
+        ParticleEmittersManager.register(AntiWandBarrageLocusEmitters.ID, AntiWandBarrageLocusEmitters.CODEC)
+        ParticleEmittersManager.register(StarryMeteoriteLocusEmitters.ID, StarryMeteoriteLocusEmitters.CODEC)
     }
 
 }

@@ -1,11 +1,13 @@
 package cn.coostack.usefulmagic.blocks.entity
 
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
 import net.minecraft.core.HolderLookup
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ClientGamePacketListener
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Block
@@ -88,5 +90,66 @@ class AltarBlockEntity(pos: BlockPos, state: BlockState) :
         pos: BlockPos?,
         state: BlockState?,
     ) {
+    }
+
+    override fun getSlotsForFace(p0: Direction): IntArray {
+        return intArrayOf(0)
+    }
+
+    override fun canPlaceItemThroughFace(
+        p0: Int,
+        p1: ItemStack,
+        p2: Direction?
+    ): Boolean {
+        return true
+    }
+
+    override fun canTakeItemThroughFace(
+        p0: Int,
+        p1: ItemStack,
+        p2: Direction
+    ): Boolean {
+        return true
+    }
+
+    override fun getContainerSize(): Int {
+        return 1
+    }
+
+    override fun isEmpty(): Boolean {
+        return stack.isEmpty
+    }
+
+    override fun getItem(p0: Int): ItemStack {
+        return stack
+    }
+
+    override fun removeItem(slot: Int, amount: Int): ItemStack {
+        val old = stack
+        setAltarStack(ItemStack.EMPTY)
+        return old
+    }
+
+    override fun removeItemNoUpdate(p0: Int): ItemStack {
+        val old = stack
+        stack = ItemStack.EMPTY
+        return old
+    }
+
+    override fun setItem(p0: Int, stack: ItemStack) {
+        setAltarStack(stack)
+    }
+
+    override fun stillValid(p0: Player): Boolean {
+        return true
+    }
+
+    override fun clearContent() {
+        setAltarStack(ItemStack.EMPTY)
+    }
+
+
+    override fun getMaxStackSize(): Int {
+        return 1
     }
 }

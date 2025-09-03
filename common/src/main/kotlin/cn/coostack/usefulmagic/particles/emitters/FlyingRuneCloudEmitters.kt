@@ -58,8 +58,8 @@ class FlyingRuneCloudEmitters(var player: UUID, pos: Vec3, world: Level?) : Clas
     }
 
     val random = Random(System.currentTimeMillis())
-    override fun genParticles(): Map<ControlableParticleData, RelativeLocation> {
-        val res = HashMap<ControlableParticleData, RelativeLocation>()
+    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+        val res = ArrayList<Pair<ControlableParticleData, RelativeLocation>>()
         val velocityList = PointsBuilder()
             .addBall(0.5, 5)
             .rotateAsAxis(random.nextDouble(-PI, PI), RelativeLocation.xAxis())
@@ -68,11 +68,11 @@ class FlyingRuneCloudEmitters(var player: UUID, pos: Vec3, world: Level?) : Clas
         val count = random.nextInt(10, 20)
         repeat(count) {
             val velocity = velocityList.random()
-            res[
+            res.add(
                 templateData.clone().apply {
                     this.velocity = velocity.normalize().multiply(-0.01).toVector()
                 }
-            ] = velocity.clone()
+                        to velocity.clone())
         }
 
         return res
@@ -81,8 +81,10 @@ class FlyingRuneCloudEmitters(var player: UUID, pos: Vec3, world: Level?) : Clas
     override fun singleParticleAction(
         controler: ParticleControler,
         data: ControlableParticleData,
-        spawnPos: Vec3,
-        spawnWorld: Level
+        spawnPos: RelativeLocation,
+        spawnWorld: Level,
+        particleLerpProgress: Float,
+        posLerpProgress: Float
     ) {
         data.maxAge = 10
         data.color = Math3DUtil

@@ -95,7 +95,7 @@ class PlayerSwordSlashSkill(val damage: Float) : Skill, ComboCondition, SkillCan
             it.uuid != attacker.uuid
         }.forEach {
             val source = it.damageSources().playerAttack(attacker)
-            it.hurtTime = 0
+            it.invulnerableTime = 0
             it.hurt(source, damage)
         }
     }

@@ -29,6 +29,7 @@ class PacketS2CFormationSettingsResponse(val settings: FormationSettings, val is
                     buf.writeBoolean(settings.playerEntityAttack)
                     buf.writeBoolean(settings.anotherEntityAttack)
                     buf.writeBoolean(settings.displayParticleOnlyTrigger)
+                    buf.writeBoolean(settings.displayDefendBallOnlyTrigger)
                     buf.writeDouble(settings.triggerRange)
                     buf.writeBoolean(data.isOwner)
                 }, {
@@ -39,6 +40,7 @@ class PacketS2CFormationSettingsResponse(val settings: FormationSettings, val is
                         playerEntityAttack = it.readBoolean()
                         anotherEntityAttack = it.readBoolean()
                         displayParticleOnlyTrigger = it.readBoolean()
+                        displayDefendBallOnlyTrigger = it.readBoolean()
                         triggerRange = it.readDouble()
                     }
                     PacketS2CFormationSettingsResponse(settings, it.readBoolean())

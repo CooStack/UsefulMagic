@@ -132,21 +132,20 @@ object DefendMagicListener {
             return true
         }
         val manaCost = count * 5
-        val sourceEntity = attacker
         val sourceDirection = attacker?.let {
             entity.position().relativize(attackPos)
         }
         if (mana >= manaCost) {
             data.mana -= manaCost.roundToInt()
             // 防御成功
-            showDefendSuccess(sourceDirection, entity, sourceEntity, barrage)
+            showDefendSuccess(sourceDirection, entity, attacker, barrage)
             return false
         }
         data.mana = 0
         val actualDamage = count - mana / 5
         entity.hurt(source, actualDamage)
         // 成功了一部分
-        showDefendPartSuccess(sourceDirection, entity, sourceEntity)
+        showDefendPartSuccess(sourceDirection, entity, attacker)
         return false
     }
 

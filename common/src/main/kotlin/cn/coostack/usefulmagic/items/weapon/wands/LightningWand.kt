@@ -100,7 +100,7 @@ class LightningWand(settings: Properties) : WandItem(settings, 20, 8.0) {
                 val source = entity.damageSources().playerAttack(user)
                 entity.remainingFireTicks = 60
                 entity.hurt(source, damage.toFloat())
-                entity.hurtTime = 0
+                entity.invulnerableTime = 0
                 var prePos = currentPos
                 var nextPos = prePos
                 val dir = prePos.relativize(nextPos).normalize().scale(4.5)
@@ -118,7 +118,7 @@ class LightningWand(settings: Properties) : WandItem(settings, 20, 8.0) {
                     nextPos = next.eyePosition
                     next.remainingFireTicks = 60
                     next.hurt(source, (damage * attenuation.pow(j)).toFloat())
-                    next.hurtTime = 0
+                    next.invulnerableTime = 0
                     damagedEntitySet.add(next)
                     // 生成闪电
                     val lightning = LightningParticleEmitters(prePos, world)
@@ -167,6 +167,7 @@ class LightningWand(settings: Properties) : WandItem(settings, 20, 8.0) {
                     )
                     it.maxAge = 5
                 }
+                offsetRange = 3.0
             }
         ParticleEmittersManager.spawnEmitters(lightning)
         // 扣除魔法

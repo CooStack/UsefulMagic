@@ -94,19 +94,19 @@ class ExplodeMagicEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos
     }
 
     val random = Random(System.currentTimeMillis())
-    override fun genParticles(): Map<ControlableParticleData, RelativeLocation> {
+    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
         val velocityList = PointsBuilder()
             .addBall(2.0, ballCountPow)
             .rotateAsAxis(random.nextDouble(-PI, PI))
             .rotateAsAxis(random.nextDouble(-PI, PI), RelativeLocation.xAxis())
             .create()
-        val res = HashMap<ControlableParticleData, RelativeLocation>()
+        val res = ArrayList<Pair<ControlableParticleData, RelativeLocation>>()
         val count = random.nextInt(randomCountMin, randomCountMax)
         for (i in 0 until count) {
             val it = velocityList.random()
-            res[templateData.clone().apply {
+            res.add(templateData.clone().apply {
                 this.velocity = it.normalize().multiply(random.nextDouble(minSpeed, maxSpeed)).toVector()
-            }] = RelativeLocation()
+            } to RelativeLocation())
         }
         return res
     }
@@ -114,8 +114,10 @@ class ExplodeMagicEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos
     override fun singleParticleAction(
         controler: ParticleControler,
         data: ControlableParticleData,
-        spawnPos: Vec3,
-        spawnWorld: Level
+        spawnPos: RelativeLocation,
+        spawnWorld: Level,
+        particleLerpProgress: Float,
+        posLerpProgress: Float
     ) {
         data.maxAge = random.nextInt(randomParticleAgeMin, randomParticleAgeMax)
         controler.addPreTickAction {

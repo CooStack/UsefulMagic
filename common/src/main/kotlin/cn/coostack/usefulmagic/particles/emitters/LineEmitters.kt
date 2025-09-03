@@ -48,19 +48,21 @@ class LineEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, world)
     val option: Int
         get() = ParticleOption.getParticleCounts()
 
-    override fun genParticles(): Map<ControlableParticleData, RelativeLocation> {
+    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
         return PointsBuilder()
             .addLine(Vec3.ZERO, endPos, count * option)
-            .create().associateBy {
-                templateData.clone()
+            .create().map {
+                templateData.clone() to it
             }
     }
 
     override fun singleParticleAction(
         controler: ParticleControler,
         data: ControlableParticleData,
-        spawnPos: Vec3,
-        spawnWorld: Level
+        spawnPos: RelativeLocation,
+        spawnWorld: Level,
+        particleLerpProgress: Float,
+        posLerpProgress: Float
     ) {
     }
 

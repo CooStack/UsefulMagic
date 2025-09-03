@@ -12,7 +12,7 @@ import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.meteorite.impl.OptionMeteorite
 import cn.coostack.usefulmagic.particles.group.server.SingleBarrageParticleServer
-import cn.coostack.usefulmagic.particles.style.barrage.wand.CopperMagicStyle
+import cn.coostack.usefulmagic.particles.style.wand.CopperMagicStyle
 import cn.coostack.usefulmagic.utils.FriendFilterHelper
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player

@@ -1,10 +1,11 @@
 package cn.coostack.usefulmagic.blocks.entity
 
+import net.minecraft.world.WorldlyContainer
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 
-interface AltarEntity {
+interface AltarEntity : WorldlyContainer {
     companion object {
         /**
          * level 1 -> 50 1

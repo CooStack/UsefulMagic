@@ -4,6 +4,7 @@ import cn.coostack.cooparticlesapi.CooParticlesAPI
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.network.particle.emitters.impl.PresetLaserEmitters
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
+import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
@@ -20,6 +21,7 @@ import cn.coostack.usefulmagic.particles.style.TestStyle
 import cn.coostack.usefulmagic.particles.style.explosion.ExplosionMagicBallStyle
 import cn.coostack.usefulmagic.particles.style.explosion.ExplosionMagicStyle
 import cn.coostack.usefulmagic.particles.style.explosion.ExplosionStarStyle
+import cn.coostack.usefulmagic.renderer.SkyFallingRenderEntity
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
@@ -37,38 +39,21 @@ import kotlin.math.PI
 import kotlin.random.Random
 
 class DebuggerItem : Item(Properties()) {
-    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack?>? {
+    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
         val res = super.use(world, user, hand)
-        // 数学测试
-//        testLight(world, user)
-        // 陨石测试
-//        testMeteorite(world, user, hand)
-        // 魔力树形测试
-//        testMana(world, user, hand)
         if (world.isClientSide) {
             return res
         }
-//        testStar(world as ServerLevel, user as ServerPlayer)
         world as ServerLevel
         user as ServerPlayer
-//        testShader(world, user)
-//        CooParticlesAPI.scheduler.runTaskTimerMaxTick(5, 60) {
-//            repeat(3) {
-//        testExplosion(world, user)
-//        testMagic(world, user)
-//        testExplosionMagicStyle(world, user, RelativeLocation.yAxis())
-//            }
-//        }
-//        CooParticlesAPI.scheduler.runTaskTimerMaxTick(120) {
-//            repeat(2) {
-//                testStar(world, user)
-//            }
-//        }
-//        testExplosionMagicStyle(world, user)
-//        testStar(world, user)
-//        testImpact(world, user)
-
+        testShader(world, user)
         return res
+    }
+
+    fun testShader(world: ServerLevel, user: ServerPlayer) {
+        val shader = SkyFallingRenderEntity(world, user.position())
+        ServerRenderEntityManager.spawn(shader)
+
     }
 
     override fun useOn(context: UseOnContext): InteractionResult {

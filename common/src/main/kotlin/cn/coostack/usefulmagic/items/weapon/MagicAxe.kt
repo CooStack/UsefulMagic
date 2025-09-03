@@ -149,7 +149,7 @@ class MagicAxe(settings: Properties) : AxeItem(UsefulMagicToolMaterials.MAGIC, s
                 it.uuid != attacker.uuid
             }.forEach {
                 val source = it.damageSources().playerAttack(attacker)
-                it.hurtTime = 0
+                it.invulnerableTime = 0
                 it.hurt(source, 5f)
             }
         }

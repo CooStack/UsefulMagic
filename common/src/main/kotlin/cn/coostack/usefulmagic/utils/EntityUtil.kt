@@ -9,7 +9,6 @@ object EntityUtil {
         target.speed = 0f
         target.deltaMovement = Vec3.ZERO
         target.hurtMarked = true
-
     }
 
 }

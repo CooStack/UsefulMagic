@@ -26,6 +26,7 @@ class FormationCoreBlockEntity(pos: BlockPos, state: BlockState) :
         settingsNBT.putBoolean("animal_attack", settings.animalEntityAttack)
         settingsNBT.putBoolean("another_attack", settings.anotherEntityAttack)
         settingsNBT.putBoolean("display_particle_only_trigger", settings.displayParticleOnlyTrigger)
+        settingsNBT.putBoolean("display_defend_ball_only_trigger", settings.displayDefendBallOnlyTrigger)
         settingsNBT.putDouble("trigger_range", settings.triggerRange)
         nbt.put("settings", settingsNBT)
         nbt.putUUID("formation_uuid", formation.uuid)
@@ -41,6 +42,7 @@ class FormationCoreBlockEntity(pos: BlockPos, state: BlockState) :
         settings.animalEntityAttack = settingsNBT.getBoolean("animal_attack")
         settings.anotherEntityAttack = settingsNBT.getBoolean("another_attack")
         settings.displayParticleOnlyTrigger = settingsNBT.getBoolean("display_particle_only_trigger")
+        settings.displayDefendBallOnlyTrigger = settingsNBT.getBoolean("display_defend_ball_only_trigger")
         settings.triggerRange = settingsNBT.getDouble("trigger_range")
         val formationUUID = nbt.getUUID("formation_uuid")
         formation.uuid = formationUUID

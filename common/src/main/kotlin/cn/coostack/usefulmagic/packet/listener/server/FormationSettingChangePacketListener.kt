@@ -30,6 +30,7 @@ object FormationSettingChangePacketListener {
             this.anotherEntityAttack = changed.anotherEntityAttack
             this.hostileEntityAttack = changed.hostileEntityAttack
             this.displayParticleOnlyTrigger = changed.displayParticleOnlyTrigger
+            this.displayDefendBallOnlyTrigger = changed.displayDefendBallOnlyTrigger
             if (formationEntity.formation.getFormationTriggerRange() < changed.triggerRange) {
                 this.triggerRange = -1.0
                 return@apply

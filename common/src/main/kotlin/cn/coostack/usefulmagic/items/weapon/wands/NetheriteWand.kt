@@ -9,7 +9,7 @@ import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.extend.isOf
 import cn.coostack.usefulmagic.particles.barrages.wand.NetheriteSwordBarrage
-import cn.coostack.usefulmagic.particles.style.barrage.wand.NetheriteWandStyle
+import cn.coostack.usefulmagic.particles.style.wand.NetheriteWandStyle
 import cn.coostack.usefulmagic.utils.ParticleOption
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.world.entity.LivingEntity
@@ -26,6 +26,8 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.item.UseAnim
 import net.minecraft.world.level.Level
+import kotlin.math.PI
+import kotlin.random.Random
 
 class NetheriteWand(settings: Properties) : WandItem(settings, 100, 5.0) {
     override fun appendHoverText(
@@ -92,8 +94,7 @@ class NetheriteWand(settings: Properties) : WandItem(settings, 100, 5.0) {
         return super.finishUsingItem(stack, world, user)
     }
 
-
-    val rangeBall = PointsBuilder().addBall(12.0, 6 * options).create()
+    val random = Random(System.currentTimeMillis())
     override fun onUseTick(world: Level, user: LivingEntity, stack: ItemStack, remainingUseTicks: Int) {
         val tick = getUseDuration(stack, user) - remainingUseTicks
         val max = getUseDuration(stack, user)
@@ -101,6 +102,11 @@ class NetheriteWand(settings: Properties) : WandItem(settings, 100, 5.0) {
             return
         }
         if (tick % 3 == 0) {
+            val rangeBall = PointsBuilder()
+                .addBall(12.0, 6 * options)
+                .rotateAsAxis(random.nextDouble(-PI, PI), RelativeLocation.yAxis())
+                .rotateAsAxis(random.nextDouble(-PI, PI), RelativeLocation.xAxis())
+                .create()
             repeat(if (tick < max / 2) 10 else 20) {
                 val it = rangeBall.random()
                 val pos = user.position().add(it.toVector())
@@ -123,13 +129,7 @@ class NetheriteWand(settings: Properties) : WandItem(settings, 100, 5.0) {
                 3f,
                 2f
             )
-//            world.playSound(
-//                null,
-//                user.x, user.y, user.z,
-//                SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 3f, 1.3f
-//            )
         }
-
     }
 
     override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack?> {

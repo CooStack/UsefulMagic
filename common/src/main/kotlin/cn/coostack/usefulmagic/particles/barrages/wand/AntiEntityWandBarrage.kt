@@ -6,15 +6,14 @@ import cn.coostack.cooparticlesapi.barrages.HitBox
 import cn.coostack.cooparticlesapi.extend.relativize
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.network.particle.emitters.impl.SimpleParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.util.ServerParticleUtil
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.particles.barrages.api.PlayerDamagedBarrage
-import cn.coostack.usefulmagic.particles.style.barrage.wand.AntiEntityWandBarrageStyle
+import cn.coostack.usefulmagic.particles.emitters.AntiWandBarrageLocusEmitters
+import cn.coostack.usefulmagic.particles.style.wand.anti.AntiEntityWandBarrageStyle
 import cn.coostack.usefulmagic.utils.FriendFilterHelper
-import cn.coostack.usefulmagic.utils.ParticleOption
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.core.particles.ParticleTypes
@@ -50,19 +49,19 @@ class AntiEntityWandBarrage(
     val traceBox = HitBox.of(32.0, 32.0, 32.0)
     private var tick = 0
     private var lastLoc = loc
-    val locusEmitters = SimpleParticleEmitters(
-        loc, world, ControlableParticleData()
-            .apply {
-                maxAge = 10
-                velocity = Vec3.ZERO
-                speed = 0.01
-                size = 0.4f
-                color = Math3DUtil.colorOf(240, 120, 255)
-            })
+    val locusEmitters = AntiWandBarrageLocusEmitters(
+        loc, world
+    )
         .apply {
-            maxTick = options.maxLivingTick
-            delay = 0
-            count = 6
+            templateData = ControlableParticleData()
+                .apply {
+                    maxAge = 10
+                    velocity = Vec3.ZERO
+                    speed = 0.01
+                    size = 0.4f
+                    color = Math3DUtil.colorOf(255, 255, 255)
+                    maxTick = options.maxLivingTick
+                }
         }
 
     override fun tick() {
@@ -95,7 +94,7 @@ class AntiEntityWandBarrage(
     override fun onHitDamaged(result: BarrageHitResult) {
         locusEmitters.cancelled = true
         for (entity in result.entities) {
-            entity.hurtTime = 0
+            entity.invulnerableTime = 0
         }
         world.playSound(
             null, loc.x, loc.y, loc.z, SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.PLAYERS, 6f, 1.2f

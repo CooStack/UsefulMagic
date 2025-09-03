@@ -7,11 +7,12 @@ import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersMan
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.platform.CooParticlesServices
+import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.blocks.entity.formation.EnergyCrystalsBlockEntity
-import cn.coostack.usefulmagic.blocks.entity.formation.RecoverCrystalsBlockEntity
+import cn.coostack.usefulmagic.blocks.entity.formation.RecoverCrystalBlockEntity
 import cn.coostack.usefulmagic.entity.custom.formation.FormationCoreEntity
 import cn.coostack.usefulmagic.formation.api.AttackCrystal
 import cn.coostack.usefulmagic.formation.api.BlockFormation
@@ -36,7 +37,7 @@ import cn.coostack.usefulmagic.particles.style.formation.FormationStyle
 import cn.coostack.usefulmagic.particles.style.formation.LargeFormationStyle
 import cn.coostack.usefulmagic.particles.style.formation.MidFormationStyle
 import cn.coostack.usefulmagic.particles.style.formation.SmallFormationStyle
-import net.minecraft.core.BlockPos
+import cn.coostack.usefulmagic.renderer.DefendCrystalRenderEntity
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
@@ -48,7 +49,6 @@ import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.entity.animal.AbstractFish
 import net.minecraft.world.entity.animal.Animal
 import net.minecraft.world.entity.monster.Monster
-import net.minecraft.world.level.ChunkPos
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.AABB
@@ -60,6 +60,7 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
     var bindEntity: FormationCoreEntity? = null
         private set
     var style: FormationStyle? = null
+    var defendEntity: DefendCrystalRenderEntity? = null
     override var uuid: UUID = UUID.randomUUID()
         internal set
     override var activeCrystals: MutableList<FormationCrystal> = ArrayList()
@@ -117,6 +118,8 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
                 10f,
                 1f
             )
+            defendEntity?.over()
+            defendEntity = null
             scale = FormationScale.NONE
             owner = null
             active = false
@@ -130,6 +133,15 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
     var scale = FormationScale.NONE
 
     override fun hasCrystalType(type: Class<out FormationCrystal>): Boolean {
+        if (DefendCrystal::class.java.isAssignableFrom(type)) {
+            return hasDefend
+        }
+        if (AttackCrystal::class.java.isAssignableFrom(type)) {
+            return hasAttack
+        }
+        if (RecoverCrystalBlockEntity::class.java.isAssignableFrom(type)) {
+            return hasRecover
+        }
         return activeCrystals.any {
             type.isAssignableFrom(it::class.java)
         }
@@ -262,7 +274,7 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
             if (entity is DefendCrystal) {
                 hasDefend = true
             }
-            if (entity is RecoverCrystalsBlockEntity) {
+            if (entity is RecoverCrystalBlockEntity) {
                 hasRecover = true
             }
         }
@@ -285,6 +297,22 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
             createStyleOnBuild()
             displayStyleOnBuild()
         }
+        if (!settings.displayDefendBallOnlyTrigger && !world!!.isClientSide && hasDefend) {
+            createEntityOnBuild()
+            displayEntityOnBuild()
+        }
+    }
+
+    private fun createEntityOnBuild() {
+        defendEntity = DefendCrystalRenderEntity(world, formationCore, getFormationTriggerRange())
+            .also {
+                it.formationPos = formationCore
+            }
+    }
+
+    private fun displayEntityOnBuild() {
+        defendEntity ?: return
+        ServerRenderEntityManager.spawn(defendEntity!!)
     }
 
     private fun displayStyleOnBuild() {
@@ -315,6 +343,9 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
 
     var workTime = 0
 
+    /**
+     * 阵法被激活
+     */
     var inTriggerRangeActive = false
     var triggerTime = 0
     override fun tick() {
@@ -426,6 +457,12 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
         ) {
             createStyleOnBuild()
             displayStyleOnBuild()
+        }
+        if (hasDefend && (defendEntity == null || (defendEntity?.over
+                ?: true)) && (inTriggerRangeActive || !settings.displayDefendBallOnlyTrigger)
+        ) {
+            createEntityOnBuild()
+            displayEntityOnBuild()
         }
         style ?: return
         if (!style!!.displayed) {

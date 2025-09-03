@@ -6,7 +6,7 @@ import cn.coostack.cooparticlesapi.network.particle.util.ServerParticleUtil
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.extend.isOf
 import cn.coostack.usefulmagic.particles.barrages.wand.GoldenMagicBallBarrage
-import cn.coostack.usefulmagic.particles.style.barrage.wand.GoldenWandStyle
+import cn.coostack.usefulmagic.particles.style.wand.GoldenWandStyle
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerLevel

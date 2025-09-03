@@ -96,19 +96,21 @@ class DirectionShootEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(p
         this.count = emitters.count
     }
 
-    override fun genParticles(): Map<ControlableParticleData, RelativeLocation> {
-        return shootType.getPositions(Vec3.ZERO, tick, count).map { RelativeLocation.of(it) }.shuffled().associateBy {
+    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+        return shootType.getPositions(Vec3.ZERO, tick, count).map { RelativeLocation.of(it) }.shuffled().map {
             templateData.clone().apply {
                 velocity = shootDirection
-            }
+            } to it
         }
     }
 
     override fun singleParticleAction(
         controler: ParticleControler,
         data: ControlableParticleData,
-        spawnPos: Vec3,
-        spawnWorld: Level
+        spawnPos: RelativeLocation,
+        spawnWorld: Level,
+        particleLerpProgress: Float,
+        posLerpProgress: Float
     ) {
         data.velocity = data.velocity.add(
             random.nextDouble(-randomX, randomX),

@@ -71,13 +71,16 @@ abstract class Meteorite {
             val entity = it.value
             val n = origin.add(key.toVector())
             entity.tp(n)
+            entity.updateAliveTick()
         }
     }
 
     open fun tick() {
         if (!valid || hit) return
         // 判定碰撞箱
-        val value = entities.asSequence().filter { it.value.checkEntityOrBlockInBox() }.firstOrNull()?.value
+        val value = entities.asSequence().filter {
+            it.value.checkEntityOrBlockInBox()
+        }.firstOrNull()?.value
         if (value != null) {
             hit(value.position())
             return

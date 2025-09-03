@@ -2,8 +2,10 @@
   "required": true,
   "package": "cn.coostack.usefulmagic.mixin",
   "compatibilityLevel": "JAVA_18",
+  "refmap": "usefulmagic.refmap.json",
   "mixins": [
-    "FallingBlockEntityAccessor"
+    "FallingBlockEntityAccessor",
+    "HooperBlockEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

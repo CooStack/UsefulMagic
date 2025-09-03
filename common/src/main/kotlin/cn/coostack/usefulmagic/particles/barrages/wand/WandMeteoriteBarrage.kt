@@ -22,8 +22,8 @@ import cn.coostack.usefulmagic.meteorite.impl.OptionMeteorite
 import cn.coostack.usefulmagic.particles.emitters.ExplodeMagicEmitters
 import cn.coostack.usefulmagic.particles.emitters.ParticleWaveEmitters
 import cn.coostack.usefulmagic.particles.group.server.SingleBarrageParticleServer
-import cn.coostack.usefulmagic.particles.style.barrage.wand.WandMeteoriteStyle
-import cn.coostack.usefulmagic.particles.style.barrage.wand.WandMeteoriteTargetStyle
+import cn.coostack.usefulmagic.particles.style.wand.meteorite.WandMeteoriteStyle
+import cn.coostack.usefulmagic.particles.style.wand.meteorite.WandMeteoriteTargetStyle
 import cn.coostack.usefulmagic.utils.FallingBlockHelper
 import cn.coostack.usefulmagic.utils.FriendFilterHelper
 import cn.coostack.usefulmagic.utils.ParticleOption
@@ -33,7 +33,6 @@ import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundSource
 import net.minecraft.sounds.SoundEvents
-import net.minecraft.core.BlockPos
 import net.minecraft.core.particles.BlockParticleOption
 import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.effect.MobEffects
@@ -59,7 +58,7 @@ class WandMeteoriteBarrage(
             noneHitBoxTick = 0
         }) {
     override fun filterHitEntity(livingEntity: LivingEntity): Boolean {
-        return livingEntity.uuid != shooter?.uuid  && FriendFilterHelper.filterNotFriend(shooter!!,livingEntity.uuid)
+        return livingEntity.uuid != shooter?.uuid && FriendFilterHelper.filterNotFriend(shooter!!, livingEntity.uuid)
     }
 
     override fun tick() {
@@ -155,14 +154,15 @@ class WandMeteoriteBarrage(
                     loc, 20.0, 20.0, 20.0
                 )
                 val source =
-                    if (shooter == null) world.damageSources().flyIntoWall() else world.damageSources().playerAttack(shooter as Player)
+                    if (shooter == null) world.damageSources().flyIntoWall() else world.damageSources()
+                        .playerAttack(shooter as Player)
                 world.getEntitiesOfClass(
                     LivingEntity::class.java, box
                 ) {
                     it != shooter
                 }.forEach {
                     it.hurt(source, damage.toFloat())
-                    it.hurtTime = 0
+                    it.invulnerableTime = 0
                 }
 
                 ParticleEmittersManager.spawnEmitters(
@@ -264,7 +264,7 @@ class WandMeteoriteBarrage(
                 }
                 if (entity != null) {
                     direction = RelativeLocation.of(
-                        origin.relativize(entity.eyePosition)
+                        origin.relativize(entity.position())
                     )
                 }
             }
