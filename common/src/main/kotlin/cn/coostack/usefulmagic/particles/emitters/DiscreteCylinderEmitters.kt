@@ -67,7 +67,7 @@ class DiscreteCylinderEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters
     override fun doTick() {
     }
 
-    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+    override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         return PointsBuilder.of(
             MathUtil.discreteCylinderGenerator(
                 minDiscrete, maxDiscrete, maxRadius, height, heightStep, radiusStep, minCount, maxCount
@@ -93,7 +93,7 @@ class DiscreteCylinderEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters
                 )
             ).normalize().multiply(0.1)
         controler.addPreTickAction {
-            updatePhysics(pos, data)
+            updatePhysics(pos, data, this)
         }
     }
 

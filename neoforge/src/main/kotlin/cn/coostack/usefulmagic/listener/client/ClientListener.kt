@@ -3,12 +3,13 @@ package cn.coostack.usefulmagic.listener.client
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.UsefulMagicClient
 import cn.coostack.usefulmagic.gui.mana.ManaBarCallback
+import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.common.EventBusSubscriber
 import net.neoforged.neoforge.client.event.ClientTickEvent
 import net.neoforged.neoforge.client.event.RenderGuiEvent
 
-@EventBusSubscriber(modid = UsefulMagic.MOD_ID)
+@EventBusSubscriber(modid = UsefulMagic.MOD_ID, value = [Dist.CLIENT])
 object ClientListener {
 
     @SubscribeEvent

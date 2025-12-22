@@ -1,5 +1,6 @@
 package cn.coostack.usefulmagic.particles.emitters.explosion
 
+import cn.coostack.cooparticlesapi.extend.random
 import cn.coostack.cooparticlesapi.network.particle.emitters.ClassParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmitters
@@ -75,7 +76,7 @@ class ExplosionWaveEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(po
     }
 
     val random = Random(System.currentTimeMillis())
-    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+    override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         return PointsBuilder()
             .addDiscreteCircleXZ(1.0, random.nextInt(waveCircleCountMin, waveCircleCountMax), discrete)
             .create().map {
@@ -95,20 +96,16 @@ class ExplosionWaveEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(po
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
+        data.maxAge += random.nextInt(-data.maxAge / 4, (data.maxAge / 3).coerceAtLeast(1))
         controler.addPreTickAction {
             data.velocity = LinearResistanceHelper.setPercentageVelocity(
                 data.velocity, speedDrag
             )
             if (randomVector) {
                 data.velocity = data.velocity.add(
-                    Vec3(
-                        random.nextDouble(-1.0, 1.0),
-                        random.nextDouble(-1.0, 1.0),
-                        random.nextDouble(-1.0, 1.0),
-                    ).normalize().multiply(random.nextDouble(-randomSpeed, randomSpeed))
+                    Vec3.ZERO.random().multiply(random.nextDouble(-randomSpeed, randomSpeed))
                 )
             }
-            updatePhysics(this.loc, data)
         }
     }
 

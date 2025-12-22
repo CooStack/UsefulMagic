@@ -3,6 +3,12 @@ package cn.coostack.usefulmagic.listener.server
 import cn.coostack.cooparticlesapi.platform.network.NeoForgeClientContext
 import cn.coostack.cooparticlesapi.platform.network.NeoForgeServerContext
 import cn.coostack.usefulmagic.UsefulMagic
+import cn.coostack.usefulmagic.blocks.UsefulMagicBlocks
+import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
+import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
+import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes
+import cn.coostack.usefulmagic.items.UsefulMagicItemGroups
+import cn.coostack.usefulmagic.items.UsefulMagicItems
 import cn.coostack.usefulmagic.packet.c2s.PacketC2SFormationSettingChangeRequest
 import cn.coostack.usefulmagic.packet.c2s.PacketC2SFormationSettingRequest
 import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendAddRequest
@@ -25,18 +31,52 @@ import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationSettingsResponse
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFriendChangeResponse
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFriendListResponse
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CManaDataToggle
+import cn.coostack.usefulmagic.recipe.UsefulMagicRecipeTypes
+import net.minecraft.core.registries.BuiltInRegistries
+import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.common.EventBusSubscriber
 import net.neoforged.neoforge.event.tick.ServerTickEvent
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent
+import net.neoforged.neoforge.registries.RegisterEvent
 
 @EventBusSubscriber(modid = UsefulMagic.MOD_ID)
 object ServerInitializedListener {
 
-
     @SubscribeEvent
     fun onPacketRegister(event: RegisterPayloadHandlersEvent) {
         val registrar = event.registrar(UsefulMagic.MOD_ID)
+        registrar.playToServer(
+            PacketC2SFormationSettingChangeRequest.payloadID,
+            PacketC2SFormationSettingChangeRequest.CODEC
+        ) { packet, context ->
+            FormationSettingChangePacketListener.receive(packet, NeoForgeServerContext(context))
+        }
+        registrar.playToServer(
+            PacketC2SFormationSettingRequest.payloadID,
+            PacketC2SFormationSettingRequest.CODEC
+        ) { packet, context ->
+            FormationSettingRequestPacketListener.receive(packet, NeoForgeServerContext(context))
+        }
+
+        registrar.playToServer(
+            PacketC2SFriendAddRequest.payloadID,
+            PacketC2SFriendAddRequest.CODEC
+        ) { packet, context ->
+            FriendAddListRequestHandler.receive(packet, NeoForgeServerContext(context))
+        }
+        registrar.playToServer(
+            PacketC2SFriendListRequest.payloadID,
+            PacketC2SFriendListRequest.CODEC
+        ) { packet, context ->
+            FriendListRequestHandler.receive(packet, NeoForgeServerContext(context))
+        }
+        registrar.playToServer(
+            PacketC2SFriendRemoveRequest.payloadID,
+            PacketC2SFriendRemoveRequest.CODEC
+        ) { packet, context ->
+            FriendRemoveListRequestHandler.receive(packet, NeoForgeServerContext(context))
+        }
         registrar.playToClient(
             PacketS2CEnergyCrystalChange.payloadID,
             PacketS2CEnergyCrystalChange.CODEC
@@ -78,38 +118,6 @@ object ServerInitializedListener {
             PacketS2CManaDataToggle.CODEC
         ) { packet, context ->
             ManaChangePacketListener.receive(packet, NeoForgeClientContext(context))
-        }
-
-        registrar.playToServer(
-            PacketC2SFormationSettingChangeRequest.payloadID,
-            PacketC2SFormationSettingChangeRequest.CODEC
-        ) { packet, context ->
-            FormationSettingChangePacketListener.receive(packet, NeoForgeServerContext(context))
-        }
-        registrar.playToServer(
-            PacketC2SFormationSettingRequest.payloadID,
-            PacketC2SFormationSettingRequest.CODEC
-        ) { packet, context ->
-            FormationSettingRequestPacketListener.receive(packet, NeoForgeServerContext(context))
-        }
-
-        registrar.playToServer(
-            PacketC2SFriendAddRequest.payloadID,
-            PacketC2SFriendAddRequest.CODEC
-        ) { packet, context ->
-            FriendAddListRequestHandler.receive(packet, NeoForgeServerContext(context))
-        }
-        registrar.playToServer(
-            PacketC2SFriendListRequest.payloadID,
-            PacketC2SFriendListRequest.CODEC
-        ) { packet, context ->
-            FriendListRequestHandler.receive(packet, NeoForgeServerContext(context))
-        }
-        registrar.playToServer(
-            PacketC2SFriendRemoveRequest.payloadID,
-            PacketC2SFriendRemoveRequest.CODEC
-        ) { packet, context ->
-            FriendRemoveListRequestHandler.receive(packet, NeoForgeServerContext(context))
         }
     }
 

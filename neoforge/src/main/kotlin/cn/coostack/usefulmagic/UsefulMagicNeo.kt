@@ -67,11 +67,6 @@ object UsefulMagicNeo {
                 it.register(item.id, item.getItem())
             }
         }
-        event.register(BuiltInRegistries.CREATIVE_MODE_TAB.key()) {
-            val group = UsefulMagicItemGroups.usefulMagicMainGroup
-            it.register(group.id, group.get())
-        }
-
         event.register(BuiltInRegistries.BLOCK_ENTITY_TYPE.key()) {
             UsefulMagicBlockEntities.blockEntityTypes.forEach { entityType ->
                 it.register(entityType.id, entityType.get())
@@ -101,7 +96,6 @@ object UsefulMagicNeo {
             }
         }
     }
-
     private fun onCommonSetup(event: FMLCommonSetupEvent) {
     }
 }

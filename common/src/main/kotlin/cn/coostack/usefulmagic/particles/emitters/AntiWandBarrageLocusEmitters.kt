@@ -11,7 +11,6 @@ import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
-import org.joml.Vector3f
 
 class AntiWandBarrageLocusEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, world) {
     var templateData = ControlableParticleData()
@@ -43,7 +42,7 @@ class AntiWandBarrageLocusEmitters(pos: Vec3, world: Level?) : ClassParticleEmit
     override fun doTick() {
     }
 
-    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+    override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         return listOf(templateData to RelativeLocation())
     }
 

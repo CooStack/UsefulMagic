@@ -51,7 +51,7 @@ class LightningParticleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitter
     val options
         get() = ParticleOption.getParticleCounts()
 
-    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+    override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         val count = (endPos.length() / 10).roundToInt().coerceIn(3, 6)
         val offsetPos = if (offsetRange > 0.0) {
             RelativeLocation(

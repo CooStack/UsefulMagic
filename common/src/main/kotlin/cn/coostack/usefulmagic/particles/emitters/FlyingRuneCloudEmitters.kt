@@ -58,7 +58,7 @@ class FlyingRuneCloudEmitters(var player: UUID, pos: Vec3, world: Level?) : Clas
     }
 
     val random = Random(System.currentTimeMillis())
-    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+    override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         val res = ArrayList<Pair<ControlableParticleData, RelativeLocation>>()
         val velocityList = PointsBuilder()
             .addBall(0.5, 5)
@@ -96,7 +96,7 @@ class FlyingRuneCloudEmitters(var player: UUID, pos: Vec3, world: Level?) : Clas
         data.alpha = random.nextDouble(0.35, 0.85).toFloat()
         data.setTextureSheet(ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT)
         controler.addPreTickAction {
-            updatePhysics(this.loc, data)
+            updatePhysics(this.loc, data, this)
             val r = (color.x * 255).toInt()
             val g = (color.y * 255).toInt()
             val b = (color.z * 255).toInt()

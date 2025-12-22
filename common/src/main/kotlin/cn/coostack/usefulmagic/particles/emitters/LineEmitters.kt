@@ -48,7 +48,7 @@ class LineEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, world)
     val option: Int
         get() = ParticleOption.getParticleCounts()
 
-    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+    override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         return PointsBuilder()
             .addLine(Vec3.ZERO, endPos, count * option)
             .create().map {

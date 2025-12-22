@@ -57,7 +57,7 @@ class ShrinkParticleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(p
     }
 
     val random = Random(System.currentTimeMillis())
-    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+    override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         val res = ArrayList<Pair<ControlableParticleData, RelativeLocation>>()
         val actualCount = random.nextInt(countMin, countMax)
         val points = PointsBuilder()
@@ -86,7 +86,7 @@ class ShrinkParticleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(p
             data.velocity = LinearResistanceHelper.setPercentageVelocity(
                 data.velocity, speedDrag
             )
-            updatePhysics(this.loc, data)
+            updatePhysics(this.loc, data, this)
         }
     }
 

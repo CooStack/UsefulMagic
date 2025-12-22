@@ -59,7 +59,7 @@ class ParticleWaveEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos
     }
 
     val random = Random(System.currentTimeMillis())
-    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+    override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         return PointsBuilder()
             .addDiscreteCircleXZ(waveSize, random.nextInt(waveCircleCountMin, waveCircleCountMax), 0.5)
             .rotateTo(waveAxis)
@@ -80,7 +80,7 @@ class ParticleWaveEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos
         posLerpProgress: Float
     ) {
         controler.addPreTickAction {
-            updatePhysics(pos, data)
+            updatePhysics(pos, data, this)
         }
     }
 

@@ -60,7 +60,7 @@ class CircleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, worl
     override fun doTick() {
     }
 
-    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+    override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         val velocityList = PointsBuilder()
             .addCircle(2.0, circleCount)
             .rotateTo(circleDirection)

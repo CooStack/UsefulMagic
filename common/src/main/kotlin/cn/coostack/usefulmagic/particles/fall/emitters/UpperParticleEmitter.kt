@@ -38,7 +38,7 @@ class UpperParticleEmitter(pos: Vec3, world: Level?) : ClassParticleEmitters(pos
 
     }
 
-    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+    override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         return PointsBuilder()
             .create().map { templateData.clone() to it }
     }

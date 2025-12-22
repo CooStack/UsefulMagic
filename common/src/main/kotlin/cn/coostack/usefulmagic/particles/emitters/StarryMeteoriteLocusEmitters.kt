@@ -43,7 +43,7 @@ class StarryMeteoriteLocusEmitters(pos: Vec3, world: Level?) : ClassParticleEmit
     override fun doTick() {
     }
 
-    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+    override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         return listOf(templateData to RelativeLocation())
     }
 

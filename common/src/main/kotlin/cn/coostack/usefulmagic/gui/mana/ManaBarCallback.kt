@@ -14,12 +14,10 @@ import kotlin.math.roundToInt
  * fabric 需要注册 HudRenderCallback
  */
 object ManaBarCallback {
-
     const val BAR_HEIGHT = 3
 
     @JvmStatic
     private val TEXTURE = ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "textures/gui/mana_bar.png")
-
 
     fun onHudRender(
         context: GuiGraphics,

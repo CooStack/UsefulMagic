@@ -602,9 +602,8 @@ class MagicBookEntity(entityType: EntityType<out PathfinderMob>, world: Level) :
         }
     }
 
-    override fun performRangedAttack(target: LivingEntity?, pullProgress: Float) {
+    override fun performRangedAttack(target: LivingEntity, pullProgress: Float) {
         if (level().isClientSide) return
-        if (target == null) return
         val direction = position().relativize(target.position())
         val barrage = EntityWoodenBarrage(
             2.0, target, eyePosition, level() as ServerLevel,

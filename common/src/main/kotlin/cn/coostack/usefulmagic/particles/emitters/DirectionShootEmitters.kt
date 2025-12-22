@@ -96,7 +96,7 @@ class DirectionShootEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(p
         this.count = emitters.count
     }
 
-    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+    override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         return shootType.getPositions(Vec3.ZERO, tick, count).map { RelativeLocation.of(it) }.shuffled().map {
             templateData.clone().apply {
                 velocity = shootDirection
@@ -121,7 +121,7 @@ class DirectionShootEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(p
             data.velocity = LinearResistanceHelper.setPercentageVelocity(
                 data.velocity, speedDrag
             )
-            updatePhysics(pos, data)
+            updatePhysics(pos, data, this)
         }
     }
 

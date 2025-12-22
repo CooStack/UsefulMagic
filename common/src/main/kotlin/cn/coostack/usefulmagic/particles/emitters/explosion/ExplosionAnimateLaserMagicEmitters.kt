@@ -67,7 +67,7 @@ class ExplosionAnimateLaserMagicEmitters(pos: Vec3, world: Level?) : ClassPartic
     override fun doTick() {
     }
 
-    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+    override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         return MathUtil.discreteCylinderGenerator(
             minDiscrete, maxDiscrete, maxRadius, height, heightStep, radiusStep, minCount, maxCount
         ).map { templateData.clone() to it }
@@ -90,7 +90,7 @@ class ExplosionAnimateLaserMagicEmitters(pos: Vec3, world: Level?) : ClassPartic
                 )
             ).normalize().scale(0.1)
         controler.addPreTickAction {
-            updatePhysics(pos, data)
+            updatePhysics(pos, data, this)
         }
     }
 

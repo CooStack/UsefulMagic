@@ -3,6 +3,8 @@ plugins {
     id 'fabric-loom'
     id 'org.jetbrains.kotlin.jvm'
 }
+
+
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     mappings loom.layered {
@@ -12,7 +14,8 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
-    modImplementation fileTree(dir: "../depend", includes: ["CooParticlesAPI-Fabric-1.21.1-2.0.1.jar"])
+//    modImplementation fileTree(dir: "../depend", includes: ["CooParticlesAPI-Fabric-1.21.1-2.1.0.jar"])
+    modImplementation "cn.coostack:cooparticlesapi-fabric:${rootProject.coo_particles_api_version}"
 //    modImplementation project(':common')
 }
 

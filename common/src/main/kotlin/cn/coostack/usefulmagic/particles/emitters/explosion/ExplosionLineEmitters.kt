@@ -56,7 +56,7 @@ class ExplosionLineEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(po
     }
 
     val random = Random(System.currentTimeMillis())
-    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+    override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         return PointsBuilder()
             .addBall(
                 0.5,

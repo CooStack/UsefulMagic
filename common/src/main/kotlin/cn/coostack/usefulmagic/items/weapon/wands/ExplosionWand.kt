@@ -173,7 +173,6 @@ class ExplosionWand(settings: Properties) : WandItem(settings, 3500, 1024.0) {
             maxSpeed = 40.0
             randomCountMin = 120 * 3
             randomCountMax = 400 * 3
-            wind.direction = Vec3(0.0, 0.8, 0.0)
         }
         ParticleEmittersManager.spawnEmitters(explosion)
 

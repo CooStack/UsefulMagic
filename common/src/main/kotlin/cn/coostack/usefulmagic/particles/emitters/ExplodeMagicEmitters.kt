@@ -94,7 +94,7 @@ class ExplodeMagicEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos
     }
 
     val random = Random(System.currentTimeMillis())
-    override fun genParticles(): List<Pair<ControlableParticleData, RelativeLocation>> {
+    override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         val velocityList = PointsBuilder()
             .addBall(2.0, ballCountPow)
             .rotateAsAxis(random.nextDouble(-PI, PI))
@@ -124,7 +124,7 @@ class ExplodeMagicEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos
             data.velocity = LinearResistanceHelper.setPercentageVelocity(
                 data.velocity, precentDrag
             )
-            updatePhysics(pos, data)
+            updatePhysics(pos, data, this)
         }
     }
 

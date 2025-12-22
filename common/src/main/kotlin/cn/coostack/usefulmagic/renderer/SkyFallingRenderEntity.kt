@@ -16,13 +16,11 @@ import net.minecraft.client.Minecraft
 import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.resources.ResourceLocation
-import net.minecraft.util.Mth
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import org.joml.Matrix4f
 import org.joml.Matrix4fStack
 import org.joml.Vector3f
-import org.lwjgl.opengl.GL11
 import kotlin.math.pow
 
 class SkyFallingRenderEntity(world: Level?, pos: Vec3) : RenderEntity(world, pos) {

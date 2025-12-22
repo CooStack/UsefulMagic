@@ -332,7 +332,7 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
             maxSpeed = 40.0
             randomCountMin = 120 * 3
             randomCountMax = 400 * 3
-            wind.direction = Vec3(0.0, 0.8, 0.0)
+            gravity = -0.001
         }
         ParticleEmittersManager.spawnEmitters(explosion)
 
@@ -376,7 +376,7 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
         // 冲击波云
         ParticleEmittersManager.spawnEmitters(genWave(20.0, 6.0, 0.85, 1.0))
         ParticleEmittersManager.spawnEmitters(genWave(40.0, 10.0, 0.85, 1.0))
-        ParticleEmittersManager.spawnEmitters(genWave(60.0, 15.5, 0.85, 1.0))
+        ParticleEmittersManager.spawnEmitters(genWave(60.0, 15.0, 0.85, 1.0))
         ParticleEmittersManager.spawnEmitters(genWave(80.0, 19.0, 0.85, 1.0))
         ParticleEmittersManager.spawnEmitters(genWave(90.0, 10.0, 0.85, 1.0))
         ParticleEmittersManager.spawnEmitters(genWave(110.0, 18.0, 0.85, 1.0))
