@@ -1,0 +1,38 @@
+{
+  "type": "usefulmagic:altar_recipe",
+  "center": {
+    "item": "usefulmagic:red_mana_star"
+  },
+  "data": {
+    "0": {
+      "item": "minecraft:obsidian"
+    },
+    "1": {
+      "item": "minecraft:obsidian"
+    },
+    "2": {
+      "item": "minecraft:obsidian"
+    },
+    "3": {
+      "item": "usefulmagic:anti_entity_domain_magic"
+    },
+    "4": {
+      "item": "minecraft:obsidian"
+    },
+    "5": {
+      "item": "minecraft:obsidian"
+    },
+    "6": {
+      "item": "minecraft:obsidian"
+    },
+    "7": {
+      "item": "usefulmagic:meteorite_magic"
+    }
+  },
+  "mana_need": 30000,
+  "output": {
+    "count": 1,
+    "id": "usefulmagic:starry_magic"
+  },
+  "tick": 3000
+}

@@ -1,4 +1,4 @@
-package cn.coostack.usefulmagic.blocks.entity.formation
+﻿package cn.coostack.usefulmagic.blocks.entity.formation
 
 import cn.coostack.cooparticlesapi.CooParticlesAPI
 import cn.coostack.cooparticlesapi.barrages.BarrageHitResult
@@ -13,10 +13,9 @@ import cn.coostack.usefulmagic.formation.api.DefendCrystal
 import cn.coostack.usefulmagic.formation.api.FormationTargetOption
 import cn.coostack.usefulmagic.formation.target.BarrageTargetOption
 import cn.coostack.usefulmagic.formation.target.LivingEntityTargetOption
-import cn.coostack.usefulmagic.formation.target.MeteoriteEntityTargetOption
 import cn.coostack.usefulmagic.formation.target.ProjectileEntityTargetOption
+import cn.coostack.usefulmagic.meteorite.MeteoriteBarrage
 import cn.coostack.usefulmagic.particles.barrages.api.DamagedBarrage
-import cn.coostack.usefulmagic.particles.emitters.CircleEmitters
 import cn.coostack.usefulmagic.particles.style.formation.crystal.CrystalStyle
 import cn.coostack.usefulmagic.particles.style.formation.crystal.DefendCrystalStyle
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
@@ -62,6 +61,11 @@ class DefendCrystalBlockEntity(pos: BlockPos, state: BlockState) :
 
     override fun canDefendBarrage(target: BarrageTargetOption): Boolean {
         val barrage = target.target
+        if (barrage is MeteoriteBarrage) {
+            if (barrage.mergeSign) {
+                return false
+            }
+        }
         if (barrage !is DamagedBarrage) {
             return activeFormation!!.hasManaToTransform(30)
         }
@@ -73,8 +77,8 @@ class DefendCrystalBlockEntity(pos: BlockPos, state: BlockState) :
         if (target is ProjectileEntityTargetOption) {
             return activeFormation!!.hasManaToTransform(20)
         }
-        if (target is MeteoriteEntityTargetOption) {
-            return activeFormation!!.hasManaToTransform((200 * preDamageTake).toInt())
+        if (target is BarrageTargetOption) {
+            return activeFormation!!.hasManaToTransform((20 * preDamageTake).toInt())
         }
         return activeFormation!!.hasManaToTransform(1)
     }
@@ -88,13 +92,13 @@ class DefendCrystalBlockEntity(pos: BlockPos, state: BlockState) :
             target.target.kill()
             return 20
         }
-        if (target is MeteoriteEntityTargetOption) {
+        if (target is BarrageTargetOption) {
             displayDeterParticle(target.pos(), target.movementVec())
-            target.meteorite.hit(target.pos())
-            return (200 * preDamageTake).toInt()
+            target.hit()
+            return (20 * preDamageTake).toInt()
         }
         if (target is LivingEntityTargetOption && !target.touch) {
-            // 这里的魔力值是被attack方法取代
+            // 这里的魔力值由 attack 方法处理
             return 0
         }
         setVelocity(0.7, wallInner, target)
@@ -143,20 +147,20 @@ class DefendCrystalBlockEntity(pos: BlockPos, state: BlockState) :
             1f
         )
 
-        val emitters =
-            CircleEmitters(deterPos.add(deterDirection.normalize()), level)
-        emitters.apply {
-            maxTick = 1
-            templateData.also {
-                it.effect = ControlableEndRodEffect(uuid)
-                it.size = 0.1f
-                it.color = Math3DUtil.colorOf(147, 242, 255)
-            }
-            circleSpeed = 0.8
-            precentDrag = 0.6
-            circleDirection = deterDirection
-        }
-        ParticleEmittersManager.spawnEmitters(emitters)
+//        val emitters =
+//            CircleEmitters(deterPos.add(deterDirection.normalize()), level)
+//        emitters.apply {
+//            maxTick = 1
+//            templateData.also {
+//                it.effect = ControlableEndRodEffect(uuid)
+//                it.size = 0.1f
+//                it.color = Math3DUtil.colorOf(147, 242, 255)
+//            }
+//            circleSpeed = 0.8
+//            precentDrag = 0.6
+//            circleDirection = deterDirection
+//        }
+//        ParticleEmittersManager.spawnEmitters(emitters)
     }
 }
 

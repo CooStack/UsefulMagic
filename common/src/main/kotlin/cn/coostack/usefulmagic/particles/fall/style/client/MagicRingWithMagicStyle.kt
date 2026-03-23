@@ -95,7 +95,7 @@ class MagicRingWithMagicStyle(uuid: UUID, val parent: SkyFallingStyle) : Particl
 
     override fun onDisplay() {
         addPreTickAction {
-            rotateParticlesAsAxis(rotateSpeed)
+            rotateAsAxis(rotateSpeed)
             if (parent.status.displayStatus == 1) {
                 alpha.increaseAlpha()
                 scaleHelper.doScale()

@@ -15,4 +15,8 @@ class FabricPlatformHelper : IPlatformHelper {
     override fun isDevelopmentEnvironment(): Boolean {
         return FabricLoader.getInstance().isDevelopmentEnvironment
     }
+
+    override fun getIterateTracker(): WatcherSender {
+        return FabricWatcherSender
+    }
 }

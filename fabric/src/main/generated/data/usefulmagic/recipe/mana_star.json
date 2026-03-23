@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "E": {
+      "item": "minecraft:ender_pearl"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    " E ",
+    "ERE",
+    " E "
+  ],
+  "result": {
+    "count": 1,
+    "id": "usefulmagic:mana_star"
+  }
+}

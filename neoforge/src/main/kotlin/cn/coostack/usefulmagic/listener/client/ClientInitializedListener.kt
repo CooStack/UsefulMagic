@@ -1,7 +1,5 @@
 package cn.coostack.usefulmagic.listener.client
 
-import cn.coostack.cooparticlesapi.platform.network.NeoForgeClientContext
-import cn.coostack.cooparticlesapi.platform.network.NeoForgeServerContext
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.UsefulMagicClient
 import cn.coostack.usefulmagic.blocks.entity.AltarBlockCoreEntityRenderer
@@ -14,30 +12,14 @@ import cn.coostack.usefulmagic.entity.UsefulMagicEntityLayers
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
 import cn.coostack.usefulmagic.entity.custom.renderer.FormationCoreRenderer
 import cn.coostack.usefulmagic.entity.custom.renderer.MagicBookEntityRenderer
+import cn.coostack.usefulmagic.entity.custom.renderer.MagicDragonRenderer
+import cn.coostack.usefulmagic.entity.custom.renderer.MagicEyeEntityRenderer
+import cn.coostack.usefulmagic.entity.custom.renderer.MagicSubEyeEntityRenderer
+import cn.coostack.usefulmagic.client.tooltip.NeoLoadedMagicClientTooltip
 import cn.coostack.usefulmagic.items.UsefulMagicItemGroups
-import cn.coostack.usefulmagic.meteorite.MeteoriteFallingBlockRenderer
-import cn.coostack.usefulmagic.packet.c2s.PacketC2SFormationSettingChangeRequest
-import cn.coostack.usefulmagic.packet.c2s.PacketC2SFormationSettingRequest
-import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendAddRequest
-import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendListRequest
-import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendRemoveRequest
-import cn.coostack.usefulmagic.packet.listener.client.FormationPacketListener
-import cn.coostack.usefulmagic.packet.listener.client.FormationSettingsPacketResponseListener
-import cn.coostack.usefulmagic.packet.listener.client.FriendChangeResponsePacketListener
-import cn.coostack.usefulmagic.packet.listener.client.FriendResponsePacketListener
-import cn.coostack.usefulmagic.packet.listener.client.ManaChangePacketListener
-import cn.coostack.usefulmagic.packet.listener.server.FormationSettingChangePacketListener
-import cn.coostack.usefulmagic.packet.listener.server.FormationSettingRequestPacketListener
-import cn.coostack.usefulmagic.packet.listener.server.FriendAddListRequestHandler
-import cn.coostack.usefulmagic.packet.listener.server.FriendListRequestHandler
-import cn.coostack.usefulmagic.packet.listener.server.FriendRemoveListRequestHandler
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CEnergyCrystalChange
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationBreak
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationCreate
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationSettingsResponse
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CFriendChangeResponse
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CFriendListResponse
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CManaDataToggle
+import cn.coostack.usefulmagic.items.weapon.wands.LoadedMagicTooltip
+import cn.coostack.usefulmagic.particles.particle.WaveParticleProvider
+import cn.coostack.usefulmagic.particles.particle.UsefulMagicParticleTypes
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.client.KeyMapping
 import net.minecraft.core.registries.BuiltInRegistries
@@ -45,8 +27,9 @@ import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.common.EventBusSubscriber
 import net.neoforged.neoforge.client.event.EntityRenderersEvent
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent
+import net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent
 import net.neoforged.neoforge.registries.RegisterEvent
 import org.lwjgl.glfw.GLFW
 
@@ -58,7 +41,7 @@ object ClientInitializedListener {
             "key.friend_ui.open",
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_J,
-            "category.ui.friend"
+            "category.usefulmagic.keys"
         )
         event.register(binding)
         UsefulMagicClient.loadKeyBindings(binding)
@@ -74,12 +57,10 @@ object ClientInitializedListener {
 
     @SubscribeEvent
     fun registerEntityRender(event: EntityRenderersEvent.RegisterRenderers) {
-        event.registerEntityRenderer(
-            UsefulMagicEntityTypes.METEORITE_ENTITY.get()
-        ) {
-            return@registerEntityRenderer MeteoriteFallingBlockRenderer(it)
-        }
         event.registerEntityRenderer(UsefulMagicEntityTypes.FORMATION_CORE_ENTITY.get(), ::FormationCoreRenderer)
+        event.registerEntityRenderer(UsefulMagicEntityTypes.MAGIC_DRAGON_ENTITY_TYPE.get(), ::MagicDragonRenderer)
+        event.registerEntityRenderer(UsefulMagicEntityTypes.MAGIC_EYE_ENTITY_TYPE.get(), ::MagicEyeEntityRenderer)
+        event.registerEntityRenderer(UsefulMagicEntityTypes.MAGIC_SUB_EYE_ENTITY_TYPE.get(), ::MagicSubEyeEntityRenderer)
         event.registerEntityRenderer(
             UsefulMagicEntityTypes.MAGIC_BOOK_ENTITY_TYPE.get(),
             ::MagicBookEntityRenderer
@@ -94,6 +75,20 @@ object ClientInitializedListener {
             UsefulMagicEntityLayers.MAGIC_BOOK_ENTITY_LAYER,
             MagicBookEntityModel::createBodyLayer
         )
+    }
+
+    @SubscribeEvent
+    fun registerTooltipComponent(event: RegisterClientTooltipComponentFactoriesEvent) {
+        event.register(LoadedMagicTooltip::class.java) { tooltip ->
+            NeoLoadedMagicClientTooltip(tooltip.magicStack)
+        }
+    }
+
+    @SubscribeEvent
+    fun registerParticles(event: RegisterParticleProvidersEvent) {
+        event.registerSpriteSet(UsefulMagicParticleTypes.WAVE_PARTICLE.get()) { sprites ->
+            WaveParticleProvider(sprites)
+        }
     }
 
     private fun handleBlockEntity(event: EntityRenderersEvent.RegisterRenderers) {

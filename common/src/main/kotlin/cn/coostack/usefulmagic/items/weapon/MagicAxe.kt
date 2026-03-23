@@ -9,7 +9,6 @@ import cn.coostack.cooparticlesapi.network.particle.emitters.PhysicConstant
 import cn.coostack.cooparticlesapi.network.particle.emitters.type.EmittersShootTypes
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.usefulmagic.items.UsefulMagicToolMaterials
-import cn.coostack.usefulmagic.particles.barrages.wand.NetheriteSwordBarrage
 import cn.coostack.usefulmagic.particles.emitters.DirectionShootEmitters
 import cn.coostack.usefulmagic.particles.emitters.LineEmitters
 import cn.coostack.usefulmagic.skill.api.EntitySkillManager
@@ -103,20 +102,20 @@ class MagicAxe(settings: Properties) : AxeItem(UsefulMagicToolMaterials.MAGIC, s
                         random.nextDouble(-0.5, 2.0),
                         random.nextDouble(-3.0, 3.0),
                     )
-                val barrage = NetheriteSwordBarrage(spawnPos, attacker.level() as ServerLevel, 5.0, attacker, 1.5)
-                barrage.direction = direction
-                BarrageManager.spawn(barrage)
-                val loc = barrage.loc
-                attacker.level().playSound(
-                    null,
-                    loc.x,
-                    loc.y,
-                    loc.z,
-                    SoundEvents.PLAYER_ATTACK_CRIT,
-                    SoundSource.PLAYERS,
-                    3f,
-                    1.5f
-                )
+//                val barrage = NetheriteSwordBarrageMagic(spawnPos, attacker.level() as ServerLevel, 5.0, attacker, 1.5)
+//                barrage.direction = direction
+//                BarrageManager.spawn(barrage)
+//                val loc = barrage.loc
+//                attacker.level().playSound(
+//                    null,
+//                    loc.x,
+//                    loc.y,
+//                    loc.z,
+//                    SoundEvents.PLAYER_ATTACK_CRIT,
+//                    SoundSource.PLAYERS,
+//                    3f,
+//                    1.5f
+//                )
             }
         }
         if (state.count < 3) return

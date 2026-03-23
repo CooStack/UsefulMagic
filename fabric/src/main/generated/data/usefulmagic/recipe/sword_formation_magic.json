@@ -1,0 +1,38 @@
+{
+  "type": "usefulmagic:altar_recipe",
+  "center": {
+    "item": "usefulmagic:sword_qi_magic"
+  },
+  "data": {
+    "0": {
+      "item": "minecraft:diamond_sword"
+    },
+    "1": {
+      "item": "usefulmagic:mana_star"
+    },
+    "2": {
+      "item": "minecraft:diamond_sword"
+    },
+    "3": {
+      "item": "usefulmagic:mana_star"
+    },
+    "4": {
+      "item": "usefulmagic:mana_crystal"
+    },
+    "5": {
+      "item": "minecraft:diamond_sword"
+    },
+    "6": {
+      "item": "usefulmagic:mana_crystal"
+    },
+    "7": {
+      "item": "usefulmagic:mana_star"
+    }
+  },
+  "mana_need": 8000,
+  "output": {
+    "count": 1,
+    "id": "usefulmagic:sword_formation_magic"
+  },
+  "tick": 800
+}

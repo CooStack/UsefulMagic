@@ -9,7 +9,6 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.network.chat.Component
-import kotlin.math.roundToInt
 
 class ItemTextureButton(
     x: Int, y: Int, width: Int, height: Int, val item: ItemStack, pressAction: OnPress,
@@ -24,7 +23,18 @@ class ItemTextureButton(
         matrices.translate(-x.toFloat(), -y.toFloat(), 0f)
         matrices.translate(x.toFloat() / scale, y.toFloat() / scale, 0f)
         context.renderItem(item, x, y)
-        if (this.isHovered) {
+        if (!this.active) {
+            context.fillGradient(
+                RenderType.guiOverlay(),
+                x,
+                y,
+                x + 16,
+                y + 16,
+                0x99000000.toInt(),
+                0x99000000.toInt(),
+                0
+            )
+        } else if (this.isHovered) {
             context.fillGradient(
                 RenderType.guiOverlay(),
                 x,

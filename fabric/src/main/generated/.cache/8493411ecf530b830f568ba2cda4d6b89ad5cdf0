@@ -1,0 +1,9 @@
+// 1.21.1	2026-03-23T20:21:53.1793458	UsefulMagic/Block Loot Tables
+9368907cdb80da3514a710f1ed13f854c2f14ee1 data\usefulmagic\loot_table\blocks\altar_block_core.json
+5979a9af7c16007ee73eaba58c5bac1d9293c2bb data\usefulmagic\loot_table\blocks\magic_core.json
+1d4929d7d6176f60e5ea991a577527ed251ef375 data\usefulmagic\loot_table\blocks\defend_crystal.json
+1d4929d7d6176f60e5ea991a577527ed251ef375 data\usefulmagic\loot_table\blocks\sword_attack_crystal.json
+497fef1b4e258631b76369c8d5810fe0495ed847 data\usefulmagic\loot_table\blocks\altar_block.json
+1d4929d7d6176f60e5ea991a577527ed251ef375 data\usefulmagic\loot_table\blocks\recover_crystal.json
+e43d648bb235318a0fc9d69c50fc9fd8f6b0d27a data\usefulmagic\loot_table\blocks\formation_core.json
+1d4929d7d6176f60e5ea991a577527ed251ef375 data\usefulmagic\loot_table\blocks\energy_crystal.json

@@ -1,5 +1,6 @@
 package cn.coostack.usefulmagic.particles.emitters
 
+import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.extend.multiply
 import cn.coostack.cooparticlesapi.network.particle.emitters.ClassParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
@@ -8,14 +9,13 @@ import cn.coostack.cooparticlesapi.particles.control.ParticleControler
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.cooparticlesapi.utils.helper.emitters.LinearResistanceHelper
-import cn.coostack.usefulmagic.utils.ParticleOption
-import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.RegistryFriendlyByteBuf
 
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.level.Level
-import kotlin.math.PI
 
+@CooAutoRegister
 class CircleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, world) {
     var templateData = ControlableParticleData()
     var circleSpeed = 2.0
@@ -24,7 +24,7 @@ class CircleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, worl
     var particleMaxAge = 20
 
     /**
-     * 速度衰减 (默认15%)每 tick
+     * 速度衰减（默认每 tick 15%）
      */
     var precentDrag = 0.85
 
@@ -32,7 +32,7 @@ class CircleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, worl
         const val ID = "circle-emitters"
 
         @JvmStatic
-        val CODEC = StreamCodec.of<FriendlyByteBuf, ParticleEmitters>(
+        val CODEC = StreamCodec.of<RegistryFriendlyByteBuf, ParticleEmitters>(
             { buf, data ->
                 data as CircleEmitters
                 encodeBase(data, buf)
@@ -92,7 +92,7 @@ class CircleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, worl
         return ID
     }
 
-    override fun getCodec(): StreamCodec<FriendlyByteBuf, ParticleEmitters> {
+    override fun getCodec(): StreamCodec<RegistryFriendlyByteBuf, ParticleEmitters> {
         return CODEC
     }
 }

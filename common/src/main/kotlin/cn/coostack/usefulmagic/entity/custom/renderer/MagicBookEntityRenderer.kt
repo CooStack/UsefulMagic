@@ -3,13 +3,13 @@ package cn.coostack.usefulmagic.entity.custom.renderer
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.entity.MagicBookEntityModel
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityLayers
-import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
 import cn.coostack.usefulmagic.entity.custom.MagicBookEntity
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.entity.MobRenderer
 import net.minecraft.resources.ResourceLocation
+import kotlin.math.sin
 
 class MagicBookEntityRenderer(context: EntityRendererProvider.Context) :
     MobRenderer<MagicBookEntity, MagicBookEntityModel>(
@@ -34,6 +34,10 @@ class MagicBookEntityRenderer(context: EntityRendererProvider.Context) :
         packedLight: Int
     ) {
         poseStack.pushPose()
+        if (entity.shouldRenderIdleFloat()) {
+            val bob = sin((entity.tickCount + partialTicks) * 0.18f) * 0.12f
+            poseStack.translate(0.0, bob.toDouble(), 0.0)
+        }
         poseStack.scale(4f, 4f, 4f)
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight)
         poseStack.popPose()

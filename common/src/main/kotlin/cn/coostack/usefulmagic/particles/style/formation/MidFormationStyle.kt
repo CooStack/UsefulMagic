@@ -74,9 +74,9 @@ class MidFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid) {
                         reverseFunctionFromStatus(this, this@MidFormationStyle.statusHelper)
                         this.addPreTickAction {
                             if (status == FormationStatus.WORKING) {
-                                rotateParticlesAsAxis(PI / 256)
+                                rotateAsAxis(PI / 256)
                             } else {
-                                rotateParticlesAsAxis(PI / 512)
+                                rotateAsAxis(PI / 512)
                             }
                         }
                     }
@@ -128,9 +128,9 @@ class MidFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid) {
                                         )
                                         this.addPreTickAction {
                                             if (status == FormationStatus.WORKING) {
-                                                rotateParticlesAsAxis(PI / 64)
+                                                rotateAsAxis(PI / 64)
                                             } else {
-                                                rotateParticlesAsAxis(PI / 128)
+                                                rotateAsAxis(PI / 128)
                                             }
                                         }
                                     }
@@ -185,9 +185,9 @@ class MidFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid) {
                                                         )
                                                         this.addPreTickAction {
                                                             if (status == FormationStatus.WORKING) {
-                                                                rotateParticlesAsAxis(PI / 64)
+                                                                rotateAsAxis(PI / 64)
                                                             } else {
-                                                                rotateParticlesAsAxis(PI / 128)
+                                                                rotateAsAxis(PI / 128)
                                                             }
                                                         }
                                                     }
@@ -198,9 +198,9 @@ class MidFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid) {
                                         reverseFunctionFromStatus(this, this@MidFormationStyle.statusHelper)
                                         this.addPreTickAction {
                                             if (status == FormationStatus.WORKING) {
-                                                rotateParticlesAsAxis(-PI / 64)
+                                                rotateAsAxis(-PI / 64)
                                             } else {
-                                                rotateParticlesAsAxis(-PI / 128)
+                                                rotateAsAxis(-PI / 128)
                                             }
                                         }
                                     }
@@ -258,9 +258,9 @@ class MidFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid) {
                                         reverseFunctionFromStatus(this, this@MidFormationStyle.statusHelper)
                                         this.addPreTickAction {
                                             if (status == FormationStatus.WORKING) {
-                                                rotateParticlesAsAxis(PI / 64)
+                                                rotateAsAxis(PI / 64)
                                             } else {
-                                                rotateParticlesAsAxis(PI / 128)
+                                                rotateAsAxis(PI / 128)
                                             }
                                         }
                                     }
@@ -271,9 +271,9 @@ class MidFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid) {
                         reverseFunctionFromStatus(this, this@MidFormationStyle.statusHelper)
                         this.addPreTickAction {
                             if (status == FormationStatus.WORKING) {
-                                rotateParticlesAsAxis(-PI / 128)
+                                rotateAsAxis(-PI / 128)
                             } else {
-                                rotateParticlesAsAxis(-PI / 512)
+                                rotateAsAxis(-PI / 512)
                             }
                         }
                     }

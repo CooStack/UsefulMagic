@@ -1,19 +1,19 @@
-package cn.coostack.usefulmagic.particles.animation
+﻿package cn.coostack.usefulmagic.particles.animation
 
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.network.particle.style.ParticleGroupStyle
-import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
+import cn.coostack.cooparticlesapi.network.particle.composition.ParticleComposition
+import cn.coostack.cooparticlesapi.network.particle.composition.manager.ParticleCompositionManager
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.phys.Vec3
 
 class StylesAnimate(
-    val emitterGenerator: (Vec3) -> Pair<ParticleGroupStyle, Vec3>,
+    val emitterGenerator: (Vec3) -> Pair<ParticleComposition, Vec3>,
     var origin: Vec3,
     val world: ServerLevel,
     var interval: Int,
     duration: Int,
-    val spawnAction: (emitter: ParticleGroupStyle) -> Unit,
+    val spawnAction: (emitter: ParticleComposition) -> Unit,
 ) : ParticleAnimate {
     private var animateDuration = duration
     private var valid = true
@@ -27,7 +27,8 @@ class StylesAnimate(
             val styleToPos = emitterGenerator(origin)
             val style = styleToPos.first
             val pos = styleToPos.second
-            ParticleStyleManager.spawnStyle(world, pos, style)
+            style.teleportTo(pos)
+            ParticleCompositionManager.spawn(style)
             spawnAction(style)
         }
         if (animateDuration == -1) return

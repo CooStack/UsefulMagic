@@ -1,10 +1,12 @@
-package cn.coostack.usefulmagic.formation
+﻿package cn.coostack.usefulmagic.formation
 
 import cn.coostack.cooparticlesapi.barrages.BarrageManager
+import cn.coostack.cooparticlesapi.extend.minus
 import cn.coostack.cooparticlesapi.extend.ofFloored
 import cn.coostack.cooparticlesapi.extend.relativize
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
+import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.platform.CooParticlesServices
 import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
@@ -14,6 +16,7 @@ import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.blocks.entity.formation.EnergyCrystalsBlockEntity
 import cn.coostack.usefulmagic.blocks.entity.formation.RecoverCrystalBlockEntity
 import cn.coostack.usefulmagic.entity.custom.formation.FormationCoreEntity
+import cn.coostack.usefulmagic.extend.boxCenterPosition
 import cn.coostack.usefulmagic.formation.api.AttackCrystal
 import cn.coostack.usefulmagic.formation.api.BlockFormation
 import cn.coostack.usefulmagic.formation.api.DefendCrystal
@@ -23,21 +26,18 @@ import cn.coostack.usefulmagic.formation.api.FormationSettings
 import cn.coostack.usefulmagic.formation.api.FormationTargetOption
 import cn.coostack.usefulmagic.formation.target.BarrageTargetOption
 import cn.coostack.usefulmagic.formation.target.LivingEntityTargetOption
-import cn.coostack.usefulmagic.formation.target.MeteoriteEntityTargetOption
 import cn.coostack.usefulmagic.formation.target.ProjectileEntityTargetOption
 import cn.coostack.usefulmagic.managers.server.ServerFormationManager
-import cn.coostack.usefulmagic.meteorite.MeteoriteFallingBlockEntity
-import cn.coostack.usefulmagic.meteorite.MeteoriteManager
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationBreak
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationCreate
 import cn.coostack.usefulmagic.particles.barrages.api.DamagedBarrage
 import cn.coostack.usefulmagic.particles.emitters.CircleEmitters
 import cn.coostack.usefulmagic.particles.emitters.LightningParticleEmitters
+import cn.coostack.usefulmagic.renderer.DefendCrystalRenderEntity
 import cn.coostack.usefulmagic.particles.style.formation.FormationStyle
 import cn.coostack.usefulmagic.particles.style.formation.LargeFormationStyle
 import cn.coostack.usefulmagic.particles.style.formation.MidFormationStyle
 import cn.coostack.usefulmagic.particles.style.formation.SmallFormationStyle
-import cn.coostack.usefulmagic.renderer.DefendCrystalRenderEntity
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
@@ -225,7 +225,7 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
 
     /**
      * 在阵法成功构建时
-     * 生成实体, 在FormationCore的上方
+     * 生成实体，在 FormationCore 的上方
      */
     override fun createFormationEntity(): FormationCoreEntity {
         val entity = FormationCoreEntity(world!!)
@@ -284,7 +284,7 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
     }
 
     /**
-     * 在阵法构建时(加载,主动激活)
+     * 在阵法构建时(加载、主动创建)
      * 都会执行这个方法
      */
     fun onBuild() {
@@ -374,10 +374,6 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
                     !isFriendly(LivingEntityTargetOption(it))
                 }
 
-                is MeteoriteFallingBlockEntity -> {
-                    val m = MeteoriteManager.getFromSingleEntity(it) ?: return@getEntitiesOfClass false
-                    !isFriendly(MeteoriteEntityTargetOption(m))
-                }
 
                 else -> {
                     false
@@ -394,12 +390,6 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
 
                 is LivingEntity -> {
                     LivingEntityTargetOption(it)
-                }
-
-                is MeteoriteFallingBlockEntity -> {
-                    if (!isServer) return@forEach
-                    val m = MeteoriteManager.getFromSingleEntity(it) ?: return@forEach
-                    MeteoriteEntityTargetOption(m)
                 }
 
                 else -> null
@@ -432,7 +422,7 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
                     }
                     option = crystal.handle(option)
                 }
-                // 判断option是否还存在
+                // 判断 option 是否还存在
                 // 判断option是否距离过近
                 val barrageStillAlive = option.isValid() && option.pos()
                     .distanceTo(formationCore) <= 4.0 && option is BarrageTargetOption && option.target is DamagedBarrage
@@ -452,7 +442,7 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
             inTriggerRangeActive = false
         }
         displayTime--
-        if ((style == null || !(style?.valid ?: false))
+        if ((style == null || !(style?.isValid() ?: false))
             && (inTriggerRangeActive || !settings.displayParticleOnlyTrigger)
         ) {
             createStyleOnBuild()
@@ -485,7 +475,7 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
 
 
     /**
-     * 从其他水晶中调动能量值
+     * 从其他水晶中调动能量
      * @return 是否成功调动
      */
     override fun transformMana(requestCrystal: FormationCrystal, count: Int): Boolean {
@@ -533,7 +523,7 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
             breakFormation(damage, who)
             return true
         }
-        // 防御阵法在抵御实体的时候会当实体在外围
+        // 防御阵法在抵御实体时，会判定实体在外围
         val defend = activeCrystals.firstOrNull() { it is DefendCrystal } ?: return false
         val need = (damage * 10).roundToInt()
         val hasMana = hasManaToTransform(need)
@@ -558,17 +548,24 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
         responseCrystals.forEach {
             val start = it.crystalPos
             val end = request.crystalPos
-
-            val line = LightningParticleEmitters(start, world).apply {
-                this.endPos = RelativeLocation.of(start.relativize(end))
-                this.templateData.also { it ->
-                    it.speed = 0.0
-                    it.color = Math3DUtil.colorOf(230, 130, 255)
-                    it.maxAge = 3
+            val emitter = LightningParticleEmitters(start, world)
+                .apply {
+                    targetPos = end - start
+                    maxTick = 1
+                    templateData.apply {
+                        setTextureSheet(CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT)
+                        color = Math3DUtil.colorOf(230, 130, 255)
+                    }
+                    simpleData.apply {
+                        minAge = 3
+                        maxAge = 7
+                        minCount = 2
+                        maxCount = 4
+                        minSize = 0.1
+                        maxSize = 0.3
+                    }
                 }
-                maxTick = 1
-            }
-            ParticleEmittersManager.spawnEmitters(line)
+            ParticleEmittersManager.spawnEmitters(emitter)
         }
     }
 
@@ -591,7 +588,7 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
     }
 
     /**
-     * 检查完整性, 会有神人通过其他特殊方式将对应阵法的水晶替换
+     * 检查完整性，会有神人通过其他特殊方式将对应阵法的水晶替换
      */
     private fun checkIntact(): Boolean {
         world ?: return false

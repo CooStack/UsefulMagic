@@ -14,9 +14,15 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
-//    modImplementation fileTree(dir: "../depend", includes: ["CooParticlesAPI-Fabric-1.21.1-2.1.0.jar"])
-    modImplementation "cn.coostack:cooparticlesapi-fabric:${rootProject.coo_particles_api_version}"
-//    modImplementation project(':common')
+    modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
+    modImplementation("cn.coostack:cooparticlesapi-fabric:${rootProject.coo_particles_api_version}") {
+        changing = false
+    }
+}
+afterEvaluate {
+    tasks.named("runDatagen", JavaExec) { JavaExec t ->
+        t.jvmArgs("-Dfabric-api.datagen.modid=${rootProject.mod_id}")
+    }
 }
 
 fabricApi {
@@ -46,6 +52,7 @@ loom {
             setConfigName('Fabric Client')
             ideConfigGenerated(true)
             runDir('runs/client')
+            vmArgs "-XX:+AllowEnhancedClassRedefinition"
         }
         server {
             server()

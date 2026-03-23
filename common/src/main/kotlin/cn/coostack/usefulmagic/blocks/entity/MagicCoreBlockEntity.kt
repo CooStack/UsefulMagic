@@ -1,23 +1,21 @@
-package cn.coostack.usefulmagic.blocks.entity
+﻿package cn.coostack.usefulmagic.blocks.entity
 
 import cn.coostack.cooparticlesapi.CooParticlesAPI
 import cn.coostack.cooparticlesapi.barrages.HitBox
 import cn.coostack.cooparticlesapi.extend.relativize
+import cn.coostack.cooparticlesapi.network.particle.composition.manager.ParticleCompositionManager
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.network.particle.emitters.impl.PhysicsParticleEmitters
-import cn.coostack.cooparticlesapi.network.particle.emitters.impl.SimpleParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.type.EmittersShootTypes
-import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.network.particle.util.ServerParticleUtil
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEnchantmentEffect
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.entity.util.MagicBookSpawner
-import cn.coostack.usefulmagic.particles.style.entitiy.CraftingLevel1Style
-import cn.coostack.usefulmagic.particles.style.entitiy.CraftingLevel2Style
-import cn.coostack.usefulmagic.particles.style.entitiy.CraftingLevel3Style
+import cn.coostack.usefulmagic.particles.composition.entity.CraftingLevel1Style
+import cn.coostack.usefulmagic.particles.composition.entity.CraftingLevel2Composition
+import cn.coostack.usefulmagic.particles.composition.entity.CraftingLevel3Composition
 import cn.coostack.usefulmagic.recipe.AltarRecipeType
 import cn.coostack.usefulmagic.recipe.AltarStackRecipeInput
 import cn.coostack.usefulmagic.utils.ParticleOption
@@ -180,7 +178,7 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
         if (hasRecipe()) {
             val current = getCurrentRecipe()
             val value = current.get().value
-            // 重新进入时 currentRecipe是null
+            // 重新进入时 currentRecipe 是 null
             if (currentRecipe == null) {
                 this.currentRecipe = value
             }
@@ -238,7 +236,7 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
     ) {
         handleRecipe()
         // 更新方块
-        // 查找周围的8个
+        // 查找周围实体
         var anotherRevive = 0
         var anotherMaxMana = 0
         val entities = getAnotherAltarBlockEntities().map {
@@ -282,18 +280,18 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
                     val loc = entity.blockPos.center.add(0.0, 0.5, 0.0)
                     val dir = loc.relativize(pos.center)
                     // 生成粒子
-                    val emitters = SimpleParticleEmitters(
-                        loc, world, ControlableParticleData()
-                            .apply {
-                                color = Math3DUtil.colorOf(240, 100, 255)
-                                maxAge = 35
-                                effect = ControlableCloudEffect(uuid)
-                                velocity = dir
-                                speed = 0.1
-                            }
-                    )
-                    emitters.maxTick = 1
-                    ParticleEmittersManager.spawnEmitters(emitters)
+//                    val emitters = SimpleParticleEmitters(
+//                        loc, world, ControlableParticleData()
+//                            .apply {
+//                                color = Math3DUtil.colorOf(240, 100, 255)
+//                                maxAge = 35
+//                                effect = ControlableCloudEffect(uuid)
+//                                velocity = dir
+//                                speed = 0.1
+//                            }
+//                    )
+//                    emitters.maxTick = 1
+//                    ParticleEmittersManager.spawnEmitters(emitters)
                 }
             }
         }
@@ -328,7 +326,7 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
         }
         val tick = currentRecipe!!.tick
 
-        // 计算tick所属档位
+        // 计算 tick 所属档位
         val over = if (tick <= 500) {
             spawnStyleLevel1()
         } else if (tick <= 1500) {
@@ -337,27 +335,27 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
             spawnStyleLevel3()
         }
 
-        val emitters = getAnotherAltarBlockEntities()
-            .map {
-                it as BlockEntity
-                SimpleParticleEmitters(
-                    it.blockPos.center.add(0.0, 0.5, 0.0), it.level,
-                    ControlableParticleData()
-                        .apply {
-                            val center = it.blockPos.center.add(0.0, 0.5, 0.0)
-                            val corePos = this@MagicCoreBlockEntity.blockPos.center
-                            velocity = center.relativize(corePos)
-                            effect = ControlableEnchantmentEffect(uuid)
-                            size = 0.2f
-                            maxAge = 35
-                            age = 0
-                            color = Math3DUtil.colorOf(240, 120, 200)
-                            speed = 0.1
-                        }
-                ).also {
-                    it.delay = 20
-                }
-            }.toList()
+//        val emitters = getAnotherAltarBlockEntities()
+//            .map {
+//                it as BlockEntity
+//                SimpleParticleEmitters(
+//                    it.blockPos.center.add(0.0, 0.5, 0.0), it.level,
+//                    ControlableParticleData()
+//                        .apply {
+//                            val center = it.blockPos.center.add(0.0, 0.5, 0.0)
+//                            val corePos = this@MagicCoreBlockEntity.blockPos.center
+//                            velocity = center.relativize(corePos)
+//                            effect = ControlableEnchantmentEffect(uuid)
+//                            size = 0.2f
+//                            maxAge = 35
+//                            age = 0
+//                            color = Math3DUtil.colorOf(240, 120, 200)
+//                            speed = 0.1
+//                        }
+//                ).also {
+//                    it.delay = 20
+//                }
+//            }.toList()
         val preTickAdded = (if (tick >= 500) (tick - 200) else tick) / 9
         var index = 0
         var cancel = false
@@ -367,17 +365,17 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
             if (!crafting && !cancel) {
                 cancel = true
                 over(loop >= tick)
-                emitters.forEach {
-                    it.stop()
-                }
+//                emitters.forEach {
+//                    it.stop()
+//                }
             }
             if (cancel) return@runTaskTimerMaxTick
-            if (craftingTick > preTickAdded * index && index < emitters.size) {
-                ParticleEmittersManager.spawnEmitters(
-                    emitters[index++].apply {
-                        maxTick = tick - craftingTick
-                    })
-            }
+//            if (craftingTick > preTickAdded * index && index < emitters.size) {
+//                ParticleEmittersManager.spawnEmitters(
+//                    emitters[index++].apply {
+//                        maxTick = tick - craftingTick
+//                    })
+//            }
         }
     }
 
@@ -398,83 +396,86 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
 
 
     /**
-     * 圆聚集 较快
+     * 圆聚集，较快
      * 圆环旋转
      * 0-500
      */
     private fun spawnStyleLevel1(): (Boolean) -> Unit {
         if (level!!.isClientSide) return {}
-        val style = CraftingLevel1Style(4.0, 120 * options)
         val toCenterPos = worldPosition.below(3).center
-        val emitters = SimpleParticleEmitters(
-            toCenterPos,
-            level,
-            ControlableParticleData()
-                .apply {
-                    color = Math3DUtil.colorOf(240, 200, 140)
-                    effect = ControlableCloudEffect(uuid)
-                    this.maxAge = 30
-                    speed = 0.2
-                }
-        )
-        emitters.apply {
-            shootType = EmittersShootTypes.math(
-                "2 * COS(RAD(i * c * 10))",
-                "0",
-                "2 * SIN(RAD(i * c * 10))",
-                "ox-x",
-                "oy-y + 3",
-                "oz-z",
-            )
-            count = 40 * options
-            maxTick = currentRecipe!!.tick - craftingTick
-            delay = 10
+        val style = CraftingLevel1Style(toCenterPos, level!!).apply {
+            r = 4.0
+            count = 120 * options
         }
-        ParticleEmittersManager.spawnEmitters(emitters)
-        ParticleStyleManager.spawnStyle(level as ServerLevel, toCenterPos, style)
+//        val emitters = SimpleParticleEmitters(
+//            toCenterPos,
+//            level,
+//            ControlableParticleData()
+//                .apply {
+//                    color = Math3DUtil.colorOf(240, 200, 140)
+//                    effect = ControlableCloudEffect(uuid)
+//                    this.maxAge = 30
+//                    speed = 0.2
+//                }
+//        )
+//        emitters.apply { FIXME 这里要重新做
+//            shootType = EmittersShootTypes.math(
+//                "2 * COS(RAD(i * c * 10))",
+//                "0",
+//                "2 * SIN(RAD(i * c * 10))",
+//                "ox-x",
+//                "oy-y + 3",
+//                "oz-z",
+//            )
+//            count = 40 * options
+//            maxTick = currentRecipe!!.tick - craftingTick
+//            delay = 10
+//        }
+//        ParticleEmittersManager.spawnEmitters(emitters)
+        ParticleCompositionManager.spawn(style)
         return {
-            emitters.stop()
+//            emitters.stop()
             style.status.setStatus(2)
         }
     }
 
     /**
      * 小魔法阵
-     * 圆聚集 较快
+     * 圆聚集，较快
      * 500-2000
      */
     private fun spawnStyleLevel2(): (Boolean) -> Unit {
         if (level!!.isClientSide) return {}
-        val style = CraftingLevel2Style()
         val toCenterPos = worldPosition.below(3).center
-        val emitters = SimpleParticleEmitters(
-            toCenterPos,
-            level,
-            ControlableParticleData()
-                .apply {
-                    color = Math3DUtil.colorOf(240, 200, 140)
-                    effect = ControlableCloudEffect(uuid)
-                    this.maxAge = 30
-                    speed = 0.2
-                }
-        )
-        emitters.apply {
-            shootType = EmittersShootTypes.math(
-                "4 * COS(RAD(i * c * 10))",
-                "0",
-                "4 * SIN(RAD(i * c * 10))",
-                "ox-x",
-                "oy-y + 3",
-                "oz-z",
-            )
-            count = 60 * options
-            maxTick = currentRecipe!!.tick - craftingTick
-            delay = 10
-        }
-        ParticleStyleManager.spawnStyle(level as ServerLevel, toCenterPos, style)
-        ParticleEmittersManager.spawnEmitters(emitters)
+        val style = CraftingLevel2Composition(toCenterPos, level!!)
+//        val emitters = SimpleParticleEmitters(
+//            toCenterPos,
+//            level,
+//            ControlableParticleData()
+//                .apply {
+//                    color = Math3DUtil.colorOf(240, 200, 140)
+//                    effect = ControlableCloudEffect(uuid)
+//                    this.maxAge = 30
+//                    speed = 0.2
+//                }
+//        )
+//        emitters.apply {
+//            shootType = EmittersShootTypes.math(
+//                "4 * COS(RAD(i * c * 10))",
+//                "0",
+//                "4 * SIN(RAD(i * c * 10))",
+//                "ox-x",
+//                "oy-y + 3",
+//                "oz-z",
+//            )
+//            count = 60 * options
+//            maxTick = currentRecipe!!.tick - craftingTick
+//            delay = 10
+//        }
+        ParticleCompositionManager.spawn(style)
+//        ParticleEmittersManager.spawnEmitters(emitters)
         return {
-            emitters.stop()
+//            emitters.stop()
             style.status.setStatus(2)
         }
     }
@@ -487,80 +488,81 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
      */
     private fun spawnStyleLevel3(): (Boolean) -> Unit {
         if (level!!.isClientSide) return {}
-        val style = CraftingLevel3Style()
-        style.age = craftingTick
         val toCenterPos = worldPosition.below(3).center
-        val emitters = SimpleParticleEmitters(
-            toCenterPos,
-            level,
-            ControlableParticleData()
-                .apply {
-                    color = Math3DUtil.colorOf(240, 200, 140)
-                    effect = ControlableCloudEffect(uuid)
-                    this.maxAge = 30
-                    speed = 0.2
-                    velocity = Vec3.ZERO
-                }
-        )
-        emitters.apply {
-            shootType = EmittersShootTypes.math(
-                "5 * COS(RAD(i * c * 10))",
-                "0",
-                "5 * SIN(RAD(i * c * 10))",
-                "ox-x",
-                "oy-y + 3",
-                "oz-z",
-            )
-            count = 90 * options
-            maxTick = currentRecipe!!.tick - craftingTick
-            delay = 10
+        val style = CraftingLevel3Composition(toCenterPos, level!!).apply {
+            age = craftingTick
         }
-        ParticleEmittersManager.spawnEmitters(emitters)
-        ParticleStyleManager.spawnStyle(level as ServerLevel, toCenterPos, style)
+//        val emitters = SimpleParticleEmitters(
+//            toCenterPos,
+//            level,
+//            ControlableParticleData()
+//                .apply {
+//                    color = Math3DUtil.colorOf(240, 200, 140)
+//                    effect = ControlableCloudEffect(uuid)
+//                    this.maxAge = 30
+//                    speed = 0.2
+//                    velocity = Vec3.ZERO
+//                }
+//        )
+//        emitters.apply {
+//            shootType = EmittersShootTypes.math(
+//                "5 * COS(RAD(i * c * 10))",
+//                "0",
+//                "5 * SIN(RAD(i * c * 10))",
+//                "ox-x",
+//                "oy-y + 3",
+//                "oz-z",
+//            )
+//            count = 90 * options
+//            maxTick = currentRecipe!!.tick - craftingTick
+//            delay = 10
+//        }
+//        ParticleEmittersManager.spawnEmitters(emitters)
+        ParticleCompositionManager.spawn(style)
         return {
-            val up = PhysicsParticleEmitters(
-                toCenterPos, level, ControlableParticleData()
-                    .apply {
-                        color = Math3DUtil.colorOf(240, 200, 140)
-                        effect = ControlableCloudEffect(uuid)
-                        speed = 0.5
-                        this.maxAge = 40
-                    }
-            )
-            up.apply {
-                wind.direction = Vec3(0.0, 10.0, 0.0)
-                count = 30
-                shootType = EmittersShootTypes.box(
-                    HitBox.of(1.0, 1.0, 1.0)
-                )
-                gravity = PhysicsParticleEmitters.EARTH_GRAVITY
-                airDensity = PhysicsParticleEmitters.SEA_AIR_DENSITY
-                maxTick = 60
-            }
-            val centerUP = PhysicsParticleEmitters(
-                toCenterPos, level, ControlableParticleData()
-                    .apply {
-                        color = Math3DUtil.colorOf(240, 140, 140)
-                        effect = ControlableCloudEffect(uuid)
-                        speed = 0.02
-                        this.maxAge = 40
-                    }
-            )
-            centerUP.apply {
-                wind.direction = Vec3(0.0, 10.0, 0.0)
-                count = 30
-                shootType = EmittersShootTypes.box(
-                    HitBox.of(1.0, 1.0, 1.0)
-                )
-                gravity = PhysicsParticleEmitters.EARTH_GRAVITY
-                airDensity = PhysicsParticleEmitters.SEA_AIR_DENSITY
-                maxTick = 60
-            }
+//            val up = PhysicsParticleEmitters(
+//                toCenterPos, level, ControlableParticleData()
+//                    .apply {
+//                        color = Math3DUtil.colorOf(240, 200, 140)
+//                        effect = ControlableCloudEffect(uuid)
+//                        speed = 0.5
+//                        this.maxAge = 40
+//                    }
+//            )
+//            up.apply {
+//                wind.direction = Vec3(0.0, 10.0, 0.0)
+//                count = 30
+//                shootType = EmittersShootTypes.box(
+//                    HitBox.of(1.0, 1.0, 1.0)
+//                )
+//                gravity = PhysicsParticleEmitters.EARTH_GRAVITY
+//                airDensity = PhysicsParticleEmitters.SEA_AIR_DENSITY
+//                maxTick = 60
+//            }
+//            val centerUP = PhysicsParticleEmitters(
+//                toCenterPos, level, ControlableParticleData()
+//                    .apply {
+//                        color = Math3DUtil.colorOf(240, 140, 140)
+//                        effect = ControlableCloudEffect(uuid)
+//                        speed = 0.02
+//                        this.maxAge = 40
+//                    }
+//            )
+//            centerUP.apply {
+//                wind.direction = Vec3(0.0, 10.0, 0.0)
+//                count = 30
+//                shootType = EmittersShootTypes.box(
+//                    HitBox.of(1.0, 1.0, 1.0)
+//                )
+//                gravity = PhysicsParticleEmitters.EARTH_GRAVITY
+//                airDensity = PhysicsParticleEmitters.SEA_AIR_DENSITY
+//                maxTick = 60
+//            }
             style.status.setStatus(2)
-            emitters.stop()
+//            emitters.stop()
             if (it) {
-                ParticleEmittersManager.spawnEmitters(up)
-                ParticleEmittersManager.spawnEmitters(centerUP)
+//                ParticleEmittersManager.spawnEmitters(up)
+//                ParticleEmittersManager.spawnEmitters(centerUP)
             }
         }
     }

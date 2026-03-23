@@ -7,20 +7,20 @@ import kotlin.random.Random
 
 class EntitySkillManager(var owner: LivingEntity) {
     val cacheUUID: UUID = UUID.randomUUID()
-    private val skills = HashMap<String, Skill>()
+    private val skills = HashMap<String, Skill<LivingEntity>>()
 
     private val countdownStorage = HashMap<String, Int>()
     private var activeHoldingTick = 0
     private val random = Random(System.currentTimeMillis())
-    var active: Skill? = null
+    var active: Skill<LivingEntity>? = null
         internal set
 
-    fun getSkills(predicate: Predicate<Skill>): Map<String, Skill> {
+    fun getSkills(predicate: Predicate<Skill<LivingEntity>>): Map<String, Skill<LivingEntity>> {
         return skills.filter { predicate.test(it.value) }
     }
 
-    fun addSkill(skill: Skill) {
-        skills[skill.getSkillID()] = skill
+    fun addSkill(skill: Skill<out LivingEntity>) {
+        skills[skill.getSkillID()] = skill.forOwner()
     }
 
     /**
@@ -31,15 +31,24 @@ class EntitySkillManager(var owner: LivingEntity) {
     }
 
     /**
+     * @return false 没有可用的技能
+     */
+    fun hasAnySkillToChoice(): Boolean {
+        return !skills.keys.any {
+            (countdownStorage[it] ?: 0) <= 0
+        }
+    }
+
+    /**
      * 根据权重随机选择一个技能
      */
-    fun choiceSkill(): Skill? {
+    fun choiceSkill(): Skill<LivingEntity>? {
         return skills.asSequence()
             .filter {
                 val cd = !hasCD(it.key)
                 val value = it.value
-                if (value is SkillCondition) {
-                    value.canTrigger(owner) && cd
+                if (value is SkillCondition<*>) {
+                    value.asOwnerCondition().canTrigger(owner) && cd
                 } else cd
             }
             .maxByOrNull {
@@ -47,7 +56,7 @@ class EntitySkillManager(var owner: LivingEntity) {
             }?.value
     }
 
-    fun setSkillCountdown(skill: Skill) {
+    fun setSkillCountdown(skill: Skill<LivingEntity>) {
         countdownStorage[skill.getSkillID()] = skill.getSkillCountDown(owner)
     }
 
@@ -60,6 +69,14 @@ class EntitySkillManager(var owner: LivingEntity) {
         activeHoldingTick = 0
     }
 
+    fun interruptActiveSkill(setCooldown: Boolean = true) {
+        val activeSkill = active ?: return
+        if (setCooldown) {
+            setSkillCountdown(activeSkill)
+        }
+        resetActiveSkill(false)
+    }
+
     fun hasCD(id: String): Boolean {
         return countdownStorage.containsKey(id) && (countdownStorage[id] ?: 0) > 0
     }
@@ -68,7 +85,7 @@ class EntitySkillManager(var owner: LivingEntity) {
      * @param id 技能id
      * @return null 技能不存在或者技能正在冷却
      */
-    fun getSkill(id: String): Skill? {
+    fun getSkill(id: String): Skill<LivingEntity>? {
         val cd = countdownStorage[id] ?: 0
         if (cd > 0) return null
         return skills[id]
@@ -78,13 +95,14 @@ class EntitySkillManager(var owner: LivingEntity) {
         return active != null
     }
 
-    fun setActiveSkill(skill: Skill, cancelBefore: Boolean = false) {
+    fun setActiveSkill(skill: Skill<out LivingEntity>, cancelBefore: Boolean = false) {
         if (cancelBefore) {
             active?.stopHolding(owner, activeHoldingTick)
         }
-        skill.onActive(owner)
+        val ownerSkill = skill.forOwner()
+        ownerSkill.onActive(owner)
         activeHoldingTick = 0
-        active = skill
+        active = ownerSkill
     }
 
     /**
@@ -97,34 +115,34 @@ class EntitySkillManager(var owner: LivingEntity) {
     }
 
     private fun handleActiveSkill() {
-        active ?: return
-        if (activeHoldingTick++ >= active!!.getMaxHoldingTick(owner)) {
-            active!!.onRelease(owner, activeHoldingTick)
-            setSkillCountdown(active!!)
-            active!!.holdingTick(owner, activeHoldingTick)
+        val activeSkill = active ?: return
+        if (activeHoldingTick++ >= activeSkill.getMaxHoldingTick(owner)) {
+            activeSkill.onRelease(owner, activeHoldingTick)
+            setSkillCountdown(activeSkill)
+            activeSkill.holdingTick(owner, activeHoldingTick)
             resetActiveSkill(true)
             return
         }
-        active!!.holdingTick(owner, activeHoldingTick)
+        activeSkill.holdingTick(owner, activeHoldingTick)
 
-        if (active is SkillCancelCondition) {
-            val condition = active as SkillCancelCondition
+        if (activeSkill is SkillCancelCondition<*>) {
+            val condition = activeSkill.asOwnerCancelCondition()
             if (condition.testCancel(owner)) {
                 condition.canceled = true
             }
         }
 
-        if (active is SkillCancelable) {
-            val cancelable = active as SkillCancelable
+        if (activeSkill is SkillCancelable) {
+            val cancelable = activeSkill as SkillCancelable
             val cd = cancelable.cancelSetCD
             if (cancelable.canceled) {
                 if (cd) {
-                    setSkillCountdown(active!!)
+                    setSkillCountdown(activeSkill)
                 }
                 resetActiveSkill(false)
                 cancelable.canceled = false
-                if (active is SkillDamageCancelCondition) {
-                    (active as SkillDamageCancelCondition).damageAmount = 0f
+                if (activeSkill is SkillDamageCancelCondition<*>) {
+                    activeSkill.asOwnerDamageCancelCondition().damageAmount = 0f
                 }
             }
         }
@@ -139,6 +157,26 @@ class EntitySkillManager(var owner: LivingEntity) {
                 iterator.remove()
             }
         }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun Skill<out LivingEntity>.forOwner(): Skill<LivingEntity> {
+        return this as Skill<LivingEntity>
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun SkillCondition<*>.asOwnerCondition(): SkillCondition<LivingEntity> {
+        return this as SkillCondition<LivingEntity>
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun SkillCancelCondition<*>.asOwnerCancelCondition(): SkillCancelCondition<LivingEntity> {
+        return this as SkillCancelCondition<LivingEntity>
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun SkillDamageCancelCondition<*>.asOwnerDamageCancelCondition(): SkillDamageCancelCondition<LivingEntity> {
+        return this as SkillDamageCancelCondition<LivingEntity>
     }
 
 }

@@ -14,7 +14,7 @@ import kotlin.math.PI
 
 class RecoverCrystalStyle(uuid: UUID = UUID.randomUUID()) : CrystalStyle(uuid) {
     override fun displayParticleAnimate() {
-        rotateParticlesAsAxis(PI / 256)
+        rotateAsAxis(PI / 256)
     }
 
     class Provider : ParticleStyleProvider {

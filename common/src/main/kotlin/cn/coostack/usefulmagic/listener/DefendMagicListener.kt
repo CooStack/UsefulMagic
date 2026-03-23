@@ -5,6 +5,7 @@ import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersMan
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.usefulmagic.UsefulMagic
+import cn.coostack.usefulmagic.extend.mana
 import cn.coostack.usefulmagic.items.prop.DefendCoreItem
 import cn.coostack.usefulmagic.particles.emitters.CircleEmitters
 import cn.coostack.usefulmagic.particles.emitters.ExplodeMagicEmitters
@@ -127,7 +128,7 @@ object DefendMagicListener {
             return true
         }
         val data = UsefulMagic.state.getDataFromServer(entity.uuid)
-        val mana = data.mana
+        val mana = entity.mana
         if (mana == 0) {
             return true
         }
@@ -136,12 +137,12 @@ object DefendMagicListener {
             entity.position().relativize(attackPos)
         }
         if (mana >= manaCost) {
-            data.mana -= manaCost.roundToInt()
+            entity.mana -= manaCost.roundToInt()
             // 防御成功
             showDefendSuccess(sourceDirection, entity, attacker, barrage)
             return false
         }
-        data.mana = 0
+        entity.mana = 0
         val actualDamage = count - mana / 5
         entity.hurt(source, actualDamage)
         // 成功了一部分

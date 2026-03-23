@@ -1,17 +1,20 @@
-package cn.coostack.usefulmagic.items.prop
+﻿package cn.coostack.usefulmagic.items.prop
 
 import cn.coostack.cooparticlesapi.CooParticlesAPI
 import cn.coostack.cooparticlesapi.extend.ofFloored
 import cn.coostack.cooparticlesapi.extend.relativize
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.network.particle.emitters.impl.PresetLaserEmitters
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
 import cn.coostack.cooparticlesapi.scheduler.CooScheduler
-import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
+import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.usefulmagic.UsefulMagic
+import cn.coostack.usefulmagic.blocks.entity.formation.EnergyCrystalsBlockEntity
+import cn.coostack.usefulmagic.effects.UsefulMagicEffects
+import cn.coostack.usefulmagic.formation.CrystalFormation
+import cn.coostack.usefulmagic.formation.api.BlockFormation
 import cn.coostack.usefulmagic.formation.api.DefendCrystal
 import cn.coostack.usefulmagic.formation.target.LivingEntityTargetOption
 import cn.coostack.usefulmagic.managers.server.ServerFormationManager
@@ -22,10 +25,13 @@ import cn.coostack.usefulmagic.particles.fall.style.GuildCircleStyle
 import cn.coostack.usefulmagic.particles.fall.style.SkyFallingStyle
 import cn.coostack.usefulmagic.renderer.SkyFallingRenderEntity
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
-import cn.coostack.usefulmagic.utils.EntityUtil
-import cn.coostack.usefulmagic.utils.ExplosionUtil
+import cn.coostack.usefulmagic.utils.UsefulMagicFlightController
+import cn.coostack.usefulmagic.utils.MathUtil
+import net.minecraft.core.BlockPos
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.RelativeMovement
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
@@ -38,28 +44,33 @@ import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResultHolder
 import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.effect.MobEffects
-import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.item.Rarity
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.level.Level
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.item.UseAnim
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.AABB
 import java.util.*
-import kotlin.math.exp
+import kotlin.math.max
+import kotlin.math.roundToInt
 
 /**
  * 天空坠落魔法
  *
  * 消耗品
- * 使用时会在视线前方(最多)100 方块进行爆破
- * 展开时会周围(r <= 10) 的实体进行缓速
+ * 使用时会在视线前方最多 100 方块进行爆破
+ * 展开时会对周围(r <= 10) 的实体进行缓速
  */
 class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
     companion object {
         private val playerGuildStyles = HashMap<UUID, GuildCircleStyle>()
         const val knockbackHitDamage = 100f
         const val hitDamage = 200f
+        const val EXPLOSION_MAX_RADIUS = 48
+        private const val PROTECTED_BLOCK_DAMAGE = 0.5f
+        private const val FORMATION_MANA_PER_DAMAGE = 10f
         val playerTasks = HashMap<UUID, MutableList<CooScheduler.TickRunnable>>()
         val playerMagicStyles = HashMap<UUID, SkyFallingStyle>()
 
@@ -114,11 +125,11 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
         tooltip: MutableList<Component>,
         tooltipFlag: TooltipFlag
     ) {
-        tooltip.add(Component.literal("§7花费巨大的代价,迅速击溃敌人"))
-        tooltip.add(Component.literal("§7超位魔法-天空坠落"))
-        tooltip.add(Component.literal("§e右键使用"))
-        tooltip.add(Component.literal("§7消耗品"))
-        tooltip.add(Component.literal("§7不消耗魔力值"))
+        tooltip.add(Component.literal("花费巨大的代价，迅速击溃敌人"))
+        tooltip.add(Component.literal("超位魔法-天空坠落"))
+        tooltip.add(Component.literal("右键使用"))
+        tooltip.add(Component.literal("消耗品"))
+        tooltip.add(Component.literal("不消耗魔力值"))
         super.appendHoverText(stack, context, tooltip, tooltipFlag)
     }
 
@@ -126,6 +137,7 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
         if (!selected) return
         if (world.isClientSide) return
         if (entity !is Player) return
+        if (UsefulMagicEffects.isMagicSealed(entity)) return
         val world = world as ServerLevel
         val entity = entity as ServerPlayer
 
@@ -133,7 +145,7 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
             GuildCircleStyle()
         }
         style.bindPlayer = entity.uuid
-        if (!style.valid) {
+        if (!style.isValid()) {
             style = GuildCircleStyle()
             playerGuildStyles[entity.uuid] = style
             ParticleStyleManager.spawnStyle(world, getTargetLocation(entity), style)
@@ -157,6 +169,9 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
 
     override fun finishUsingItem(stack: ItemStack, world: Level, user: LivingEntity): ItemStack {
         if (user !is Player) return stack
+        if (UsefulMagicEffects.isMagicSealed(user)) {
+            return stack
+        }
 
         val hand = user.usedItemHand
         val stack = user.getItemInHand(hand)
@@ -174,7 +189,7 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
             10f, 1f
         )
         val world = world as ServerLevel
-        if (!playerMagicStyles.containsKey(user.uuid) || !(playerMagicStyles[user.uuid]?.valid ?: false)) {
+        if (!playerMagicStyles.containsKey(user.uuid) || !(playerMagicStyles[user.uuid]?.isValid() ?: false)) {
             val style = SkyFallingStyle()
             style.bindPlayer = user.uuid
             ParticleStyleManager.spawnStyle(world, user.position(), style)
@@ -186,13 +201,15 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
         if (tasks.isNotEmpty() && tasks.any { !it.canceled }) {
             return stack
         }
+        val serverUser = user as ServerPlayer
         val explodeTask = CooParticlesAPI.scheduler.runTask(12 * 20) {
-            handleExplodeParticle(world, user as ServerPlayer, target)
-            handleExplode(world, user, target)
+            handleExplodeParticle(world, serverUser, target)
+            handleExplode(world, serverUser, target)
         }
         tasks.add(explodeTask)
         val data = UsefulMagic.state.getDataFromServer(user.uuid)
         val releasePos = user.position()
+        UsefulMagicFlightController.grant(serverUser, UsefulMagicFlightController.Source.SKY_FALLING)
         val attackTask = CooParticlesAPI.scheduler.runTaskTimerMaxTick(1, 12 * 20) {
             val r = 12.0
             val box = AABB.ofSize(target, r * 2, r * 2, r * 2)
@@ -202,18 +219,22 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
             entities.forEach { entity ->
                 entity.addEffect(
                     MobEffectInstance(
-                        MobEffects.MOVEMENT_SLOWDOWN, 20, 10
-                    )
+                        BuiltInRegistries.MOB_EFFECT.wrapAsHolder(UsefulMagicEffects.FREEZE.get()),
+                        5,
+                        1
+                    ), user
                 )
-                EntityUtil.resetMovement(entity)
             }
-            EntityUtil.resetMovement(user)
-            user.abilities.mayfly = true
-            user.teleportTo(releasePos.x, releasePos.y, releasePos.z)
-            user.onUpdateAbilities()
+            user.addEffect(
+                MobEffectInstance(
+                    BuiltInRegistries.MOB_EFFECT.wrapAsHolder(UsefulMagicEffects.FREEZE.get()),
+                    5,
+                    1
+                ), user
+            )
+            lockPlayerPosition(serverUser, releasePos)
         }.setFinishCallback {
-            user.abilities.mayfly = false
-            user.abilities.flying = false
+            UsefulMagicFlightController.revoke(serverUser, UsefulMagicFlightController.Source.SKY_FALLING)
         }
         tasks.add(attackTask)
         playerTasks[user.uuid] = tasks
@@ -221,8 +242,11 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
     }
 
     override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack?> {
-        // 防止重复执行 (然后第二个无效)
-        val styleAlive = playerMagicStyles.containsKey(user.uuid) && playerMagicStyles[user.uuid]?.valid ?: false
+        if (UsefulMagicEffects.isMagicSealed(user)) {
+            return InteractionResultHolder.fail(user.getItemInHand(hand))
+        }
+        // 防止重复执行（然后第二个无效）
+        val styleAlive = playerMagicStyles.containsKey(user.uuid) && playerMagicStyles[user.uuid]?.isValid() ?: false
         val taskAlive = (playerTasks[user.uuid] ?: ArrayList()).all { it.canceled }
         if (styleAlive && taskAlive) {
             return super.use(world, user, hand)
@@ -281,31 +305,111 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
             it.hurt(source, 2048f)
         }
 
-        val formation = ServerFormationManager.getFormationFromPos(target, world)
-        formation?.attack(128f, LivingEntityTargetOption(user), target)
         var currentRadius = 1
-        CooParticlesAPI.scheduler.runTaskTimerMaxTick(2, 48) {
-            ExplosionUtil.createHollowSphereExplosionIgnoreWater(
+        val protectedBlocks = HashSet<BlockPos>()
+        val protectedBlockCounts = HashMap<BlockFormation, Int>()
+        CooParticlesAPI.scheduler.runTaskTimerMaxTick(2, EXPLOSION_MAX_RADIUS) {
+            createSkyFallingExplosionStep(
                 currentRadius++,
                 world,
                 target,
-                user
+                user,
+                protectedBlocks,
+                protectedBlockCounts
             )
-            ExplosionUtil.createHollowSphereExplosionIgnoreWater(
+            createSkyFallingExplosionStep(
                 currentRadius++,
                 world,
                 target,
-                user
+                user,
+                protectedBlocks,
+                protectedBlockCounts
             )
+        }.setFinishCallback {
+            applyProtectedFormationDamage(protectedBlockCounts, user)
         }
         CooParticlesAPI.scheduler.runTaskTimerMaxTick(5, 8 * 20) {
-            formation?.attack(16f, LivingEntityTargetOption(user), target)
             world.getEntitiesOfClass(LivingEntity::class.java, AABB.ofSize(target, 96.0, 96.0, 96.0)) {
                 !data.isFriend(it.uuid) && it.uuid != user.uuid
             }.forEach {
                 val playerAttack = it.damageSources().playerAttack(user)
                 it.hurt(playerAttack, hitDamage / 8)
                 it.invulnerableTime = 0
+            }
+        }
+    }
+
+    private fun lockPlayerPosition(user: ServerPlayer, pos: Vec3) {
+        user.connection.teleport(
+            pos.x,
+            pos.y,
+            pos.z,
+            user.getYRot(),
+            user.getXRot(),
+            RelativeMovement.ROTATION
+        )
+        user.deltaMovement = Vec3.ZERO
+        user.hurtMarked = true
+    }
+
+    private fun createSkyFallingExplosionStep(
+        currentRadius: Int,
+        world: ServerLevel,
+        center: Vec3,
+        user: ServerPlayer,
+        protectedBlocks: MutableSet<BlockPos>,
+        protectedBlockCounts: MutableMap<BlockFormation, Int>
+    ) {
+        val attacker = LivingEntityTargetOption(user, false)
+        val solidBall = MathUtil.getSolidBall(currentRadius).map {
+            ofFloored((it + RelativeLocation.of(center)).toVector())
+        }.toSet()
+
+        solidBall.forEach { pos ->
+            if (!world.hasChunkAt(pos)) return@forEach
+            val state = world.getBlockState(pos)
+            val fluid = world.getFluidState(pos)
+            val resistance = max(state.block.explosionResistance, fluid.explosionResistance)
+            val canBreak =
+                resistance >= 0f && resistance < 1000f && (fluid.isEmpty || state.`is`(Blocks.WATER)) && !state.isAir
+            if (!canBreak) return@forEach
+
+            val formation = ServerFormationManager.getFormationFromPos(pos.center, world)
+            if (formation != null && formation.hasCrystalType(DefendCrystal::class.java) && formation.isActiveFormation()) {
+                if (!formation.isFriendly(attacker) && protectedBlocks.add(pos)) {
+                    protectedBlockCounts[formation] = (protectedBlockCounts[formation] ?: 0) + 1
+                }
+                return@forEach
+            }
+
+            world.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL)
+        }
+    }
+
+    private fun applyProtectedFormationDamage(
+        protectedBlockCounts: Map<BlockFormation, Int>,
+        user: ServerPlayer
+    ) {
+        val attacker = LivingEntityTargetOption(user, false)
+        protectedBlockCounts.forEach { (formation, blockCount) ->
+            if (blockCount <= 0 || !formation.isActiveFormation()) return@forEach
+
+            val damage = blockCount.toFloat() * PROTECTED_BLOCK_DAMAGE
+            val requiredMana = (damage * FORMATION_MANA_PER_DAMAGE).roundToInt()
+            if (requiredMana <= 0) return@forEach
+
+            val defendCrystal = formation.activeCrystals.firstOrNull { it is DefendCrystal }
+            val currentMana = formation.activeCrystals.filterIsInstance<EnergyCrystalsBlockEntity>().sumOf { it.currentMana }
+
+            if (defendCrystal != null && currentMana >= requiredMana) {
+                formation.transformMana(defendCrystal, requiredMana)
+            } else {
+                val breakDamage = if (formation is CrystalFormation) {
+                    max(damage, formation.formationHealth)
+                } else {
+                    damage
+                }
+                formation.breakFormation(breakDamage, attacker)
             }
         }
     }

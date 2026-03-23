@@ -14,23 +14,25 @@ import cn.coostack.usefulmagic.packet.c2s.PacketC2SFormationSettingRequest
 import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendAddRequest
 import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendListRequest
 import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendRemoveRequest
+import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendSettingsChangeRequest
 import cn.coostack.usefulmagic.packet.listener.client.FormationPacketListener
 import cn.coostack.usefulmagic.packet.listener.client.FormationSettingsPacketResponseListener
 import cn.coostack.usefulmagic.packet.listener.client.FriendChangeResponsePacketListener
 import cn.coostack.usefulmagic.packet.listener.client.FriendResponsePacketListener
-import cn.coostack.usefulmagic.packet.listener.client.ManaChangePacketListener
+import cn.coostack.usefulmagic.packet.listener.client.TrackerToggleListener
 import cn.coostack.usefulmagic.packet.listener.server.FormationSettingChangePacketListener
 import cn.coostack.usefulmagic.packet.listener.server.FormationSettingRequestPacketListener
 import cn.coostack.usefulmagic.packet.listener.server.FriendAddListRequestHandler
 import cn.coostack.usefulmagic.packet.listener.server.FriendListRequestHandler
 import cn.coostack.usefulmagic.packet.listener.server.FriendRemoveListRequestHandler
+import cn.coostack.usefulmagic.packet.listener.server.FriendSettingsChangeRequestHandler
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CEnergyCrystalChange
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationBreak
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationCreate
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationSettingsResponse
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFriendChangeResponse
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFriendListResponse
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CManaDataToggle
+import cn.coostack.usefulmagic.packet.s2c.PacketS2CTrackerToggle
 import cn.coostack.usefulmagic.recipe.UsefulMagicRecipeTypes
 import net.minecraft.core.registries.BuiltInRegistries
 import net.neoforged.api.distmarker.Dist
@@ -77,6 +79,12 @@ object ServerInitializedListener {
         ) { packet, context ->
             FriendRemoveListRequestHandler.receive(packet, NeoForgeServerContext(context))
         }
+        registrar.playToServer(
+            PacketC2SFriendSettingsChangeRequest.payloadID,
+            PacketC2SFriendSettingsChangeRequest.CODEC
+        ) { packet, context ->
+            FriendSettingsChangeRequestHandler.receive(packet, NeoForgeServerContext(context))
+        }
         registrar.playToClient(
             PacketS2CEnergyCrystalChange.payloadID,
             PacketS2CEnergyCrystalChange.CODEC
@@ -114,10 +122,10 @@ object ServerInitializedListener {
             FriendResponsePacketListener.receive(packet, NeoForgeClientContext(context))
         }
         registrar.playToClient(
-            PacketS2CManaDataToggle.payloadID,
-            PacketS2CManaDataToggle.CODEC
+            PacketS2CTrackerToggle.payloadID,
+            PacketS2CTrackerToggle.CODEC
         ) { packet, context ->
-            ManaChangePacketListener.receive(packet, NeoForgeClientContext(context))
+            TrackerToggleListener.receive(packet, NeoForgeClientContext(context))
         }
     }
 

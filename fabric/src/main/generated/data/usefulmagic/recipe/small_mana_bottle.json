@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "item": "minecraft:glass"
+    }
+  },
+  "pattern": [
+    "G",
+    "G"
+  ],
+  "result": {
+    "count": 8,
+    "id": "usefulmagic:small_mana_bottle"
+  }
+}

@@ -43,7 +43,7 @@
     "fabric-api": "*",
     "minecraft": "${minecraft_version}",
     "java": ">=${java_version}",
-    "cooparticlesapi": ">=2.0.0"
+    "cooparticlesapi": ">=2.3.4"
   },
   "suggests": {
     "another-mod": "*"

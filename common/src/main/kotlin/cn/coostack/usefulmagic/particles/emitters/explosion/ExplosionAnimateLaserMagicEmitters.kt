@@ -1,5 +1,6 @@
 package cn.coostack.usefulmagic.particles.emitters.explosion
 
+import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.extend.relativize
 import cn.coostack.cooparticlesapi.network.particle.emitters.ClassParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
@@ -9,7 +10,7 @@ import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.cooparticlesapi.utils.helper.emitters.LinearResistanceHelper
 import cn.coostack.usefulmagic.utils.MathUtil
-import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.RegistryFriendlyByteBuf
 
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.phys.Vec3
@@ -17,10 +18,11 @@ import net.minecraft.world.level.Level
 import kotlin.math.PI
 import kotlin.random.Random
 
+@CooAutoRegister
 class ExplosionAnimateLaserMagicEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, world) {
     companion object {
         const val ID = "explosion-animate-laser-magic-emitters"
-        val CODEC = StreamCodec.of<FriendlyByteBuf, ParticleEmitters>(
+        val CODEC = StreamCodec.of<RegistryFriendlyByteBuf, ParticleEmitters>(
             { buf, data ->
                 data as ExplosionAnimateLaserMagicEmitters
                 encodeBase(data, buf)
@@ -98,7 +100,7 @@ class ExplosionAnimateLaserMagicEmitters(pos: Vec3, world: Level?) : ClassPartic
         return ID
     }
 
-    override fun getCodec(): StreamCodec<FriendlyByteBuf, ParticleEmitters> {
+    override fun getCodec(): StreamCodec<RegistryFriendlyByteBuf, ParticleEmitters> {
         return CODEC
     }
 

@@ -1,12 +1,12 @@
 package cn.coostack.usefulmagic.recipe
 
-import com.mojang.datafixers.kinds.App
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import net.minecraft.core.NonNullList
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.item.crafting.Ingredient
+import java.util.LinkedHashMap
 
 /**
  * 配方环
@@ -35,9 +35,7 @@ class RoundShapeRecipe(
         @JvmStatic
         val CODEC: Codec<RoundShapeRecipe> = IndexData.CODEC.flatXmap<RoundShapeRecipe>(
             ::fromData
-        ) {
-            if (it.data.map.isNotEmpty()) DataResult.success(it.data) else DataResult.error { "error" }
-        }
+        ) { it.toData() }
 
         @JvmStatic
         val PACKET_CODEC: StreamCodec<RegistryFriendlyByteBuf, RoundShapeRecipe> = StreamCodec.of(
@@ -56,7 +54,25 @@ class RoundShapeRecipe(
         )
     }
 
-    val data = IndexData(HashMap())
+    val data: IndexData
+        get() {
+            val map = LinkedHashMap<String, Ingredient>(ingredients.size)
+            ingredients.forEachIndexed { index, ingredient ->
+                if (!ingredient.isEmpty) {
+                    map[index.toString()] = ingredient
+                }
+            }
+            return IndexData(map)
+        }
+
+    private fun toData(): DataResult<IndexData> {
+        return if (data.map.isNotEmpty()) {
+            DataResult.success(data)
+        } else {
+            DataResult.error { "recipe ingredients must contain at least one non-empty slot" }
+        }
+    }
+
     fun matchers(input: AltarStackRecipeInput): Boolean {
         val rotates = getRotates()
         rotates.forEach {
@@ -91,10 +107,10 @@ class RoundShapeRecipe(
     /**
      * 由int判断ingredients索引
      */
-    class IndexData(val map: HashMap<String, Ingredient>) {
+    class IndexData(val map: LinkedHashMap<String, Ingredient>) {
         companion object {
             val CODEC: Codec<IndexData> = Codec.unboundedMap(Codec.STRING, Ingredient.CODEC_NONEMPTY).xmap(
-                { map -> IndexData(HashMap(map)) },
+                { map -> IndexData(LinkedHashMap(map)) },
                 { indexData -> indexData.map }
             )
         }

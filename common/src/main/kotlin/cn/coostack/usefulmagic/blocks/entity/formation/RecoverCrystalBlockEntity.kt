@@ -1,4 +1,4 @@
-package cn.coostack.usefulmagic.blocks.entity.formation
+﻿package cn.coostack.usefulmagic.blocks.entity.formation
 
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
@@ -9,8 +9,8 @@ import cn.coostack.usefulmagic.formation.api.BlockFormation
 import cn.coostack.usefulmagic.formation.api.FormationCrystal
 import cn.coostack.usefulmagic.formation.api.FormationTargetOption
 import cn.coostack.usefulmagic.particles.emitters.LightningParticleEmitters
-import cn.coostack.usefulmagic.particles.style.formation.crystal.CrystalStyle
 import cn.coostack.cooparticlesapi.extend.relativize
+import cn.coostack.usefulmagic.particles.style.formation.crystal.CrystalStyle
 import cn.coostack.usefulmagic.particles.style.formation.crystal.RecoverCrystalStyle
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
@@ -60,16 +60,16 @@ class RecoverCrystalBlockEntity(pos: BlockPos, state: BlockState) :
                 val start = this.crystalPos
                 val end = it.crystalPos
 
-                val line = LightningParticleEmitters(start, world).apply {
-                    this.endPos = RelativeLocation.of(start.relativize(end))
-                    this.templateData.also { it ->
-                        it.speed = 0.0
-                        it.color = Math3DUtil.colorOf(100, 255, 180)
-                        it.maxAge = 3
-                    }
-                    maxTick = 1
-                }
-                ParticleEmittersManager.spawnEmitters(line)
+//                val line = LightningParticleEmitters(start, world).apply {
+//                    this.endPos = RelativeLocation.of(start.relativize(end))
+//                    this.templateData.also { it ->
+//                        it.speed = 0.0
+//                        it.color = Math3DUtil.colorOf(100, 255, 180)
+//                        it.maxAge = 3
+//                    }
+//                    maxTick = 1
+//                }
+//                ParticleEmittersManager.spawnEmitters(line)
 
             }
         }
@@ -95,3 +95,4 @@ class RecoverCrystalBlockEntity(pos: BlockPos, state: BlockState) :
     }
 
 }
+

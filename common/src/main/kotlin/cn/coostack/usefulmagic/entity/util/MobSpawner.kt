@@ -1,13 +1,19 @@
 package cn.coostack.usefulmagic.entity.util
 
-import cn.coostack.usefulmagic.entity.custom.MagicBookEntity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.phys.Vec3
-import java.util.concurrent.StructuredTaskScope
 
 abstract class MobSpawner {
     var currentTick = 0
+        protected set
     var start = false
+        private set
+    var cancel = false
+        private set
+
+    var spawned = false
+        private set
+
     abstract fun spawnCondition(): Boolean
 
     abstract fun getSpawnTicks(): Int
@@ -37,7 +43,15 @@ abstract class MobSpawner {
         val entity = getSpawnedEntity()
         val world = entity.level()
         world.addFreshEntity(entity)
+        spawned = true
         onSpawn(entity)
+    }
+
+    fun cancel() {
+        if (!start) {
+            return
+        }
+        cancel = true
     }
 
     /**
@@ -55,11 +69,13 @@ abstract class MobSpawner {
             }
             return
         }
-        if (start) {
+        if (cancel) {
             onCancelSpawn()
         }
+
         currentTick = 0
         start = false
+        cancel = false
     }
 
 }

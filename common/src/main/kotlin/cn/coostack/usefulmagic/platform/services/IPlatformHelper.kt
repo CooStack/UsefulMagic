@@ -1,5 +1,7 @@
 package cn.coostack.usefulmagic.platform.services
 
+import cn.coostack.usefulmagic.platform.WatcherSender
+
 interface IPlatformHelper {
     /**
      * Gets the name of the current platform
@@ -22,6 +24,8 @@ interface IPlatformHelper {
      * @return True if in a development environment, false otherwise.
      */
     fun isDevelopmentEnvironment(): Boolean
+
+    fun getIterateTracker(): WatcherSender
 
     /**
      * Gets the name of the environment type as a string.

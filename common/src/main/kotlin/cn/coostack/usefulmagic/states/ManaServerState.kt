@@ -1,9 +1,7 @@
 package cn.coostack.usefulmagic.states
 
-import cn.coostack.cooparticlesapi.platform.CooParticlesServices
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.beans.MagicPlayerData
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CManaDataToggle
 import net.minecraft.core.HolderLookup
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.MinecraftServer
@@ -11,7 +9,6 @@ import net.minecraft.util.datafix.DataFixTypes
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.saveddata.SavedData
 import java.util.UUID
-import java.util.function.BiFunction
 
 class ManaServerState : SavedData() {
     val magicPlayerData = HashMap<UUID, MagicPlayerData>()
@@ -21,14 +18,6 @@ class ManaServerState : SavedData() {
     }
 
     fun sendToggle() {
-        UsefulMagic.server.playerList.players.forEach {
-            val data = magicPlayerData.getOrPut(it.uuid) {
-                MagicPlayerData(it.uuid)
-            }
-            CooParticlesServices.SERVER_NETWORK.send(
-                PacketS2CManaDataToggle(data, it.uuid), it
-            )
-        }
         setDirty()
     }
 
@@ -44,13 +33,21 @@ class ManaServerState : SavedData() {
                 val value = players.getCompound(it)
                 val data = MagicPlayerData(uuid)
                 data.apply {
-                    maxMana = value.getInt("maxMana")
-                    mana = value.getInt("mana")
-                    manaRegeneration = value.getInt("manaRegeneration")
                     val friendsNBT = value.getCompound("friends")
                     friendsNBT.allKeys.forEach { index ->
                         val uuid = friendsNBT.getUUID(index)
                         data.addFriend(uuid)
+                    }
+                    if (value.contains("friendly_settings")) {
+                        val settings = value.getCompound("friendly_settings")
+                        updateFriendlySettings(
+                            settings.getBoolean("hostile"),
+                            if (settings.contains("neutral")) settings.getBoolean("neutral") else false,
+                            settings.getBoolean("non_friend_player"),
+                            if (settings.contains("friend_player")) settings.getBoolean("friend_player") else true,
+                            settings.getBoolean("animal"),
+                            if (settings.contains("friendly_mob")) settings.getBoolean("friendly_mob") else false
+                        )
                     }
                 }
                 loader.magicPlayerData[uuid] = data
@@ -77,14 +74,19 @@ class ManaServerState : SavedData() {
             val key = it.key.toString()
             val value = it.value
             val dataNbt = CompoundTag()
-            dataNbt.putInt("mana", value.mana)
-            dataNbt.putInt("maxMana", value.maxMana)
-            dataNbt.putInt("manaRegeneration", value.manaRegeneration)
             val friends = CompoundTag()
             value.friends.forEachIndexed { index, f ->
                 friends.putUUID("$index", f)
             }
             dataNbt.put("friends", friends)
+            val friendlySettings = CompoundTag()
+            friendlySettings.putBoolean("hostile", value.treatHostileAsFriend)
+            friendlySettings.putBoolean("neutral", value.treatNeutralAsFriend)
+            friendlySettings.putBoolean("non_friend_player", value.treatNonFriendPlayerAsFriend)
+            friendlySettings.putBoolean("friend_player", value.treatFriendPlayerAsFriend)
+            friendlySettings.putBoolean("animal", value.treatAnimalAsFriend)
+            friendlySettings.putBoolean("friendly_mob", value.treatFriendlyMobAsFriend)
+            dataNbt.put("friendly_settings", friendlySettings)
             playersNBT.put(key, dataNbt)
         }
         nbt.put("players", playersNBT)

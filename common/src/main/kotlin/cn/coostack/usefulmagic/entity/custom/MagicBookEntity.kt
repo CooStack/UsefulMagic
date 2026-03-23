@@ -1,37 +1,33 @@
-package cn.coostack.usefulmagic.entity.custom
+﻿package cn.coostack.usefulmagic.entity.custom
 
-import cn.coostack.cooparticlesapi.CooParticlesAPI
 import cn.coostack.cooparticlesapi.barrages.BarrageManager
 import cn.coostack.cooparticlesapi.barrages.HitBox
-import cn.coostack.cooparticlesapi.extend.relativize
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.network.particle.emitters.PhysicConstant
 import cn.coostack.cooparticlesapi.network.particle.emitters.type.EmittersShootTypes
+import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
-import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
-import cn.coostack.usefulmagic.entity.custom.goal.IllegalFlyingGoal
-import cn.coostack.usefulmagic.entity.custom.goal.MagicAttackGoal
-import cn.coostack.usefulmagic.entity.custom.goal.MagicCloseTargetGoal
-import cn.coostack.usefulmagic.entity.custom.skills.*
+import cn.coostack.usefulmagic.entity.custom.goal.book.MagicAttackGoal
+import cn.coostack.usefulmagic.entity.custom.goal.dragon.IllegalFlyingGoal
+import cn.coostack.usefulmagic.entity.custom.skills.book.*
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import cn.coostack.usefulmagic.managers.server.SkillManagerManager
 import cn.coostack.usefulmagic.particles.animation.EmittersAnimate
 import cn.coostack.usefulmagic.particles.animation.ParticleAnimation
 import cn.coostack.usefulmagic.particles.animation.StyleAnimate
-import cn.coostack.usefulmagic.particles.barrages.entity.EntityWoodenBarrage
+import cn.coostack.usefulmagic.particles.barrages.entity.EntityMagicWoodenBarrage
 import cn.coostack.usefulmagic.particles.emitters.DirectionShootEmitters
 import cn.coostack.usefulmagic.particles.emitters.ExplodeMagicEmitters
 import cn.coostack.usefulmagic.particles.emitters.LightningParticleEmitters
 import cn.coostack.usefulmagic.particles.emitters.ParticleWaveEmitters
-import cn.coostack.usefulmagic.particles.style.entitiy.BookEntityDeathStyle
+import cn.coostack.usefulmagic.particles.entity.book.composition.BookEntityDeathComposition
 import cn.coostack.usefulmagic.skill.api.EntitySkillManager
 import cn.coostack.usefulmagic.skill.api.SkillDamageCancelCondition
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
-import net.minecraft.network.syncher.EntityDataSerializer
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.server.level.ServerBossEvent
@@ -42,13 +38,7 @@ import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
 import net.minecraft.world.BossEvent
 import net.minecraft.world.damagesource.DamageSource
-import net.minecraft.world.entity.AnimationState
-import net.minecraft.world.entity.EntityType
-import net.minecraft.world.entity.ExperienceOrb
-import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.entity.Mob
-import net.minecraft.world.entity.PathfinderMob
-import net.minecraft.world.entity.Pose
+import net.minecraft.world.entity.*
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.ai.control.FlyingMoveControl
@@ -61,12 +51,14 @@ import net.minecraft.world.entity.monster.EnderMan
 import net.minecraft.world.entity.monster.RangedAttackMob
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
+import net.minecraft.world.level.levelgen.Heightmap
 import net.minecraft.world.phys.Vec3
+import cn.coostack.cooparticlesapi.extend.*
 import kotlin.math.*
 import kotlin.random.Random
 
 /**
- * BOSS有3个生命阶段
+ * BOSS 三个生命阶段
  * 0-1/3*maxHealth, 1/3*maxHealth-2/3*maxHealth, 2/3*maxHealth-maxHealth
  */
 class MagicBookEntity(entityType: EntityType<out PathfinderMob>, world: Level) : PathfinderMob(entityType, world),
@@ -110,6 +102,18 @@ class MagicBookEntity(entityType: EntityType<out PathfinderMob>, world: Level) :
         )
 
         @JvmStatic
+        private val FLIGHT_MODE = SynchedEntityData.defineId(
+            MagicBookEntity::class.java, EntityDataSerializers.INT
+        )
+
+        private const val FLIGHT_MODE_IDLE = 0
+        private const val FLIGHT_MODE_COMBAT_ORBIT = 1
+        private const val FLIGHT_MODE_SKILL_HOVER = 2
+        private const val FLIGHT_MODE_SKILL_ORBIT = 3
+        private const val FLIGHT_MODE_HEALTH_REVERSE = 4
+        private const val COMBAT_MEMORY_RANGE = 128.0
+
+        @JvmStatic
         fun createDefaultMobAttributes(): AttributeSupplier.Builder {
             return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 1.0)
@@ -129,8 +133,10 @@ class MagicBookEntity(entityType: EntityType<out PathfinderMob>, world: Level) :
         }
     val attackAnimateState = AnimationState()
     val deathAnimation = ParticleAnimation()
+    private val orbitDirection = if (Random.nextBoolean()) 1.0 else -1.0
 
     init {
+        isNoGravity = true
         health = 1f
         initSkillManager()
     }
@@ -151,6 +157,7 @@ class MagicBookEntity(entityType: EntityType<out PathfinderMob>, world: Level) :
         builder.define(BOOK_HEALTH, 1f)
         builder.define(SET_ENTITY_DEATH, false)
         builder.define(ENTITY_SPAWNING, true)
+        builder.define(FLIGHT_MODE, FLIGHT_MODE_IDLE)
     }
 
     fun isAttacking(): Boolean {
@@ -159,6 +166,10 @@ class MagicBookEntity(entityType: EntityType<out PathfinderMob>, world: Level) :
 
     fun setAttacking(attacking: Boolean) {
         entityData.set(IS_ATTACKING, attacking)
+    }
+
+    fun shouldRenderIdleFloat(): Boolean {
+        return !entitySpawning && !isEntityDeath() && entityData.get(FLIGHT_MODE) == FLIGHT_MODE_IDLE
     }
 
     override fun readAdditionalSaveData(nbt: CompoundTag) {
@@ -213,7 +224,6 @@ class MagicBookEntity(entityType: EntityType<out PathfinderMob>, world: Level) :
 
         goalSelector.apply {
             addGoal(0, FloatGoal(this@MagicBookEntity))
-            addGoal(3, MagicCloseTargetGoal(this@MagicBookEntity, 8.0))
             addGoal(6, LookAtPlayerGoal(this@MagicBookEntity, Player::class.java, 3f))
             addGoal(7, RandomLookAroundGoal(this@MagicBookEntity))
             addGoal(1, MagicAttackGoal(this@MagicBookEntity, 5))
@@ -222,8 +232,18 @@ class MagicBookEntity(entityType: EntityType<out PathfinderMob>, world: Level) :
 
         targetSelector.apply {
             addGoal(1, HurtByTargetGoal(this@MagicBookEntity))
-            addGoal(1, NearestAttackableTargetGoal(this@MagicBookEntity, Player::class.java, true))
-            addGoal(1, NearestAttackableTargetGoal(this@MagicBookEntity, EnderMan::class.java, true))
+            addGoal(
+                1,
+                NearestAttackableTargetGoal(
+                    this@MagicBookEntity,
+                    LivingEntity::class.java,
+                    10,
+                    true,
+                    false
+                ) { candidate ->
+                    isValidCombatTarget(candidate)
+                }
+            )
         }
 
         moveControl = FlyingMoveControl(this, 10, true)
@@ -232,26 +252,147 @@ class MagicBookEntity(entityType: EntityType<out PathfinderMob>, world: Level) :
 
     fun tickMovement() {
         if (isEntityDeath() || entitySpawning) {
+            entityData.set(FLIGHT_MODE, FLIGHT_MODE_IDLE)
             deltaMovement = Vec3.ZERO
             return
         }
-        if (target == null) {
-            if (!onGround()) {
-                moveControl.setWantedPosition(x, -1.0, z, 0.8)
-            }
+        fallDistance = 0f
+        val currentTarget = resolveCombatTarget()
+        val flightMode = resolveFlightMode(currentTarget)
+        entityData.set(FLIGHT_MODE, flightMode)
+
+        if (currentTarget == null) {
+            hoverAtGroundOffset(2.0, 0.85)
             return
         }
-        if (target!!.y + 6.0 > y) {
-            deltaMovement = deltaMovement.add(0.0, 0.05, 0.0)
-        } else if (target!!.y + 4 < y) {
-            deltaMovement = deltaMovement.add(0.0, -0.05, 0.0)
+        when (flightMode) {
+            FLIGHT_MODE_HEALTH_REVERSE -> hoverAtGroundOffset(10.0, 0.95)
+            FLIGHT_MODE_SKILL_HOVER -> hoverAtGroundOffset(5.0, 0.95)
+            FLIGHT_MODE_SKILL_ORBIT -> orbitAroundTarget(
+                currentTarget,
+                desiredDistance = 16.0,
+                preferredY = preferredCombatY(currentTarget),
+                speed = 1.1
+            )
+
+            else -> orbitAroundTarget(
+                currentTarget,
+                desiredDistance = null,
+                preferredY = preferredCombatY(currentTarget),
+                speed = 1.0
+            )
+        }
+    }
+
+    private fun resolveCombatTarget(updateTarget: Boolean = true): LivingEntity? {
+        val current = target?.takeIf(::isValidCombatTarget)
+        if (current != null) {
+            return current
         }
 
-        // 距离目标水平距离
-        val len = sqrt((target!!.x - x).pow(2) + (target!!.z - z).pow(2))
-        if (len >= 16 && skillManager.active == null) {
-            deltaMovement = deltaMovement.add(Vec3(target!!.x - x, 0.0, target!!.z - z).normalize().scale(0.25))
+        val range = max(getAttributeValue(Attributes.FOLLOW_RANGE), COMBAT_MEMORY_RANGE)
+        val candidates = mutableListOf<LivingEntity>().apply {
+            addAll(level().getEntitiesOfClass(LivingEntity::class.java, boundingBox.inflate(range)) {
+                isValidCombatTarget(it)
+            })
         }
+        val nearest = candidates.minByOrNull { it.distanceToSqr(this) }
+
+        if (updateTarget) {
+            target = nearest
+        }
+        return nearest
+    }
+
+    private fun isValidCombatTarget(entity: LivingEntity?): Boolean {
+        if (entity == null || !entity.isAlive || entity.isRemoved) {
+            return false
+        }
+        if (entity.uuid == uuid || entity.type == type) {
+            return false
+        }
+        if (entity is Player && (entity.isCreative || entity.isSpectator)) {
+            return false
+        }
+        if (entity !is Player && entity !is EnderMan && entity !is MagicSubEyeEntity && entity !is MagicEyeEntity) {
+            return false
+        }
+        val range = max(getAttributeValue(Attributes.FOLLOW_RANGE), COMBAT_MEMORY_RANGE)
+        return entity.distanceToSqr(this) <= range * range
+    }
+
+    private fun resolveFlightMode(currentTarget: LivingEntity?): Int {
+        if (currentTarget == null) {
+            return FLIGHT_MODE_IDLE
+        }
+        return when (skillManager.active) {
+            is HealthReverseSkill -> FLIGHT_MODE_HEALTH_REVERSE
+            is BookCannonballsSkill, is BookSwordSlashSkill -> FLIGHT_MODE_SKILL_ORBIT
+            null -> FLIGHT_MODE_COMBAT_ORBIT
+            else -> FLIGHT_MODE_SKILL_HOVER
+        }
+    }
+
+    private fun hoverAtGroundOffset(offset: Double, speed: Double) {
+        val targetY = getGroundHoverY(x, z, offset)
+        val yOffset = (targetY - y).coerceIn(-1.5, 1.5)
+        moveControl.setWantedPosition(x, targetY, z, speed)
+        deltaMovement = Vec3(
+            deltaMovement.x * 0.7,
+            deltaMovement.y * 0.7 + yOffset * 0.08,
+            deltaMovement.z * 0.7
+        )
+    }
+
+    private fun orbitAroundTarget(
+        target: LivingEntity,
+        desiredDistance: Double?,
+        preferredY: Double,
+        speed: Double
+    ) {
+        lookControl.setLookAt(target, 180f, 180f)
+        val offset = position().subtract(target.position())
+        val distance = max(offset.length(), 1.0E-4)
+        val horizontalOffset = Vec3(offset.x, 0.0, offset.z)
+        val horizontalDirection = if (horizontalOffset.lengthSqr() < 1.0E-4) {
+            Vec3(1.0, 0.0, 0.0)
+        } else {
+            horizontalOffset.normalize()
+        }
+        val tangent = Vec3(-horizontalDirection.z * orbitDirection, 0.0, horizontalDirection.x * orbitDirection)
+        val radialDirection = offset.scale(1.0 / distance)
+        val radialWeight = when {
+            desiredDistance != null -> ((distance - desiredDistance) / desiredDistance).coerceIn(-0.9, 0.9)
+            distance > 8.0 -> -0.8
+            distance < 5.0 -> 0.9
+            else -> 0.0
+        }
+        val verticalWeight = ((preferredY - y) / 6.0).coerceIn(-0.4, 0.4)
+        val steering = tangent.scale(1.15)
+            .add(radialDirection.scale(radialWeight))
+            .add(0.0, verticalWeight, 0.0)
+        val normalized = if (steering.lengthSqr() < 1.0E-4) {
+            Vec3(tangent.x, verticalWeight, tangent.z).normalize()
+        } else {
+            steering.normalize()
+        }
+        val lookAhead = position().add(normalized.scale(if (desiredDistance != null) 4.5 else 3.5))
+        moveControl.setWantedPosition(lookAhead.x, lookAhead.y, lookAhead.z, speed)
+        val acceleration = if (desiredDistance != null) 0.09 else 0.07
+        deltaMovement = deltaMovement.scale(0.84).add(normalized.scale(acceleration))
+    }
+
+    private fun preferredCombatY(target: LivingEntity): Double {
+        return max(getGroundHoverY(x, z, 5.0), target.y + 2.5)
+    }
+
+    private fun getGroundHoverY(posX: Double, posZ: Double, offset: Double): Double {
+        val surfaceY = level().getHeight(
+            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            floor(posX).toInt(),
+            floor(posZ).toInt()
+        ).toDouble()
+        return surfaceY + offset
     }
 
     override fun startSeenByPlayer(serverPlayer: ServerPlayer) {
@@ -261,12 +402,6 @@ class MagicBookEntity(entityType: EntityType<out PathfinderMob>, world: Level) :
 
     override fun stopSeenByPlayer(serverPlayer: ServerPlayer) {
         super.stopSeenByPlayer(serverPlayer)
-        // 没有玩家看得到bossBar, 说明他妈的这个区块应该快GG了
-//        println("stopped tracking by $player")
-//        if (bossBar.players.isEmpty()) {
-//            // 移除实体必然需要中断技能使用
-//            skillManager.resetActiveSkill(false)
-//        }
         bossBar.removePlayer(serverPlayer)
     }
 
@@ -309,32 +444,28 @@ class MagicBookEntity(entityType: EntityType<out PathfinderMob>, world: Level) :
                 LightningParticleEmitters(
                     spawnPos, level()
                 ).apply {
-                    endPos = RelativeLocation(
-                        random.nextDouble(-endRandomRange, endRandomRange),
-                        random.nextDouble(-endRandomRange, endRandomRange),
-                        random.nextDouble(-endRandomRange, endRandomRange),
-                    )
-                    maxTick = random.nextInt(1, 5)
-                    templateData.also {
-                        it.maxAge = 5
-                        it.color = Math3DUtil.colorOf(
+                    targetPos = Vec3.ZERO.random() * Random.nextDouble(endRandomRange / 4, endRandomRange)
+                    maxTick = 1
+                    templateData.apply {
+                        setTextureSheet(CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT)
+                        color = Math3DUtil.colorOf(
                             121, 211, 249
                         )
+                    }
+                    simpleData.apply {
+                        minAge = 5
+                        maxAge = 14
+                        minCount = 1
+                        maxCount = 3
+                        minSize = 0.1
+                        maxSize = 0.3
                     }
                 }
             }, position(), 2, -1) {
                 it as LightningParticleEmitters
-                CooParticlesAPI.scheduler.runTaskTimerMaxTick(it.maxTick) {
-                    val endRandomRange = 40.0
-                    it.endPos = RelativeLocation(
-                        random.nextDouble(-endRandomRange, endRandomRange),
-                        random.nextDouble(-endRandomRange, endRandomRange),
-                        random.nextDouble(-endRandomRange, endRandomRange),
-                    )
-                }
             }
         ).addAnimate(
-            StyleAnimate(BookEntityDeathStyle(id), level() as ServerLevel, position(), -1)
+            StyleAnimate(BookEntityDeathComposition(position(), level()), level() as ServerLevel, position(), -1)
         ).addAnimate(
             EmittersAnimate({
                 val emitter = DirectionShootEmitters(position(), level()).apply {
@@ -412,8 +543,8 @@ class MagicBookEntity(entityType: EntityType<out PathfinderMob>, world: Level) :
             actualDamage *= 3
         }
         val activeSkill = skillManager.active
-        // 设置技能中断条件
-        if (activeSkill != null && activeSkill is SkillDamageCancelCondition) {
+        // 设置抢能中断条件
+        if (activeSkill != null && activeSkill is SkillDamageCancelCondition<*>) {
             activeSkill.damage(actualDamage)
         }
         return super.hurt(source, actualDamage)
@@ -446,14 +577,19 @@ class MagicBookEntity(entityType: EntityType<out PathfinderMob>, world: Level) :
 
     override fun dropCustomDeathLoot(level: ServerLevel, damageSource: DamageSource, recentlyHit: Boolean) {
         super.dropCustomDeathLoot(level, damageSource, recentlyHit)
-        spawnAtLocation { UsefulMagicItems.EXPLOSION_WAND.getItem() }
+        // 掉召唤物
+        spawnAtLocation { UsefulMagicItems.EXPLOSION_MAGIC.getItem() }
     }
 
     override fun remove(reason: RemovalReason) {
+        bossBar.removeAllPlayers()
+        // 区块卸载时保留 SkillManager 缓存，但必须中断当前技能，避免粒子/状态遗留。
+        if (reason.shouldSave()) {
+            skillManager.interruptActiveSkill(true)
+        } else if (reason.shouldDestroy()) {
+            skillManager.resetActiveSkill(false)
+        }
         super.remove(reason)
-        // 移除实体必然需要中断技能使用
-//        println("移除实体: $reason")
-        skillManager.resetActiveSkill(false)
     }
 
     override fun checkDespawn() {
@@ -582,6 +718,9 @@ class MagicBookEntity(entityType: EntityType<out PathfinderMob>, world: Level) :
         if (deltaMovement.y > 1.0) {
             deltaMovement = Vec3(deltaMovement.x.coerceIn(-1.0, 1.0), 1.0, deltaMovement.z.coerceIn(-1.0, 1.0))
         }
+        if (!level().isClientSide) {
+            tickMovement()
+        }
         super.tick()
         tick++
         setAnimation()
@@ -605,7 +744,7 @@ class MagicBookEntity(entityType: EntityType<out PathfinderMob>, world: Level) :
     override fun performRangedAttack(target: LivingEntity, pullProgress: Float) {
         if (level().isClientSide) return
         val direction = position().relativize(target.position())
-        val barrage = EntityWoodenBarrage(
+        val barrage = EntityMagicWoodenBarrage(
             2.0, target, eyePosition, level() as ServerLevel,
             random.nextDouble() > 0.8
         )

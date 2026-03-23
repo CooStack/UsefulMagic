@@ -5,7 +5,7 @@ import cn.coostack.usefulmagic.utils.ComboUtil
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
 
-interface ComboCondition : SkillCondition, Comparable<ComboCondition> {
+interface ComboCondition : SkillCondition<LivingEntity>, Comparable<ComboCondition> {
     val triggerComboMin: Int
 
     override fun canTrigger(entity: LivingEntity): Boolean {

@@ -42,6 +42,7 @@ class GuildCircleStyle(uuid: UUID = UUID.randomUUID()) :
             }
     }
 
+
     override fun onDisplay() {
         addPreTickAction {
             val player = world?.getPlayerByUUID(bindPlayer) ?: let {

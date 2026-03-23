@@ -32,7 +32,7 @@ class SkyFallingSub2Style(uuid: UUID, val parent: SkyFallingStyle) : SequencedPa
         addPreTickAction {
             val d = parent.pos.relativize(pos)
             direction = RelativeLocation.of(d)
-            rotateParticlesToPoint(direction)
+            rotateToPoint(direction)
         }
     }
 

@@ -21,7 +21,7 @@ import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import kotlin.random.Random
 
-class HeavyHitSkill(val damage: Float) : Skill, ComboCondition {
+class HeavyHitSkill(val damage: Float) : Skill<LivingEntity>, ComboCondition {
     override var chance: Double = 1.0
 
     override fun getSkillCountDown(source: LivingEntity): Int {

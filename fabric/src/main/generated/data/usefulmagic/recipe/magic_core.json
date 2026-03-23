@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "O": {
+      "item": "minecraft:obsidian"
+    }
+  },
+  "pattern": [
+    "OOO",
+    "O O",
+    "OOO"
+  ],
+  "result": {
+    "count": 1,
+    "id": "usefulmagic:magic_core"
+  }
+}

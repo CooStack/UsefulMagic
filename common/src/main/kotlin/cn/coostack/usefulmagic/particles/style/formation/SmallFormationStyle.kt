@@ -142,9 +142,9 @@ class SmallFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid)
                     reverseFunctionFromStatus(this, this@SmallFormationStyle.statusHelper)
                     this.addPreTickAction {
                         if (status == FormationStatus.WORKING) {
-                            rotateParticlesAsAxis(PI / 32)
+                            rotateAsAxis(PI / 32)
                         } else {
-                            rotateParticlesAsAxis(PI / 256)
+                            rotateAsAxis(PI / 256)
                         }
                     }
                 }
@@ -192,9 +192,9 @@ class SmallFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid)
                         reverseFunctionFromStatus(this, this@SmallFormationStyle.statusHelper)
                         this.addPreTickAction {
                             if (status == FormationStatus.WORKING) {
-                                rotateParticlesAsAxis(-PI / 16)
+                                rotateAsAxis(-PI / 16)
                             } else {
-                                rotateParticlesAsAxis(-PI / 128)
+                                rotateAsAxis(-PI / 128)
                             }
                         }
                     }

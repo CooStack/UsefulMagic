@@ -1,6 +1,13 @@
 package cn.coostack.usefulmagic.gui.mana
 
 import cn.coostack.usefulmagic.UsefulMagic
+import cn.coostack.usefulmagic.extend.mana
+import cn.coostack.usefulmagic.extend.maxMana
+import cn.coostack.usefulmagic.items.consumer.ManaRevive
+import cn.coostack.usefulmagic.items.consumer.ManaStar
+import cn.coostack.usefulmagic.items.prop.DefendCoreItem
+import cn.coostack.usefulmagic.items.prop.FlyingRuneItem
+import cn.coostack.usefulmagic.items.weapon.wands.MagicWand
 import cn.coostack.usefulmagic.managers.client.ClientManaManager
 import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.Minecraft
@@ -28,6 +35,20 @@ object ManaBarCallback {
         if (player.isCreative || player.isSpectator) {
             return
         }
+        var shouldRender = false
+        if (player.inventory.contains {
+                it.item is FlyingRuneItem || it.item is DefendCoreItem
+            }) {
+            shouldRender = true
+        }
+        val handItems = arrayOf(player.mainHandItem.item, player.offhandItem.item)
+        shouldRender = shouldRender || handItems.any {
+            it is MagicWand || it is ManaStar || it is ManaRevive
+        }
+        if (!shouldRender) {
+            return
+        }
+        FlyingRuneItem.enabledFlyingRuneItem
         // 消耗
         val window = client.window ?: return
         val matrices = context.pose()
@@ -37,8 +58,8 @@ object ManaBarCallback {
         RenderSystem.setShaderTexture(0, TEXTURE)
         val x = 10
         val y = 20
-        val mana = ClientManaManager.data.mana
-        val max = ClientManaManager.data.maxMana.coerceAtLeast(1)
+        val mana = player.mana
+        val max = player.maxMana
         val progress = mana.toDouble() / max
         val scale = (2 / window.guiScale).toFloat()
 //        context.matrices.peek().normalMatrix.scale(scale)

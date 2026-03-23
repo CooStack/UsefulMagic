@@ -31,7 +31,7 @@ side = "BOTH"
 [[dependencies.${ mod_id }]]
 modId = "cooparticlesapi"
 type = "required" #mandatory (Can be one of "required", "optional", "incompatible" or "discouraged")
-versionRange = "[2.0.0,)"
+versionRange = "[2.3.4,)"
 ordering = "NONE"
 side = "BOTH"
 

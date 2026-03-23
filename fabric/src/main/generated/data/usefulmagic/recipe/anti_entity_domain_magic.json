@@ -1,0 +1,38 @@
+{
+  "type": "usefulmagic:altar_recipe",
+  "center": {
+    "item": "usefulmagic:barrage_magic"
+  },
+  "data": {
+    "0": {
+      "item": "usefulmagic:red_mana_crystal"
+    },
+    "1": {
+      "item": "usefulmagic:red_mana_star"
+    },
+    "2": {
+      "item": "usefulmagic:red_mana_crystal"
+    },
+    "3": {
+      "item": "usefulmagic:red_mana_star"
+    },
+    "4": {
+      "item": "usefulmagic:red_mana_crystal"
+    },
+    "5": {
+      "item": "minecraft:nether_star"
+    },
+    "6": {
+      "item": "usefulmagic:red_mana_crystal"
+    },
+    "7": {
+      "item": "usefulmagic:red_mana_star"
+    }
+  },
+  "mana_need": 16000,
+  "output": {
+    "count": 1,
+    "id": "usefulmagic:anti_entity_domain_magic"
+  },
+  "tick": 1800
+}

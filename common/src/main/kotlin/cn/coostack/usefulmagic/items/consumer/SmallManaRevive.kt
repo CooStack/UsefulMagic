@@ -1,22 +1,19 @@
 package cn.coostack.usefulmagic.items.consumer
 
-import cn.coostack.usefulmagic.UsefulMagic
+import cn.coostack.usefulmagic.extend.isFullMana
+import cn.coostack.usefulmagic.extend.mana
+import cn.coostack.usefulmagic.extend.maxMana
 import cn.coostack.usefulmagic.items.UsefulMagicItems
-import cn.coostack.usefulmagic.managers.client.ClientManaManager
 import net.minecraft.advancements.CriteriaTriggers
-import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.entity.player.Player
-import net.minecraft.world.item.Item
-import net.minecraft.world.item.ItemStack
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResultHolder
-import net.minecraft.world.item.ItemUtils
-import net.minecraft.world.item.TooltipFlag
-import net.minecraft.world.item.UseAnim
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.*
 import net.minecraft.world.level.Level
 
 class SmallManaRevive(settings: Properties) : Item(settings) {
@@ -42,15 +39,16 @@ class SmallManaRevive(settings: Properties) : Item(settings) {
     }
 
     override fun finishUsingItem(stack: ItemStack, level: Level, user: LivingEntity): ItemStack {
+        super.finishUsingItem(stack, level, user)
         if (user !is Player) {
             return stack
         }
 
-
         if (!level.isClientSide) {
             // 增加魔力
             CriteriaTriggers.CONSUME_ITEM.trigger(user as ServerPlayer, stack)
-            UsefulMagic.state.getDataFromServer(user.uuid).mana += manaRevive
+            user.mana += manaRevive
+            user.mana = user.mana.coerceAtMost(user.maxMana)
         }
 
         if (stack.isEmpty) {
@@ -80,8 +78,7 @@ class SmallManaRevive(settings: Properties) : Item(settings) {
 
 
     override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack?> {
-        val data = if (world.isClientSide) ClientManaManager.data else UsefulMagic.state.getDataFromServer(user.uuid)
-        if (data.isFull() && !user.isCreative) {
+        if (user.isFullMana() && !user.isCreative) {
             return InteractionResultHolder.fail(
                 user.getItemInHand(hand)
             )

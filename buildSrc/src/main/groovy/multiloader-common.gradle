@@ -14,12 +14,18 @@ java {
 
 repositories {
     mavenCentral()
+    maven {
+        name = "jsdu-snapshot"
+        url = "https://nexus.jsdu.cn/snapshots"
+        mavenContent {
+            snapshotsOnly()
+        }
+    }
 
     maven {
         name = "jsdu"
-        url = "https://nexus.jsdu.cn/repository/maven-public/"
+        url = "https://nexus.jsdu.cn/repository"
     }
-
     // https://docs.gradle.org/current/userguide/declaring_repositories.html#declaring_content_exclusively_found_in_one_repository
     exclusiveContent {
         forRepository {
@@ -48,6 +54,7 @@ repositories {
         url = 'https://maven.blamejared.com'
     }
 }
+
 
 // Declare capabilities on the outgoing configurations.
 // Read more about capabilities here: https://docs.gradle.org/current/userguide/component_capabilities.html#sec:declaring-additional-capabilities-for-a-local-component
@@ -101,8 +108,8 @@ processResources {
             'description'                  : project.description,
             'neoforge_version'             : neoforge_version,
             'neoforge_loader_version_range': neoforge_loader_version_range,
-            "forge_version": forge_version,
-            "forge_loader_version_range": forge_loader_version_range,
+            "forge_version"                : forge_version,
+            "forge_loader_version_range"   : forge_loader_version_range,
             'credits'                      : credits,
             'java_version'                 : java_version
     ]

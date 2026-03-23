@@ -2,10 +2,9 @@ package cn.coostack.usefulmagic.blocks.entity
 
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.network.particle.emitters.impl.SimpleParticleEmitters
 import cn.coostack.cooparticlesapi.particles.impl.ControlableFireworkEffect
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
-import cn.coostack.usefulmagic.items.weapon.wands.WandItem
+import cn.coostack.usefulmagic.items.weapon.wands.MagicWand
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.core.HolderLookup
@@ -116,26 +115,26 @@ class AltarBlockCoreEntity(pos: BlockPos, state: BlockState) :
             return
         }
         val item = stack.item
-        if (item !is WandItem) return
+        if (item !is MagicWand) return
         if (time % 10 == 0 && core.currentMana >= 10 && stack.damageValue > 0) {
             stack.damageValue--
             core.currentMana -= 10
-            val emitter = SimpleParticleEmitters(
-                pos.above(3).center,
-                world as ServerLevel,
-                ControlableParticleData()
-                    .also {
-                        it.effect = ControlableFireworkEffect(it.uuid)
-                        it.velocity = Vec3(0.0, 0.2, 0.0)
-                        it.speed = -3 / 30.0
-                        it.maxAge = 20
-                        it.color = Math3DUtil.colorOf(200, 100, 250)
-                    }
-            ).also {
-                it.maxTick = 5
-                it.delay = 3
-            }
-            ParticleEmittersManager.spawnEmitters(emitter)
+//            val emitter = SimpleParticleEmitters(
+//                pos.above(3).center,
+//                world as ServerLevel,
+//                ControlableParticleData()
+//                    .also {
+//                        it.effect = ControlableFireworkEffect(it.uuid)
+//                        it.velocity = Vec3(0.0, 0.2, 0.0)
+//                        it.speed = -3 / 30.0
+//                        it.maxAge = 20
+//                        it.color = Math3DUtil.colorOf(200, 100, 250)
+//                    }
+//            ).also {
+//                it.maxTick = 5
+//                it.delay = 3
+//            } FIXME 这里要重新做一个
+//            ParticleEmittersManager.spawnEmitters(emitter)
         }
     }
 

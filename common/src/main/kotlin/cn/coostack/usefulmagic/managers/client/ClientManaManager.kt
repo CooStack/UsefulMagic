@@ -19,9 +19,6 @@ object ClientManaManager {
         if (who != origin.owner) {
             return
         }
-        origin.maxMana = data.maxMana
-        origin.mana = data.mana
-        origin.manaRegeneration = data.manaRegeneration
     }
 
 }

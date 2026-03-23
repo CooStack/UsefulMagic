@@ -1,5 +1,6 @@
 package cn.coostack.usefulmagic.particles.emitters
 
+import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.network.particle.emitters.ClassParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmitters
@@ -7,12 +8,13 @@ import cn.coostack.cooparticlesapi.particles.control.ParticleControler
 import cn.coostack.cooparticlesapi.utils.GraphMathHelper
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
-import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
 
+@CooAutoRegister
 class StarryMeteoriteLocusEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, world) {
     var templateData = ControlableParticleData()
 
@@ -20,7 +22,7 @@ class StarryMeteoriteLocusEmitters(pos: Vec3, world: Level?) : ClassParticleEmit
         const val ID = "starry_meteorite_locus_emitters"
 
         @JvmStatic
-        val CODEC: StreamCodec<FriendlyByteBuf, ParticleEmitters> = StreamCodec.of<FriendlyByteBuf, ParticleEmitters>(
+        val CODEC: StreamCodec<RegistryFriendlyByteBuf, ParticleEmitters> = StreamCodec.of<RegistryFriendlyByteBuf, ParticleEmitters>(
             { buf, data ->
                 data as StarryMeteoriteLocusEmitters
                 encodeBase(data, buf)
@@ -72,7 +74,7 @@ class StarryMeteoriteLocusEmitters(pos: Vec3, world: Level?) : ClassParticleEmit
         return ID
     }
 
-    override fun getCodec(): StreamCodec<FriendlyByteBuf, ParticleEmitters> {
+    override fun getCodec(): StreamCodec<RegistryFriendlyByteBuf, ParticleEmitters> {
         return CODEC
     }
 }

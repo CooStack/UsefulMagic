@@ -60,7 +60,10 @@ tasks.named('jar', Jar) {
 }
 dependencies {
     implementation "thedarkcolour:kotlinforforge-neoforge:5.9.0"
-    implementation "cn.coostack:cooparticlesapi-neoforge:${rootProject.coo_particles_api_version}"
+    implementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+    implementation("cn.coostack:cooparticlesapi-neoforge:${rootProject.coo_particles_api_version}") {
+        changing = true
+    }
 }
 
 sourceSets.main.resources {

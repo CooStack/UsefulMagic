@@ -11,7 +11,6 @@ import org.lwjgl.opengl.GL33
 
 class FormationCoreRenderer(ctx: EntityRendererProvider.Context) : EntityRenderer<FormationCoreEntity>(ctx) {
 
-
     override fun getTextureLocation(p0: FormationCoreEntity): ResourceLocation? {
         return null
     }

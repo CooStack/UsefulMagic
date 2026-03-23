@@ -106,9 +106,9 @@ class LargeFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid)
                                                 }.toggleOnDisplay {
                                                     this.addPreTickAction {
                                                         if (status == FormationStatus.WORKING) {
-                                                            rotateParticlesAsAxis(PI / 128)
+                                                            rotateAsAxis(PI / 128)
                                                         } else {
-                                                            rotateParticlesAsAxis(PI / 256)
+                                                            rotateAsAxis(PI / 256)
                                                         }
                                                     }
                                                 }
@@ -139,9 +139,9 @@ class LargeFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid)
                                                 }.toggleOnDisplay {
                                                     this.addPreTickAction {
                                                         if (status == FormationStatus.WORKING) {
-                                                            rotateParticlesAsAxis(-PI / 128)
+                                                            rotateAsAxis(-PI / 128)
                                                         } else {
-                                                            rotateParticlesAsAxis(-PI / 256)
+                                                            rotateAsAxis(-PI / 256)
                                                         }
                                                     }
                                                 }
@@ -191,7 +191,7 @@ class LargeFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid)
                                                     getSingleStyleDataBuilder().build()
                                                 }.toggleOnDisplay {
                                                     this.addPreTickAction {
-                                                        rotateParticlesAsAxis(PI / 180)
+                                                        rotateAsAxis(PI / 180)
                                                     }
                                                 }
                                             )
@@ -212,7 +212,7 @@ class LargeFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid)
                                                     getSingleStyleDataBuilder().build()
                                                 }.toggleOnDisplay {
                                                     this.addPreTickAction {
-                                                        rotateParticlesAsAxis(PI / 30)
+                                                        rotateAsAxis(PI / 30)
                                                     }
                                                 }
                                             )
@@ -234,7 +234,7 @@ class LargeFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid)
                                                     getSingleStyleDataBuilder().build()
                                                 }.toggleOnDisplay {
                                                     this.addPreTickAction {
-                                                        rotateParticlesAsAxis(PI / 180)
+                                                        rotateAsAxis(PI / 180)
                                                     }
                                                 }
                                             )
@@ -257,7 +257,7 @@ class LargeFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid)
                                                     getSingleStyleDataBuilder().build()
                                                 }.toggleOnDisplay {
                                                     this.addPreTickAction {
-                                                        rotateParticlesAsAxis(-PI / 90)
+                                                        rotateAsAxis(-PI / 90)
                                                     }
                                                 }
                                             )
@@ -286,7 +286,7 @@ class LargeFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid)
                                                         getSingleStyleDataBuilder().build()
                                                     }.toggleOnDisplay {
                                                         this.addPreTickAction {
-                                                            rotateParticlesAsAxis(PI / 90)
+                                                            rotateAsAxis(PI / 90)
                                                         }
                                                     }
                                             )
@@ -325,9 +325,9 @@ class LargeFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid)
                                                 }.toggleOnDisplay {
                                                     this.addPreTickAction {
                                                         if (status == FormationStatus.WORKING) {
-                                                            rotateParticlesAsAxis(PI / 128)
+                                                            rotateAsAxis(PI / 128)
                                                         } else {
-                                                            rotateParticlesAsAxis(PI / 256)
+                                                            rotateAsAxis(PI / 256)
                                                         }
                                                     }
                                                 }
@@ -346,9 +346,9 @@ class LargeFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid)
                                             }.toggleOnDisplay {
                                                 addPreTickAction {
                                                     if (status == FormationStatus.WORKING) {
-                                                        rotateParticlesAsAxis(-PI / 128)
+                                                        rotateAsAxis(-PI / 128)
                                                     } else {
-                                                        rotateParticlesAsAxis(-PI / 256)
+                                                        rotateAsAxis(-PI / 256)
                                                     }
                                                 }
                                             }
@@ -390,9 +390,9 @@ class LargeFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid)
                                                 }.toggleOnDisplay {
                                                     this.addPreTickAction {
                                                         if (status == FormationStatus.WORKING) {
-                                                            rotateParticlesAsAxis(PI / 128)
+                                                            rotateAsAxis(PI / 128)
                                                         } else {
-                                                            rotateParticlesAsAxis(PI / 256)
+                                                            rotateAsAxis(PI / 256)
                                                         }
                                                     }
                                                 }
@@ -415,9 +415,9 @@ class LargeFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid)
                                                 }.toggleOnDisplay {
                                                     this.addPreTickAction {
                                                         if (status == FormationStatus.WORKING) {
-                                                            rotateParticlesAsAxis(-PI / 128)
+                                                            rotateAsAxis(-PI / 128)
                                                         } else {
-                                                            rotateParticlesAsAxis(-PI / 256)
+                                                            rotateAsAxis(-PI / 256)
                                                         }
                                                     }
                                                 }
@@ -429,7 +429,7 @@ class LargeFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid)
                     }
                     .toggleOnDisplay {
                         this.addPreTickAction {
-                            rotateParticlesAsAxis(-PI / 256)
+                            rotateAsAxis(-PI / 256)
                         }
                     }
             )

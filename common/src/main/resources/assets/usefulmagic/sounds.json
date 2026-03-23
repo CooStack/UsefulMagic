@@ -2,7 +2,8 @@
   "electric_effect": {
     "subtitle": "sounds.usefulmagic.electric_effect",
     "sounds": [
-      "usefulmagic:electric_effect"
+      "usefulmagic:magic/lightning/electron_01",
+      "usefulmagic:magic/lightning/electron_02"
     ]
   },
   "magic_sword": {
@@ -15,6 +16,12 @@
     "subtitle": "sounds.usefulmagic.magic_activate",
     "sounds": [
       "usefulmagic:magic_activate"
+    ]
+  },
+  "magic_extend": {
+    "subtitle": "sounds.usefulmagic.magic_extend",
+    "sounds": [
+      "usefulmagic:magic_extend"
     ]
   },
   "sky_falling_magic_idle": {
@@ -41,12 +48,136 @@
       "usefulmagic:star"
     ]
   },
+  "meteor_fall_far": {
+    "subtitle": "sounds.usefulmagic.meteor_fall_far",
+    "sounds": [
+      "usefulmagic:magic/meteorite/meteorite_far"
+    ]
+  },
+  "meteor_fall_near": {
+    "subtitle": "sounds.usefulmagic.meteor_fall_near",
+    "sounds": [
+      "usefulmagic:magic/meteorite/meteorite_near"
+    ]
+  },
+  "meteor_impact": {
+    "subtitle": "sounds.usefulmagic.meteor_impact",
+    "sounds": [
+      "usefulmagic:magic/meteorite/meteorite_impact"
+    ]
+  },
   "defend_shield_hit": {
     "subtitle": "sounds.usefulmagic.defend_shield_hit",
     "sounds": [
       "usefulmagic:defend_shield_hit_1",
       "usefulmagic:defend_shield_hit_2",
       "usefulmagic:defend_shield_hit_3"
+    ]
+  },
+  "laser_charge_up": {
+    "subtitle": "sounds.usefulmagic.laser_charge_up",
+    "sounds": [
+      "usefulmagic:skill/laser/laser_charge_up"
+    ]
+  },
+  "laser_start": {
+    "subtitle": "sounds.usefulmagic.laser_start",
+    "sounds": [
+      "usefulmagic:skill/laser/laser_start"
+    ]
+  },
+  "laser_loop": {
+    "subtitle": "sounds.usefulmagic.laser_loop",
+    "sounds": [
+      "usefulmagic:skill/laser/laser_loop"
+    ]
+  },
+  "laser_obliteration": {
+    "subtitle": "sounds.usefulmagic.laser_obliteration",
+    "sounds": [
+      "usefulmagic:skill/laser/laser_obliteration"
+    ]
+  },
+  "eye_teleport": {
+    "subtitle": "sounds.usefulmagic.eye_teleport",
+    "sounds": [
+      "usefulmagic:eye/eye_teleport"
+    ]
+  },
+  "eye_active": {
+    "subtitle": "sounds.usefulmagic.eye_active",
+    "sounds": [
+      "usefulmagic:eye/eye_active"
+    ]
+  },
+  "small_laser_shoot": {
+    "subtitle": "sounds.usefulmagic.small_laser_shoot",
+    "sounds": [
+      "usefulmagic:skill/laser/small_laser_shoot1",
+      "usefulmagic:skill/laser/small_laser_shoot2"
+    ]
+  },
+  "eye_spawn": {
+    "subtitle": "sounds.usefulmagic.eye_spawn",
+    "sounds": [
+      "usefulmagic:eye/eye_spawn"
+    ]
+  },
+  "dragon_spawn_magic_laser": {
+    "subtitle": "sounds.usefulmagic.dragon_spawn_magic_laser",
+    "sounds": [
+      "usefulmagic:dragon/dragon_spawn_magic_laser"
+    ]
+  },
+  "dragon_huge_laser_charge_up": {
+    "subtitle": "sounds.usefulmagic.dragon_huge_laser_charge_up",
+    "sounds": [
+      "usefulmagic:dragon/dragon_huge_laser_charge_up"
+    ]
+  },
+  "dragon_huge_laser_shoot": {
+    "subtitle": "sounds.usefulmagic.dragon_huge_laser_shoot",
+    "sounds": [
+      "usefulmagic:dragon/dragon_huge_laser_shoot"
+    ]
+  },
+  "dragon_magic_active": {
+    "subtitle": "sounds.usefulmagic.dragon_magic_active",
+    "sounds": [
+      "usefulmagic:dragon/dragon_magic_active1",
+      "usefulmagic:dragon/dragon_magic_active2",
+      "usefulmagic:dragon/dragon_magic_active3"
+    ]
+  },
+  "dragon_rewind": {
+    "subtitle": "sounds.usefulmagic.dragon_rewind",
+    "sounds": [
+      "usefulmagic:dragon/rewind"
+    ]
+  },
+  "dragon_magic_appear": {
+    "subtitle": "sounds.usefulmagic.dragon_magic_appear",
+    "sounds": [
+      "usefulmagic:dragon/dragon_magic_appear1",
+      "usefulmagic:dragon/dragon_magic_appear2"
+    ]
+  },
+  "liquid_ball": {
+    "subtitle": "sounds.usefulmagic.liquid_ball",
+    "sounds": [
+      "usefulmagic:dragon/liquid_ball"
+    ]
+  },
+  "rock_loop": {
+    "subtitle": "sounds.usefulmagic.rock_loop",
+    "sounds": [
+      "usefulmagic:magic/meteorite/rock_loop"
+    ]
+  },
+  "thorn_hit": {
+    "subtitle": "sounds.usefulmagic.thorn_hit",
+    "sounds": [
+      "usefulmagic:skill/thorn/thorn_hit"
     ]
   }
 }

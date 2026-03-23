@@ -1,7 +1,12 @@
 package cn.coostack.usefulmagic.particles.animation
 
 import java.util.UUID
-
+@Deprecated("用CooParticlesAPI提供的Animate")
+/**
+ * 留着当纯因为某些选项懒得改了qaq
+ *
+ * @constructor Create empty Particle animation
+ */
 class ParticleAnimation {
     val uuid = UUID.randomUUID()
     val animations = ArrayList<ParticleAnimate>()

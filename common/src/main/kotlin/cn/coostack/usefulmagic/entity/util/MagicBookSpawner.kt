@@ -1,11 +1,10 @@
-package cn.coostack.usefulmagic.entity.util
+﻿package cn.coostack.usefulmagic.entity.util
 
 import cn.coostack.cooparticlesapi.barrages.HitBox
+import cn.coostack.cooparticlesapi.network.particle.composition.manager.ParticleCompositionManager
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.network.particle.emitters.PhysicConstant
-import cn.coostack.cooparticlesapi.network.particle.emitters.impl.PresetLaserEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.type.EmittersShootTypes
-import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
@@ -14,15 +13,14 @@ import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.blocks.entity.MagicCoreBlockEntity
 import cn.coostack.usefulmagic.entity.custom.MagicBookEntity
 import cn.coostack.usefulmagic.extend.isOf
-import cn.coostack.usefulmagic.particles.animation.EmitterAnimate
 import cn.coostack.usefulmagic.particles.animation.EmittersAnimate
 import cn.coostack.usefulmagic.particles.animation.ParticleAnimation
 import cn.coostack.usefulmagic.particles.animation.StyleAnimate
+import cn.coostack.usefulmagic.particles.composition.EnchantLineComposition
 import cn.coostack.usefulmagic.particles.emitters.DirectionShootEmitters
 import cn.coostack.usefulmagic.particles.emitters.ParticleWaveEmitters
 import cn.coostack.usefulmagic.particles.emitters.explosion.ExplosionLineEmitters
-import cn.coostack.usefulmagic.particles.style.EnchantLineStyle
-import cn.coostack.usefulmagic.particles.style.entitiy.MagicBookSpawnStyle
+import cn.coostack.usefulmagic.particles.entity.book.composition.MagicBookSpawnComposition
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
@@ -93,7 +91,12 @@ class MagicBookSpawner(val block: MagicCoreBlockEntity) : MobSpawner() {
         // 设置animation
         animation = ParticleAnimation()
             .addAnimate(
-                StyleAnimate(MagicBookSpawnStyle(), block.level as ServerLevel, block.blockPos.below(3).center, -1)
+                StyleAnimate(
+                    MagicBookSpawnComposition(block.blockPos.below(3).center, block.level as ServerLevel),
+                    block.level as ServerLevel,
+                    block.blockPos.below(3).center,
+                    -1
+                )
             ).addAnimate(
                 EmittersAnimate(
                     {
@@ -118,27 +121,6 @@ class MagicBookSpawner(val block: MagicCoreBlockEntity) : MobSpawner() {
                             }
                     }, block.blockPos.center, 5, getSpawnTicks() - 40
                 ) {}
-            ).addAnimate(
-                EmitterAnimate(
-                    PresetLaserEmitters(block.blockPos.below(3).center, block.level).apply {
-                        targetPoint = Vec3(0.0, 100.0, 0.0)
-                        lineStartScale = 1f
-                        lineScaleMin = 0.01f
-                        lineScaleMax = 5f
-                        particleCountPreBlock = 1
-                        lineStartIncreaseTick = 1
-                        lineStartDecreaseTick = 15
-                        increaseAcceleration = 0.01f
-                        defaultIncreaseSpeed = 0.1f
-                        defaultDecreaseSpeed = 0.2f
-                        decreaseAcceleration = 0.3f
-                        maxDecreaseSpeed = 3f
-                        lineMaxTick = 100
-                        markDeadWhenArriveMinScale = true
-                        particleAge = lineMaxTick / 6 + 1
-                        templateData.color = Math3DUtil.colorOf(255, 100, 100)
-                    }, 100
-                )
             )
     }
 
@@ -160,7 +142,11 @@ class MagicBookSpawner(val block: MagicCoreBlockEntity) : MobSpawner() {
                 val pos = block.blockPos.center.add(x, y, z)
                 val line = RelativeLocation(0.0, random.nextDouble(2.0, 4.0), 0.0)
                 val count = (line.length() * 2).roundToInt()
-                val style = EnchantLineStyle(line, count, random.nextInt(40, 60))
+                val style = EnchantLineComposition(pos, block.level as ServerLevel).apply {
+                    end = line
+                    this.count = count
+                    lifetime = random.nextInt(40, 60)
+                }
                 style.apply {
                     particleRandomAgePreTick = true
                     fade = true
@@ -168,7 +154,7 @@ class MagicBookSpawner(val block: MagicCoreBlockEntity) : MobSpawner() {
                     fadeOutTick = 30
                     speedDirection = RelativeLocation(0.0, random.nextDouble(-0.1, 0.1), 0.0)
                 }
-                ParticleStyleManager.spawnStyle(block.level!!, pos, style)
+                ParticleCompositionManager.spawn(style)
             }
         }
         if (currentTick % 20 == 0 && currentTick > 20 * 20) {

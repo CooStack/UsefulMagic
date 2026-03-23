@@ -1,13 +1,14 @@
 package cn.coostack.usefulmagic.items.prop
 
-import cn.coostack.cooparticlesapi.CooParticlesAPI
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.usefulmagic.UsefulMagic
+import cn.coostack.usefulmagic.extend.mana
+import cn.coostack.usefulmagic.effects.UsefulMagicEffects
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import cn.coostack.usefulmagic.particles.emitters.FlyingRuneCloudEmitters
-import net.minecraft.world.entity.Entity
+import cn.coostack.usefulmagic.utils.UsefulMagicFlightController
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
@@ -16,7 +17,6 @@ import net.minecraft.server.level.ServerLevel
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResultHolder
-import net.minecraft.world.entity.Interaction
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.level.Level
 import java.util.UUID
@@ -26,6 +26,7 @@ class FlyingRuneItem : Item(Properties().stacksTo(1)) {
     companion object {
         const val MANA_COST = 20
         private val emittersMap = ConcurrentHashMap<UUID, ParticleEmitters>()
+        private val lastDrainTickMap = ConcurrentHashMap<UUID, Long>()
 
         fun loadEmitters(uuid: UUID, emitters: ParticleEmitters): ParticleEmitters {
             emittersMap[uuid] = emitters
@@ -65,33 +66,52 @@ class FlyingRuneItem : Item(Properties().stacksTo(1)) {
                 }
         }
 
-        init {
-            CooParticlesAPI.scheduler.runTaskTimer(20) {
-                val list = CooParticlesAPI.server.playerList.players
-                list.filter {
-                    !it.isCreative && !it.isSpectator
-                }.forEach {
-                    val flying = it.abilities.flying
-                    // 魔力值是否足够
-                    val data = UsefulMagic.state.getDataFromServer(it.uuid)
-                    val canCost = data.mana >= MANA_COST
-                    val canFly =
-                        it.inventory.contains(enabledFlyingRuneItem)
-                    it.abilities.mayfly = canFly
-                    if (!canCost || !canFly) {
-                        it.abilities.flying = false
-                        it.onUpdateAbilities()
-                        handleDisableFlying(it)
-                        return@forEach
-                    }
-                    if (flying) {
-                        // 扣除魔力值
-                        data.mana -= MANA_COST
+        private fun syncFlightAccess(player: ServerPlayer) {
+            val canGrant = player.inventory.contains(enabledFlyingRuneItem)
+                && !UsefulMagicEffects.isMagicSealed(player)
+                && player.mana >= MANA_COST
+            UsefulMagicFlightController.setFlyingRuneGranted(player, canGrant)
+            if (!canGrant) {
+                handleDisableFlying(player)
+                lastDrainTickMap.remove(player.uuid)
+            }
+        }
+
+        fun tickServer() {
+            val server = UsefulMagic.server
+            val gameTime = server.overworld().gameTime
+            server.playerList.players.forEach { player ->
+                if (player.isCreative || player.isSpectator) {
+                    UsefulMagicFlightController.setFlyingRuneGranted(player, false)
+                    handleDisableFlying(player)
+                    lastDrainTickMap.remove(player.uuid)
+                    return@forEach
+                }
+                val hasEnabledRune = player.inventory.contains(enabledFlyingRuneItem)
+                val blocked = UsefulMagicEffects.isMagicSealed(player)
+                val canGrant = hasEnabledRune && !blocked && player.mana >= MANA_COST
+                UsefulMagicFlightController.setFlyingRuneGranted(player, canGrant)
+                if (!canGrant) {
+                    handleDisableFlying(player)
+                    lastDrainTickMap.remove(player.uuid)
+                    return@forEach
+                }
+                if (!player.abilities.flying) {
+                    handleDisableFlying(player)
+                    lastDrainTickMap.remove(player.uuid)
+                    return@forEach
+                }
+                handleFlying(player.level() as ServerLevel, player)
+                val lastDrainTick = lastDrainTickMap[player.uuid]
+                if (lastDrainTick == null || gameTime - lastDrainTick >= 20L) {
+                    player.mana -= MANA_COST
+                    lastDrainTickMap[player.uuid] = gameTime
+                    if (player.mana < MANA_COST) {
+                        syncFlightAccess(player)
                     }
                 }
             }
         }
-
     }
 
     override fun appendHoverText(
@@ -119,30 +139,16 @@ class FlyingRuneItem : Item(Properties().stacksTo(1)) {
         super.appendHoverText(stack, context, tooltip, tooltipFlag)
     }
 
-
-    override fun inventoryTick(stack: ItemStack, world: Level, entity: Entity, slot: Int, selected: Boolean) {
-        if (entity !is ServerPlayer) {
-            return
-        }
-        val enabled = stack.get(UsefulMagicDataComponentTypes.ENABLED.get()) ?: false
-        entity.abilities.mayfly = if (!entity.isCreative && !entity.isSpectator) enabled else true
-        entity.onUpdateAbilities()
-        val data = UsefulMagic.state.getDataFromServer(entity.uuid)
-        val canCost = data.mana >= MANA_COST
-        if (entity.abilities.flying && enabled) {
-            handleFlying(world as ServerLevel, entity)
-        } else {
-            handleDisableFlying(entity)
-        }
-        if (!canCost && enabled) {
-            stack.set(UsefulMagicDataComponentTypes.ENABLED.get(), false)
-        }
-    }
-
     override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
         val stack = user.getItemInHand(hand)
         val enabled = stack.get(UsefulMagicDataComponentTypes.ENABLED.get()) ?: false
+        if (UsefulMagicEffects.isMagicSealed(user) && !enabled) {
+            return InteractionResultHolder.fail(stack)
+        }
         stack.set(UsefulMagicDataComponentTypes.ENABLED.get(), !enabled)
+        if (user is ServerPlayer) {
+            syncFlightAccess(user)
+        }
         return super.use(world, user, hand)
     }
 

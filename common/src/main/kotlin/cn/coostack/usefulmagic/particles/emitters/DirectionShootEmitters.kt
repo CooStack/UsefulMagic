@@ -1,5 +1,6 @@
 package cn.coostack.usefulmagic.particles.emitters
 
+import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.network.particle.emitters.ClassParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmitters
@@ -8,12 +9,13 @@ import cn.coostack.cooparticlesapi.particles.control.ParticleControler
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.helper.emitters.LinearResistanceHelper
 import cn.coostack.usefulmagic.extend.multiply
-import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.level.Level
 import kotlin.random.Random
 
+@CooAutoRegister
 class DirectionShootEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, world) {
     var templateData = ControlableParticleData()
     var shootType = EmittersShootTypes.point()
@@ -41,14 +43,14 @@ class DirectionShootEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(p
             field = value.coerceAtLeast(0.01)
         }
 
-    // 百分比阻塞
+    // 百分比阻力
     var speedDrag = 1.0
 
     val random = Random(System.currentTimeMillis())
 
     companion object {
         const val ID = "direction-shoot-emitters"
-        val CODEC = StreamCodec.of<FriendlyByteBuf, ParticleEmitters>(
+        val CODEC = StreamCodec.of<RegistryFriendlyByteBuf, ParticleEmitters>(
             { buf, data ->
                 data as DirectionShootEmitters
                 encodeBase(data, buf)
@@ -129,7 +131,7 @@ class DirectionShootEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(p
         return ID
     }
 
-    override fun getCodec(): StreamCodec<FriendlyByteBuf, ParticleEmitters> {
+    override fun getCodec(): StreamCodec<RegistryFriendlyByteBuf, ParticleEmitters> {
         return CODEC
     }
 }

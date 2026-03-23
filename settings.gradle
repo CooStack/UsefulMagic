@@ -2,7 +2,14 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         mavenCentral()
-
+        maven {
+            name = "jsdu"
+            url = uri("https://nexus.jsdu.cn/repository/maven-public/")
+        }
+        maven {
+            name = "jsdu-snapshot"
+            url = uri("https://nexus.jsdu.cn/repository/maven-snapshots/")
+        }
         flatDir(
                 dirs: 'depend'
         )

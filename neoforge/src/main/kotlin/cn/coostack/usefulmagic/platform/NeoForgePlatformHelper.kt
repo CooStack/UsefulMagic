@@ -16,4 +16,8 @@ class NeoForgePlatformHelper : IPlatformHelper {
     override fun isDevelopmentEnvironment(): Boolean {
         return !FMLLoader.isProduction()
     }
+
+    override fun getIterateTracker(): WatcherSender {
+        return NeoForgeWatcherSender
+    }
 }

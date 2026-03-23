@@ -4,9 +4,13 @@ import cn.coostack.usefulmagic.blocks.UsefulMagicBlocks
 import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
 import cn.coostack.usefulmagic.entity.custom.MagicBookEntity
+import cn.coostack.usefulmagic.entity.custom.MagicDragonEntity
+import cn.coostack.usefulmagic.entity.custom.MagicEyeEntity
+import cn.coostack.usefulmagic.entity.custom.MagicSubEyeEntity
+import cn.coostack.usefulmagic.effects.UsefulMagicEffects
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes
-import cn.coostack.usefulmagic.items.UsefulMagicItemGroups
 import cn.coostack.usefulmagic.items.UsefulMagicItems
+import cn.coostack.usefulmagic.particles.particle.UsefulMagicParticleTypes
 import cn.coostack.usefulmagic.platform.FuelHelper
 import cn.coostack.usefulmagic.recipe.UsefulMagicRecipeTypes
 import net.minecraft.core.registries.BuiltInRegistries
@@ -14,10 +18,7 @@ import net.neoforged.fml.common.Mod
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent
-import net.neoforged.neoforge.event.entity.player.PlayerEvent
-import net.neoforged.neoforge.event.server.ServerStartingEvent
 import net.neoforged.neoforge.registries.RegisterEvent
-import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps
 import thedarkcolour.kotlinforforge.neoforge.forge.MOD_BUS
 
 /**
@@ -51,6 +52,18 @@ object UsefulMagicNeo {
             UsefulMagicEntityTypes.MAGIC_BOOK_ENTITY_TYPE.get(),
             MagicBookEntity.createDefaultMobAttributes().build()
         )
+        event.put(
+            UsefulMagicEntityTypes.MAGIC_DRAGON_ENTITY_TYPE.get(),
+            MagicDragonEntity.createDefaultMobAttributes().build()
+        )
+        event.put(
+            UsefulMagicEntityTypes.MAGIC_EYE_ENTITY_TYPE.get(),
+            MagicEyeEntity.createDefaultMobAttributes().build()
+        )
+        event.put(
+            UsefulMagicEntityTypes.MAGIC_SUB_EYE_ENTITY_TYPE.get(),
+            MagicSubEyeEntity.createDefaultMobAttributes().build()
+        )
     }
 
     private fun onServerRegistry(event: RegisterEvent) {
@@ -82,6 +95,16 @@ object UsefulMagicNeo {
         event.register(BuiltInRegistries.DATA_COMPONENT_TYPE.key()) {
             UsefulMagicDataComponentTypes.types.forEach { type ->
                 it.register(type.id, type.get())
+            }
+        }
+        event.register(BuiltInRegistries.MOB_EFFECT.key()) {
+            UsefulMagicEffects.mobEffects.forEach { effect ->
+                it.register(effect.id, effect.get())
+            }
+        }
+        event.register(BuiltInRegistries.PARTICLE_TYPE.key()) {
+            UsefulMagicParticleTypes.particleTypes.forEach { particle ->
+                it.register(particle.id, particle.get())
             }
         }
 

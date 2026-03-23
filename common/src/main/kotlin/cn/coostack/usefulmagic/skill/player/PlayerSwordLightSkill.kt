@@ -1,16 +1,16 @@
-package cn.coostack.usefulmagic.skill.player
+﻿package cn.coostack.usefulmagic.skill.player
 
 import cn.coostack.cooparticlesapi.CooParticlesAPI
 import cn.coostack.cooparticlesapi.barrages.BarrageManager
 import cn.coostack.cooparticlesapi.barrages.BarrageOption
 import cn.coostack.cooparticlesapi.extend.relativize
+import cn.coostack.cooparticlesapi.network.particle.composition.manager.ParticleCompositionManager
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
-import cn.coostack.usefulmagic.particles.barrages.entity.skill.GiantSwordLightBarrage
+import cn.coostack.usefulmagic.particles.barrages.entity.skill.GiantSwordLightBarrageMagic
 import cn.coostack.usefulmagic.particles.emitters.ParticleWaveEmitters
-import cn.coostack.usefulmagic.particles.style.skill.SwordLightStyle
+import cn.coostack.usefulmagic.particles.composition.skill.SwordLightComposition
 import cn.coostack.usefulmagic.skill.api.Skill
 import cn.coostack.usefulmagic.utils.ComboUtil
 import net.minecraft.world.entity.LivingEntity
@@ -20,9 +20,9 @@ import net.minecraft.world.phys.AABB
 import java.util.UUID
 
 /**
- * 大剑气
+ * 大剑光
  */
-class PlayerSwordLightSkill : Skill, ComboCondition {
+class PlayerSwordLightSkill : Skill<LivingEntity>, ComboCondition {
     override var chance: Double = 1.0
     override val triggerComboMin: Int = 15
 
@@ -30,16 +30,17 @@ class PlayerSwordLightSkill : Skill, ComboCondition {
         return 0
     }
 
-    var style = SwordLightStyle()
+    lateinit var style: SwordLightComposition
     override fun onActive(source: LivingEntity) {
         val combo = ComboUtil.getComboState(source.uuid)
         combo.count -= triggerComboMin
 
-        val spawnedStyle = SwordLightStyle()
-        style = spawnedStyle
         var currentPos = source.eyePosition
         val direction = source.forward
         val world = source.level()
+        val spawnPos = source.eyePosition.add(0.0, 30.0, 0.0)
+        val spawnedStyle = SwordLightComposition(spawnPos, world)
+        style = spawnedStyle
         var findTarget: LivingEntity? = null
         for (i in 1..50) {
             currentPos = currentPos.add(direction)
@@ -57,11 +58,10 @@ class PlayerSwordLightSkill : Skill, ComboCondition {
         if (findTarget != null) {
             style.lockedEntityID = findTarget.id
         }
-        val spawnPos = source.eyePosition.add(0.0, 30.0, 0.0)
         val rotateDirection = spawnPos.relativize(currentPos)
-        ParticleStyleManager.spawnStyle(world, spawnPos, spawnedStyle)
+        ParticleCompositionManager.spawn(spawnedStyle)
         CooParticlesAPI.scheduler.runTask(20) {
-            val barrage = GiantSwordLightBarrage(
+            val barrage = GiantSwordLightBarrageMagic(
                 spawnedStyle,
                 findTarget?.id ?: -1,
                 spawnPos, world as ServerLevel,
@@ -115,3 +115,4 @@ class PlayerSwordLightSkill : Skill, ComboCondition {
     }
 
 }
+

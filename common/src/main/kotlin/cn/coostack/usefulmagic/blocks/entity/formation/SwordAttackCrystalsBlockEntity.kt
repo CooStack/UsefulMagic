@@ -1,4 +1,4 @@
-package cn.coostack.usefulmagic.blocks.entity.formation
+﻿package cn.coostack.usefulmagic.blocks.entity.formation
 
 import cn.coostack.cooparticlesapi.barrages.BarrageManager
 import cn.coostack.cooparticlesapi.barrages.BarrageOption
@@ -14,9 +14,8 @@ import cn.coostack.usefulmagic.formation.api.FormationTargetOption
 import cn.coostack.usefulmagic.formation.target.BarrageTargetOption
 import cn.coostack.usefulmagic.formation.target.ProjectileEntityTargetOption
 import cn.coostack.usefulmagic.particles.barrages.SwordAttackFormationBarrage
-import cn.coostack.usefulmagic.particles.style.EndRodSwordStyle
+import cn.coostack.usefulmagic.particles.composition.EndRodSwordComposition
 import cn.coostack.usefulmagic.particles.style.formation.crystal.CrystalStyle
-import cn.coostack.usefulmagic.particles.style.formation.crystal.RecoverCrystalStyle
 import cn.coostack.usefulmagic.particles.style.formation.crystal.SwordAttackCrystalStyle
 import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.Packet
@@ -59,8 +58,8 @@ class SwordAttackCrystalsBlockEntity(pos: BlockPos, state: BlockState) :
             return
         }
         if (option is ProjectileEntityTargetOption) return
-        // 在range范围内 (y > origin)
-        // 随机一个位置生成一把剑 并且指向目标实体发射 击中时造成普通伤害 (不追踪)
+        // 在 range 范围内 (y > origin)
+        // 随机选一个位置生成一把剑，并指向目标实体发射，击中时造成普伤（不追踪）
 
         val range = (activeFormation?.getFormationTriggerRange() ?: 0.01) / 2
         val spawnLocation = Vec3(
@@ -68,9 +67,8 @@ class SwordAttackCrystalsBlockEntity(pos: BlockPos, state: BlockState) :
             random.nextDouble(0.0, range),
             random.nextDouble(-range, range),
         ).add(activeFormation!!.formationCore)
-//        val spawnLocation = activeFormation!!.formationCore.add(0.0,2.0,0.0)
         val barrage =
-            SwordAttackFormationBarrage(spawnLocation, level as ServerLevel, HitBox.of(2.0, 2.0, 2.0), 5.0, option)
+            SwordAttackFormationBarrage(spawnLocation, level as ServerLevel, 5.0, option)
         val owner = activeFormation!!.owner?.let(UsefulMagic.server.playerList::getPlayer)
         if (activeFormation!!.owner != null && owner == null) {
             barrage.offlineShooter = activeFormation!!.owner
@@ -78,9 +76,9 @@ class SwordAttackCrystalsBlockEntity(pos: BlockPos, state: BlockState) :
         barrage.apply {
             direction = spawnLocation.relativize(option.pos())
             shooter = owner
-            bindControl as EndRodSwordStyle
-            (bindControl as EndRodSwordStyle).addPreTickAction {
-                rotateParticlesToPoint(RelativeLocation.of(direction))
+            val control = bindControl.get() as EndRodSwordComposition
+            control.addPreTickAction {
+                rotateToPoint(RelativeLocation.of(direction))
             }
         }
         BarrageManager.spawn(barrage)

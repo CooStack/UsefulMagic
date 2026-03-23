@@ -21,5 +21,4 @@ object ClientListener {
     fun hudCallback(event: RenderGuiEvent.Post) {
         ManaBarCallback.onHudRender(event.guiGraphics, event.partialTick.getGameTimeDeltaPartialTick(true))
     }
-
 }

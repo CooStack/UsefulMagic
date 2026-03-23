@@ -1,10 +1,7 @@
 package cn.coostack.usefulmagic
 
 import cn.coostack.cooparticlesapi.platform.network.FabricClientContext
-import cn.coostack.cooparticlesapi.platform.network.FabricServerContext
-import cn.coostack.cooparticlesapi.platform.registry.CommonDeferredBlock
-import cn.coostack.cooparticlesapi.platform.registry.CommonDeferredBlockEntityType
-import cn.coostack.usefulmagic.UsefulMagicClient
+import cn.coostack.usefulmagic.client.tooltip.FabricLoadedMagicClientTooltip
 import cn.coostack.usefulmagic.blocks.UsefulMagicBlocks
 import cn.coostack.usefulmagic.blocks.entity.AltarBlockCoreEntityRenderer
 import cn.coostack.usefulmagic.blocks.entity.AltarBlockEntityRenderer
@@ -16,35 +13,39 @@ import cn.coostack.usefulmagic.entity.UsefulMagicEntityLayers
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
 import cn.coostack.usefulmagic.entity.custom.renderer.FormationCoreRenderer
 import cn.coostack.usefulmagic.entity.custom.renderer.MagicBookEntityRenderer
-import cn.coostack.usefulmagic.gui.friend.FriendManagerScreen
+import cn.coostack.usefulmagic.entity.custom.renderer.MagicDragonRenderer
+import cn.coostack.usefulmagic.entity.custom.renderer.MagicEyeEntityRenderer
+import cn.coostack.usefulmagic.entity.custom.renderer.MagicSubEyeEntityRenderer
 import cn.coostack.usefulmagic.gui.mana.ManaBarCallback
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes.LARGE_REVIVE_USE_COUNT
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import cn.coostack.usefulmagic.items.consumer.LargeManaRevive
-import cn.coostack.usefulmagic.meteorite.MeteoriteFallingBlockEntity
-import cn.coostack.usefulmagic.meteorite.MeteoriteFallingBlockRenderer
+import cn.coostack.usefulmagic.items.weapon.wands.LoadedMagicTooltip
 import cn.coostack.usefulmagic.packet.listener.client.FormationPacketListener
 import cn.coostack.usefulmagic.packet.listener.client.FormationSettingsPacketResponseListener
 import cn.coostack.usefulmagic.packet.listener.client.FriendChangeResponsePacketListener
 import cn.coostack.usefulmagic.packet.listener.client.FriendResponsePacketListener
-import cn.coostack.usefulmagic.packet.listener.client.ManaChangePacketListener
+import cn.coostack.usefulmagic.packet.listener.client.TrackerToggleListener
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CEnergyCrystalChange
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationBreak
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationCreate
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationSettingsResponse
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFriendChangeResponse
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFriendListResponse
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CManaDataToggle
+import cn.coostack.usefulmagic.packet.s2c.PacketS2CTrackerToggle
+import cn.coostack.usefulmagic.particles.particle.WaveParticleProvider
+import cn.coostack.usefulmagic.particles.particle.UsefulMagicParticleTypes
 import com.mojang.blaze3d.platform.InputConstants
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
+import net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback
 import net.fabricmc.fabric.api.`object`.builder.v1.client.model.FabricModelPredicateProviderRegistry
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.renderer.RenderType
@@ -87,15 +88,17 @@ object UsefulMagicFabricClient : ClientModInitializer {
         handleBlockLayer()
         handleNetworking()
         handleModelPredicate()
+        handleTooltipComponent()
+        handleParticles()
         loadEntities()
     }
 
     private fun loadEntities() {
-        EntityRendererRegistry.register(UsefulMagicEntityTypes.METEORITE_ENTITY.get(), {
-            return@register MeteoriteFallingBlockRenderer(it)
-        })
 
         EntityRendererRegistry.register(UsefulMagicEntityTypes.FORMATION_CORE_ENTITY.get(), ::FormationCoreRenderer)
+        EntityRendererRegistry.register(UsefulMagicEntityTypes.MAGIC_DRAGON_ENTITY_TYPE.get(), ::MagicDragonRenderer)
+        EntityRendererRegistry.register(UsefulMagicEntityTypes.MAGIC_EYE_ENTITY_TYPE.get(), ::MagicEyeEntityRenderer)
+        EntityRendererRegistry.register(UsefulMagicEntityTypes.MAGIC_SUB_EYE_ENTITY_TYPE.get(), ::MagicSubEyeEntityRenderer)
         EntityModelLayerRegistry.registerModelLayer(
             UsefulMagicEntityLayers.MAGIC_BOOK_ENTITY_LAYER,
             MagicBookEntityModel::createBodyLayer
@@ -129,11 +132,6 @@ object UsefulMagicFabricClient : ClientModInitializer {
 
     private fun handleNetworking() {
         ClientPlayNetworking.registerGlobalReceiver(
-            PacketS2CManaDataToggle.payloadID
-        ) { packet, ctx ->
-            ManaChangePacketListener.receive(packet, FabricClientContext(ctx))
-        }
-        ClientPlayNetworking.registerGlobalReceiver(
             PacketS2CFriendListResponse.payloadID
         ) { packet, ctx ->
             FriendResponsePacketListener.receive(packet, FabricClientContext(ctx))
@@ -161,6 +159,11 @@ object UsefulMagicFabricClient : ClientModInitializer {
         ) { payload, context ->
             FormationPacketListener.handleBreak(payload, FabricClientContext(context))
         }
+        ClientPlayNetworking.registerGlobalReceiver(
+            PacketS2CTrackerToggle.payloadID
+        ) { packet, ctx ->
+            TrackerToggleListener.receive(packet, FabricClientContext(ctx))
+        }
         UsefulMagic.logger.debug("客户端自定义数据包处理器注册完成")
     }
 
@@ -174,5 +177,21 @@ object UsefulMagicFabricClient : ClientModInitializer {
             }
         )
         UsefulMagic.logger.debug("模型谓词注册完成")
+    }
+
+    private fun handleTooltipComponent() {
+        TooltipComponentCallback.EVENT.register(TooltipComponentCallback { data ->
+            if (data is LoadedMagicTooltip) {
+                FabricLoadedMagicClientTooltip(data.magicStack)
+            } else {
+                null
+            }
+        })
+    }
+
+    private fun handleParticles() {
+        ParticleFactoryRegistry.getInstance().register(UsefulMagicParticleTypes.WAVE_PARTICLE.get()) { spriteSet ->
+            WaveParticleProvider(spriteSet)
+        }
     }
 }

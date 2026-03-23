@@ -35,9 +35,15 @@ object FriendListRequestHandler {
             res
         }
         val packet = PacketS2CFriendListResponse(
-            responseFriends,
-            stateFriends.size / 10 + 1,
-            requestUUID
+            friends = responseFriends,
+            maxPage = stateFriends.size / 10 + 1,
+            owner = requestUUID,
+            treatHostileAsFriend = state.treatHostileAsFriend,
+            treatNeutralAsFriend = state.treatNeutralAsFriend,
+            treatNonFriendPlayerAsFriend = state.treatNonFriendPlayerAsFriend,
+            treatFriendPlayerAsFriend = state.treatFriendPlayerAsFriend,
+            treatAnimalAsFriend = state.treatAnimalAsFriend,
+            treatFriendlyMobAsFriend = state.treatFriendlyMobAsFriend
         )
         CooParticlesServices.SERVER_NETWORK.send(
             packet,

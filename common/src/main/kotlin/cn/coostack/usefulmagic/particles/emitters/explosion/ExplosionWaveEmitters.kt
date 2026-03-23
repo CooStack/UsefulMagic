@@ -1,17 +1,18 @@
 package cn.coostack.usefulmagic.particles.emitters.explosion
 
+import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.extend.random
 import cn.coostack.cooparticlesapi.network.particle.emitters.ClassParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmitters
-import cn.coostack.cooparticlesapi.particles.Controlable
+import cn.coostack.cooparticlesapi.api.controler.Controlable
 import cn.coostack.cooparticlesapi.particles.control.ParticleControler
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.cooparticlesapi.utils.helper.emitters.LinearResistanceHelper
 import cn.coostack.usefulmagic.extend.multiply
 
-import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.RegistryFriendlyByteBuf
 
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.phys.Vec3
@@ -19,6 +20,7 @@ import net.minecraft.world.level.Level
 import kotlin.random.Random
 import kotlin.random.nextInt
 
+@CooAutoRegister
 class ExplosionWaveEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, world) {
     var templateData = ControlableParticleData()
 
@@ -41,7 +43,7 @@ class ExplosionWaveEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(po
 
     companion object {
         const val ID = "explosion-wave-magic-emitters"
-        val CODEC = StreamCodec.of<FriendlyByteBuf, ParticleEmitters>(
+        val CODEC = StreamCodec.of<RegistryFriendlyByteBuf, ParticleEmitters>(
             { buf, data ->
                 data as ExplosionWaveEmitters
                 encodeBase(data, buf)
@@ -113,7 +115,7 @@ class ExplosionWaveEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(po
         return ID
     }
 
-    override fun getCodec(): StreamCodec<FriendlyByteBuf, ParticleEmitters> {
+    override fun getCodec(): StreamCodec<RegistryFriendlyByteBuf, ParticleEmitters> {
         return CODEC
     }
 }

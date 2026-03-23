@@ -1,5 +1,6 @@
 package cn.coostack.usefulmagic.particles.fall.emitters
 
+import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.network.particle.emitters.ClassParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmitters
@@ -7,7 +8,7 @@ import cn.coostack.cooparticlesapi.particles.control.ParticleControler
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.particles.emitters.CircleEmitters
-import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.level.Level
@@ -18,7 +19,7 @@ class UpperParticleEmitter(pos: Vec3, world: Level?) : ClassParticleEmitters(pos
     var bindPlayer = UUID.randomUUID()
 
     companion object {
-        val CODEC = StreamCodec.of<FriendlyByteBuf, ParticleEmitters>(
+        val CODEC = StreamCodec.of<RegistryFriendlyByteBuf, ParticleEmitters>(
             { buf, data ->
                 data as UpperParticleEmitter
                 encodeBase(data, buf)
@@ -58,7 +59,7 @@ class UpperParticleEmitter(pos: Vec3, world: Level?) : ClassParticleEmitters(pos
         TODO("Not yet implemented")
     }
 
-    override fun getCodec(): StreamCodec<FriendlyByteBuf, ParticleEmitters> {
+    override fun getCodec(): StreamCodec<RegistryFriendlyByteBuf, ParticleEmitters> {
         TODO("Not yet implemented")
     }
 }

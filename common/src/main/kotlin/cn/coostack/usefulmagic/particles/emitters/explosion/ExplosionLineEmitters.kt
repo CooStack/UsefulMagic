@@ -1,5 +1,6 @@
 package cn.coostack.usefulmagic.particles.emitters.explosion
 
+import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.extend.relativize
 import cn.coostack.cooparticlesapi.network.particle.emitters.ClassParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
@@ -7,6 +8,7 @@ import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.PhysicConstant
 import cn.coostack.cooparticlesapi.particles.control.ParticleControler
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
+import cn.coostack.cooparticlesapi.supports.TextureSheetsEnum
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
@@ -14,7 +16,7 @@ import cn.coostack.usefulmagic.extend.multiply
 import cn.coostack.usefulmagic.utils.ParticleOption
 import net.minecraft.client.particle.ParticleRenderType
 import net.minecraft.world.entity.LivingEntity
-import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.RegistryFriendlyByteBuf
 
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.phys.Vec3
@@ -22,6 +24,7 @@ import net.minecraft.world.level.Level
 import java.util.Random
 import kotlin.math.PI
 
+@CooAutoRegister
 class ExplosionLineEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, world) {
     var templateData = ControlableParticleData()
     var targetPoint = Vec3.ZERO
@@ -31,7 +34,7 @@ class ExplosionLineEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(po
         const val ID = "explosion-line-emitters"
 
         @JvmStatic
-        val CODEC = StreamCodec.of<FriendlyByteBuf, ParticleEmitters>(
+        val CODEC = StreamCodec.of<RegistryFriendlyByteBuf, ParticleEmitters>(
             { buf, data ->
                 data as ExplosionLineEmitters
                 buf.writeVec3(data.targetPoint)
@@ -58,14 +61,13 @@ class ExplosionLineEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(po
     val random = Random(System.currentTimeMillis())
     override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         return PointsBuilder()
-            .addBall(
-                0.5,
-                ParticleOption.getParticleCounts()
-            )
+            .addBall(0.5, ParticleOption.getParticleCounts())
             .rotateAsAxis(random.nextDouble(-PI, PI), RelativeLocation.yAxis())
             .rotateAsAxis(random.nextDouble(-PI, PI), RelativeLocation.xAxis())
             .create().map {
-                templateData.clone() to it
+                templateData.clone().apply {
+                    setTextureSheet(TextureSheetsEnum.ADDITION_BLEND_TRANSLUCENT)
+                } to it
             }
     }
 
@@ -77,15 +79,13 @@ class ExplosionLineEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(po
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
-//        data.maxAge = 10
         data.color = Math3DUtil
             .colorOf(
-                random.nextInt(100, 150),
-                random.nextInt(100, 150),
+                random.nextInt(100, 200),
+                random.nextInt(120, 200),
                 255,
             )
-        data.alpha = random.nextDouble(0.4, 0.7).toFloat()
-        data.setTextureSheet(ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT)
+        data.alpha = random.nextDouble(0.4, 1.0).toFloat()
         val a = PhysicConstant.EARTH_GRAVITY / 10
         controler.addPreTickAction {
             data.speed = (data.speed - a).coerceAtLeast(0.5)
@@ -119,7 +119,7 @@ class ExplosionLineEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(po
         this.targetPoint = emitters.targetPoint
     }
 
-    override fun getCodec(): StreamCodec<FriendlyByteBuf, ParticleEmitters> {
+    override fun getCodec(): StreamCodec<RegistryFriendlyByteBuf, ParticleEmitters> {
         return CODEC
     }
 }

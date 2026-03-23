@@ -4,12 +4,18 @@
   "compatibilityLevel": "JAVA_18",
   "refmap": "usefulmagic.refmap.json",
   "mixins": [
+    "EntityHolderMixin",
+    "EntityMixin",
     "FallingBlockEntityAccessor",
-    "HooperBlockEntityMixin"
+    "HooperBlockEntityMixin",
+    "LivingEntityMixin",
+    "PlayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
+    "client.CameraMixin",
+    "client.ItemInHandRendererMixin"
   ]
 }

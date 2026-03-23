@@ -3,13 +3,9 @@ package cn.coostack.usefulmagic.utils
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import kotlin.math.PI
-import kotlin.math.max
-import kotlin.math.pow
-import kotlin.math.round
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
-import kotlin.random.Random
 
 object MathUtil {
     fun getHollowSphere(r: Int): List<RelativeLocation> {

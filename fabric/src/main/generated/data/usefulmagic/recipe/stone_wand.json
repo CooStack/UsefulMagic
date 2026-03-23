@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "#": {
+      "item": "minecraft:stick"
+    },
+    "S": {
+      "item": "minecraft:cobblestone"
+    },
+    "W": {
+      "item": "usefulmagic:wooden_wand"
+    }
+  },
+  "pattern": [
+    " SS",
+    " WS",
+    "# S"
+  ],
+  "result": {
+    "count": 1,
+    "id": "usefulmagic:stone_wand"
+  }
+}

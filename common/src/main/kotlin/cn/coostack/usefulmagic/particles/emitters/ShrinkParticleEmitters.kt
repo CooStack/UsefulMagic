@@ -1,5 +1,6 @@
 package cn.coostack.usefulmagic.particles.emitters
 
+import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.network.particle.emitters.ClassParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmitters
@@ -8,13 +9,14 @@ import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.cooparticlesapi.utils.helper.emitters.LinearResistanceHelper
 import cn.coostack.usefulmagic.extend.multiply
-import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.level.Level
 import kotlin.math.PI
 import kotlin.random.Random
 
+@CooAutoRegister
 class ShrinkParticleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, world) {
     var templateData = ControlableParticleData()
     var startRange = 20.0
@@ -26,7 +28,7 @@ class ShrinkParticleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(p
 
     companion object {
         const val ID = "shrink-particle-emitters"
-        val CODEC: StreamCodec<FriendlyByteBuf, ParticleEmitters> = StreamCodec.of<FriendlyByteBuf, ParticleEmitters>(
+        val CODEC: StreamCodec<RegistryFriendlyByteBuf, ParticleEmitters> = StreamCodec.of<RegistryFriendlyByteBuf, ParticleEmitters>(
             { buf, data ->
                 data as ShrinkParticleEmitters
                 encodeBase(data, buf)
@@ -107,7 +109,7 @@ class ShrinkParticleEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(p
         return ID
     }
 
-    override fun getCodec(): StreamCodec<FriendlyByteBuf, ParticleEmitters> {
+    override fun getCodec(): StreamCodec<RegistryFriendlyByteBuf, ParticleEmitters> {
         return CODEC
     }
 

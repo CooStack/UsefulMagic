@@ -2,6 +2,7 @@ package cn.coostack.usefulmagic.gui.guildbook
 
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.blocks.UsefulMagicBlocks
+import cn.coostack.usefulmagic.gui.guildbook.widget.BetterTextWidget
 import cn.coostack.usefulmagic.gui.guildbook.widget.button.ItemTextureButton
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.Tooltip
@@ -12,118 +13,97 @@ class FormationTutorialBookScreen(parent: StructureTutorialBookMainScreen) : Str
 
     private val formationPictureRenders = ArrayList<FormationTutorialBookScreen.(GuiGraphics) -> Unit>()
     private var current = -1
+
+    override fun getTypePanelTitle(): Component = tb("formation.type_panel_title")
+
+    override fun getContentPanelTitle(): Component = tb("formation.content_panel_title")
+
+    override fun getTypePanelHint(): Component = tb("formation.type_panel_hint")
+
+    override fun getContentPanelHint(): Component = tb("formation.content_panel_hint")
+
     override fun init() {
         initPage()
         super.init()
     }
 
     override fun initTypeIcons() {
-        val startX = getTypedIconOriginX() + 5
-        val startY = getTypedIconOriginY() + 60
-        var currentX = startX
-        var currentY = startY
-        val stepX = 35
-        val stepY = 35
+        val iconY = getTypedIconOriginY() + 66
+        val smallX = getTypedIconOriginX() + 18
+        val midX = getTypedIconOriginX() + 72
+        val largeX = getTypedIconOriginX() + 126
 
-        val maxX = width / 2 - 20
-        val maxY = height - 20
-
-        val player = client?.player ?: return
-        val world = player.level() ?: return
-
-        fun nextCurrentX(): Int {
-            val old = currentX
-            currentX += stepX
-            return old
-        }
-
-        fun nextCurrentY(): Int {
-            val old = currentY
-            if (currentX > maxX) {
-                currentX = startX
-                currentY += stepY
-            }
-            return old
-        }
         addRenderableWidget(
             ItemTextureButton(
-                nextCurrentX(),
-                nextCurrentY(),
+                smallX,
+                iconY,
                 32,
                 32,
                 UsefulMagicBlocks.ENERGY_CRYSTAL_BLOCK.get().asItem().defaultInstance
-            ) { btn ->
+            ) {
                 current = 0
             }
         ).apply {
             scale = 2f
-            tooltip = Tooltip.create(
-                Component.literal(
-                    """
-                §f小型阵法
-                §7 组成条件如下
-                §7 至少有一个能源水晶
-                §7 至少有一个功能水晶(攻击或者防御)
-                §7 阵法有效半径 32格
-                §7 搭建完成时,空手右键阵基
-                §f点击查看搭建方式
-            """.trimIndent()
-                )
-            )
+            tooltip = Tooltip.create(tb("formation.tooltip.small"))
         }
+
         addRenderableWidget(
             ItemTextureButton(
-                nextCurrentX(),
-                nextCurrentY(),
+                midX,
+                iconY,
                 32,
                 32,
                 UsefulMagicBlocks.DEFEND_CRYSTAL_BLOCK.get().asItem().defaultInstance
-            ) { btn ->
+            ) {
                 current = 1
             }
         ).apply {
             scale = 2f
-            tooltip = Tooltip.create(
-                Component.literal(
-                    """
-                §f中型阵法
-                §7 搭建时 首先要达成小型阵法的条件
-                §7 阵法有效半径 64格
-                §7 搭建完成时,空手右键阵基
-                §f点击查看搭建方式
-            """.trimIndent()
-                )
-            )
+            tooltip = Tooltip.create(tb("formation.tooltip.mid"))
         }
+
         addRenderableWidget(
             ItemTextureButton(
-                nextCurrentX(),
-                nextCurrentY(),
+                largeX,
+                iconY,
                 32,
                 32,
                 UsefulMagicBlocks.SWORD_ATTACK_CRYSTAL_BLOCK.get().asItem().defaultInstance
-            ) { btn ->
+            ) {
                 current = 2
             }
         ).apply {
             scale = 2f
-            tooltip = Tooltip.create(
-                Component.literal(
-                    """
-                §f大型阵法
-                §7 搭建时 首先要达成中型阵法的条件
-                §7 阵法有效半径 128格
-                §7 搭建完成时,空手右键阵基
-                §f点击查看搭建方式
-            """.trimIndent()
-                )
-            )
+            tooltip = Tooltip.create(tb("formation.tooltip.large"))
         }
     }
 
+    override fun initContentIcons() {
+        if (current != -1) return
+
+        addRenderableOnly(
+            BetterTextWidget(
+                getContentIconOriginX(),
+                getContentIconOriginY() + 34,
+                165,
+                90
+            ).apply {
+                shadow = false
+                scaled = 1.1f
+                heightPreLine = 12
+                textColor = 0xFF6E5538u.toInt()
+                texts.add(tb("formation.guide.title"))
+                texts.add(tb("formation.guide.line1"))
+                texts.add(tb("formation.guide.line2"))
+                texts.add(tb("formation.guide.line3"))
+            }
+        )
+    }
 
     private fun initPage() {
         if (formationPictureRenders.isNotEmpty()) return
+
         val contentX = getContentIconOriginX()
         val contentY = getContentIconOriginY()
 
@@ -132,15 +112,15 @@ class FormationTutorialBookScreen(parent: StructureTutorialBookMainScreen) : Str
         }
 
         formationPictureRenders.add {
-            it.fill(contentX - 2, contentY - 2, contentX + 152, contentY + 117, 0x8F000000U.toInt())
+            it.fill(contentX - 2, contentY - 2, contentX + 152, contentY + 117, 0x8F000000u.toInt())
             it.blit(texture("small_formation.png"), contentX, contentY, 0F, 0F, 150, 115, 150, 115)
         }
         formationPictureRenders.add {
-            it.fill(contentX - 2, contentY - 2, contentX + 152, contentY + 117, 0x8F000000U.toInt())
+            it.fill(contentX - 2, contentY - 2, contentX + 152, contentY + 117, 0x8F000000u.toInt())
             it.blit(texture("mid_formation.png"), contentX, contentY, 0F, 0F, 150, 115, 150, 115)
         }
         formationPictureRenders.add {
-            it.fill(contentX - 2, contentY - 2, contentX + 152, contentY + 117, 0x8F000000U.toInt())
+            it.fill(contentX - 2, contentY - 2, contentX + 152, contentY + 117, 0x8F000000u.toInt())
             it.blit(texture("large_formation.png"), contentX, contentY, 0F, 0F, 150, 115, 150, 115)
         }
     }
@@ -150,6 +130,5 @@ class FormationTutorialBookScreen(parent: StructureTutorialBookMainScreen) : Str
         if (current in formationPictureRenders.indices) {
             formationPictureRenders[current](context)
         }
-
     }
 }

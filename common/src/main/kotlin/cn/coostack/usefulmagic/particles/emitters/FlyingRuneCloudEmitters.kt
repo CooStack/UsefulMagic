@@ -1,5 +1,6 @@
 package cn.coostack.usefulmagic.particles.emitters
 
+import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.network.particle.emitters.ClassParticleEmitters
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmitters
@@ -11,7 +12,7 @@ import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.cooparticlesapi.utils.helper.emitters.LinearResistanceHelper
 import net.minecraft.client.particle.ParticleRenderType
-import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.RegistryFriendlyByteBuf
 
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.phys.Vec3
@@ -20,7 +21,10 @@ import java.util.Random
 import java.util.UUID
 import kotlin.math.PI
 
+@CooAutoRegister
 class FlyingRuneCloudEmitters(var player: UUID, pos: Vec3, world: Level?) : ClassParticleEmitters(pos, world) {
+    constructor() : this(UUID.randomUUID(), Vec3.ZERO, null)
+
     var templateData = ControlableParticleData()
 
     init {
@@ -33,7 +37,7 @@ class FlyingRuneCloudEmitters(var player: UUID, pos: Vec3, world: Level?) : Clas
         const val ID = "flying-rune-cloud-emitters"
 
         @JvmStatic
-        val CODEC = StreamCodec.of<FriendlyByteBuf, ParticleEmitters>(
+        val CODEC = StreamCodec.of<RegistryFriendlyByteBuf, ParticleEmitters>(
             { buf, data ->
                 data as FlyingRuneCloudEmitters
                 buf.writeUUID(data.player)
@@ -113,7 +117,7 @@ class FlyingRuneCloudEmitters(var player: UUID, pos: Vec3, world: Level?) : Clas
         return ID
     }
 
-    override fun getCodec(): StreamCodec<FriendlyByteBuf, ParticleEmitters> {
+    override fun getCodec(): StreamCodec<RegistryFriendlyByteBuf, ParticleEmitters> {
         return CODEC
     }
 }

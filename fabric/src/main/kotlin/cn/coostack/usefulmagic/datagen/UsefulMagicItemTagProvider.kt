@@ -63,6 +63,17 @@ class UsefulMagicItemTagProvider(
             .add(PURPLE_MANA_STAR)
             .add(RED_MANA_STAR)
 
+        getOrCreateTagBuilder(UsefulMagicItemTags.MAGIC)
+            .add(UsefulMagicItems.STARRY_MAGIC)
+            .add(UsefulMagicItems.METEORITE_MAGIC)
+            .add(UsefulMagicItems.BARRAGE_MAGIC)
+            .add(UsefulMagicItems.LIGHTNING_MAGIC)
+            .add(UsefulMagicItems.HEALTH_MAGIC)
+            .add(UsefulMagicItems.GOLDEN_MAGIC)
+            .add(UsefulMagicItems.BEAM_MAGIC)
+            .add(UsefulMagicItems.SWORD_FORMATION_MAGIC)
+            .add(UsefulMagicItems.SWORD_QI_MAGIC)
+
         getOrCreateTagBuilder(UsefulMagicItemTags.CRYSTAL)
             .add(UsefulMagicItems.MANA_CRYSTAL, PURPLE_MANA_CRYSTAL, RED_MANA_CRYSTAL)
     }

@@ -22,7 +22,6 @@ class UsefulMagicModelProvider(output: FabricDataOutput) : FabricModelProvider(o
         gen.registerSimpleState(UsefulMagicBlocks.RECOVER_CRYSTAL_BLOCK)
         gen.registerSimpleState(UsefulMagicBlocks.FORMATION_CORE_BLOCK)
         gen.registerSimpleState(UsefulMagicBlocks.DEFEND_CRYSTAL_BLOCK)
-
     }
 
     override fun generateItemModels(gen: ItemModelGenerators) {
@@ -44,6 +43,17 @@ class UsefulMagicModelProvider(output: FabricDataOutput) : FabricModelProvider(o
         gen.register(UsefulMagicItems.FRIEND_BOARD, ModelTemplates.FLAT_ITEM)
         gen.register(UsefulMagicItems.SKY_FALLING_RUNE, ModelTemplates.FLAT_ITEM)
         gen.register(UsefulMagicItems.STARRY_WAND, ModelTemplates.FLAT_HANDHELD_ITEM)
+        gen.register(UsefulMagicItems.BARRAGE_MAGIC, ModelTemplates.FLAT_ITEM)
+        gen.register(UsefulMagicItems.BEAM_MAGIC, ModelTemplates.FLAT_ITEM)
+        gen.register(UsefulMagicItems.LIGHTNING_MAGIC, ModelTemplates.FLAT_ITEM)
+        gen.register(UsefulMagicItems.HEALTH_MAGIC, ModelTemplates.FLAT_ITEM)
+        gen.register(UsefulMagicItems.SWORD_QI_MAGIC, ModelTemplates.FLAT_ITEM)
+        gen.register(UsefulMagicItems.GOLDEN_MAGIC, ModelTemplates.FLAT_ITEM)
+        gen.register(UsefulMagicItems.SWORD_FORMATION_MAGIC, ModelTemplates.FLAT_ITEM)
+        gen.register(UsefulMagicItems.METEORITE_MAGIC, ModelTemplates.FLAT_ITEM)
+        gen.register(UsefulMagicItems.STARRY_MAGIC, ModelTemplates.FLAT_ITEM)
+        gen.register(UsefulMagicItems.ANTI_ENTITY_DOMAIN_MAGIC, ModelTemplates.FLAT_ITEM)
+        gen.register(UsefulMagicItems.EXPLOSION_MAGIC, ModelTemplates.FLAT_ITEM)
     }
 
     fun ItemModelGenerators.register(item: CommonDeferredItem, model: ModelTemplate) {

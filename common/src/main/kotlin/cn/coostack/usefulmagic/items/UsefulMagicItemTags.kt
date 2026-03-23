@@ -16,6 +16,7 @@ object UsefulMagicItemTags {
     val RELOADABLE_BOTTLE = of("reloadable_bottle")
     val STAR = of("star")
     val CRYSTAL = of("crystal")
+    val MAGIC = of("magic")
 
     fun of(id: String): TagKey<Item> {
         return TagKey.create(

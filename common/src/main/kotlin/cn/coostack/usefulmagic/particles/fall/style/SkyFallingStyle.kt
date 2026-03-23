@@ -129,7 +129,7 @@ class SkyFallingStyle(
                                             buildSingleStyle().build()
                                         }.toggleOnDisplay {
                                             addPreTickAction {
-                                                rotateParticlesAsAxis(-PI / 128)
+                                                rotateAsAxis(-PI / 128)
                                             }
                                         }
                                 )
@@ -157,7 +157,7 @@ class SkyFallingStyle(
                                                 .build()
                                         }.toggleOnDisplay {
                                             addPreTickAction {
-                                                rotateParticlesAsAxis(PI / 64)
+                                                rotateAsAxis(PI / 64)
                                             }
                                         }
                                 )
@@ -174,7 +174,7 @@ class SkyFallingStyle(
                                             buildSingleStyle().build()
                                         }.toggleOnDisplay {
                                             addPreTickAction {
-                                                rotateParticlesAsAxis(PI / 64)
+                                                rotateAsAxis(PI / 64)
                                             }
                                         }
                                 )
@@ -201,7 +201,7 @@ class SkyFallingStyle(
                     }
                 }.toggleOnDisplay {
                     addPreTickAction {
-                        rotateParticlesAsAxis(PI / 128)
+                        rotateAsAxis(PI / 128)
                     }
                 }
             )
@@ -288,7 +288,7 @@ class SkyFallingStyle(
                             buildSingleStyle().build()
                         }.toggleOnDisplay {
                             addPreTickAction {
-                                rotateParticlesAsAxis(PI / 128)
+                                rotateAsAxis(PI / 128)
                             }
                         }
                 )

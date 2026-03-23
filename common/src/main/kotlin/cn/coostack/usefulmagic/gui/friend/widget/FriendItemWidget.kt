@@ -12,7 +12,6 @@ import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.resources.PlayerSkin
 import net.minecraft.network.chat.Component
-import java.util.function.Consumer
 
 class FriendItemWidget(
     val profile: PacketS2CFriendListResponse.PlayerProfile,
@@ -22,23 +21,28 @@ class FriendItemWidget(
     width: Int,
     height: Int,
     val fatherScreen: FriendManagerScreen,
-) :
-    AbstractWidget(x, y, width, height, Component.literal("")) {
+) : AbstractWidget(x, y, width, height, Component.literal("")) {
 
-    val deleteButtonBuilder = Button.Builder(Component.literal("删除")) {
-        // 发包
+    companion object {
+        const val DELETE_BUTTON_WIDTH = 58
+        const val DELETE_BUTTON_HEIGHT = 18
+    }
+
+    private val deleteButtonBuilder = Button.builder(Component.translatable("screen.friend_manager.remove")) {
         val client = Minecraft.getInstance()
+        val player = client.player ?: return@builder
         ClientRequestManager.sendRequest(
-            PacketC2SFriendRemoveRequest(client.player!!.uuid, profile.uuid),
+            PacketC2SFriendRemoveRequest(player.uuid, profile.uuid),
             PacketS2CFriendChangeResponse.payloadID
         ).recall {
-            client.player?.sendSystemMessage(Component.literal("你删除了${profile.name}的朋友气息"))
+            client.player?.sendSystemMessage(
+                Component.translatable("screen.friend_manager.removed", profile.name)
+            )
             fatherScreen.flushWidget()
         }
     }
 
-    lateinit var deleteButton: Button
-
+    private lateinit var deleteButton: Button
 
     override fun renderWidget(
         graphics: GuiGraphics,
@@ -46,70 +50,71 @@ class FriendItemWidget(
         mouseY: Int,
         delta: Float
     ) {
-        val matrix = graphics.pose()
-        // border
-        graphics.fill(
-            x, y, x + width, y + height, 0XFF171525U.toInt(),
-        )
-        val client = Minecraft.getInstance()
-        val uiSize = 3f / client.options.guiScale().get()
+        val hovered = mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height
+        val borderColor = if (hovered) 0xFF5FA188u.toInt() else 0xFF3C646Au.toInt()
+        val backgroundColor = if (hovered) 0xE0243539u.toInt() else 0xCC162327u.toInt()
+        val innerColor = if (hovered) 0xD01A2A2Eu.toInt() else 0xC3101A1Du.toInt()
+
+        graphics.fill(x, y, x + width, y + height, borderColor)
+        graphics.fill(x + 1, y + 1, x + width - 1, y + height - 1, backgroundColor)
+        graphics.fill(x + 2, y + 2, x + width - 2, y + height - 2, innerColor)
 
         if (!::deleteButton.isInitialized) {
-            deleteButton = deleteButtonBuilder.bounds(
-                x + width - (42 * uiSize).toInt(),
-                y + (height - (16 * uiSize).toInt()) / 2,
-                (32 * uiSize).toInt(), (16 * uiSize).toInt()
-            ).build()
+            deleteButton = deleteButtonBuilder.bounds(0, 0, DELETE_BUTTON_WIDTH, DELETE_BUTTON_HEIGHT).build()
         }
+
+        val buttonX = x + width - DELETE_BUTTON_WIDTH - 8
+        val buttonY = y + (height - DELETE_BUTTON_HEIGHT) / 2
+        deleteButton.setPosition(buttonX, buttonY)
+
+        val avatarSize = (height - 8).coerceAtLeast(24)
+        val avatarX = x + 6
+        val avatarY = y + (height - avatarSize) / 2
+        graphics.fill(avatarX - 1, avatarY - 1, avatarX + avatarSize + 1, avatarY + avatarSize + 1, 0xFF3F6A70u.toInt())
+        graphics.fill(avatarX, avatarY, avatarX + avatarSize, avatarY + avatarSize, 0xFF122126u.toInt())
 
         skinTexture?.let {
+            val scale = avatarSize / 32f
+            val matrix = graphics.pose()
             matrix.pushPose()
-            val texture = it
-            val scale = 0.8f * uiSize
-            val px = x + 5f
-            val py = y + (height - 32 * uiSize) / 2f
+            matrix.translate(avatarX.toFloat(), avatarY.toFloat(), 0f)
             matrix.scale(scale, scale, 1f)
-            matrix.translate(
-                px / scale, py / scale, 0f
-            )
-
-            graphics.blit(texture.texture, 0, 0, 32, 32, 32, 32)
+            graphics.blit(it.texture, 0, 0, 32, 32, 32, 32)
             matrix.popPose()
         }
-        val scale = 1.2f * uiSize
-        val infoX = x + 52 * scale
-        val infoY = y + (height - 16 * scale) / 2f
-        val name = profile.name
-        matrix.pushPose()
-        matrix.scale(scale, scale, 1f)
-        matrix.translate(infoX.toFloat() / scale, infoY.toFloat() / scale, 0f)
+
+        val client = Minecraft.getInstance()
+        val font = client.font
+        val nameX = avatarX + avatarSize + 8
+        val nameY = y + (height - font.lineHeight) / 2
+        val availableTextWidth = (buttonX - 8) - nameX
+        val nameText = if (availableTextWidth > 8) {
+            val raw = profile.name
+            if (font.width(raw) > availableTextWidth) {
+                font.plainSubstrByWidth(raw, availableTextWidth - font.width("...")) + "..."
+            } else {
+                raw
+            }
+        } else {
+            ""
+        }
+
         graphics.drawString(
-            Minecraft.getInstance().font,
-            Component.literal(name),
-            0,
-            0,
-            0xFFFFFFFFu.toInt(),
+            font,
+            Component.literal(nameText),
+            nameX,
+            nameY,
+            if (hovered) 0xFFF0F7F6u.toInt() else 0xFFD3E2E0u.toInt(),
             false
         )
-        matrix.popPose()
+
         deleteButton.render(graphics, mouseX, mouseY, delta)
     }
 
-
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return deleteButton.mouseClicked(mouseX, mouseY, button)
+        return deleteButton.mouseClicked(mouseX, mouseY, button) || super.mouseClicked(mouseX, mouseY, button)
     }
 
-    override fun updateWidgetNarration(p0: NarrationElementOutput) {
+    override fun updateWidgetNarration(output: NarrationElementOutput) {
     }
-
-    private fun checkInRange(widget: AbstractWidget, x: Double, y: Double): Boolean {
-        val startX = widget.x + 0.0
-        val endX = widget.x + widget.width + 0.0
-        val startY = widget.y + 0.0
-        val endY = widget.y + widget.height + .0
-        return x in startX..endX && y in startY..endY
-    }
-
-
 }

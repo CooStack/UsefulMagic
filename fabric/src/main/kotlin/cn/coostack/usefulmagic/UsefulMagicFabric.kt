@@ -7,33 +7,41 @@ import cn.coostack.usefulmagic.blocks.UsefulMagicBlocks
 import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
 import cn.coostack.usefulmagic.entity.custom.MagicBookEntity
+import cn.coostack.usefulmagic.effects.UsefulMagicEffects
+import cn.coostack.usefulmagic.entity.custom.MagicDragonEntity
+import cn.coostack.usefulmagic.entity.custom.MagicEyeEntity
+import cn.coostack.usefulmagic.entity.custom.MagicSubEyeEntity
+import cn.coostack.usefulmagic.extend.copyManaDataFrom
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes
 import cn.coostack.usefulmagic.items.UsefulMagicItemGroups
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import cn.coostack.usefulmagic.items.prop.SkyFallingRuneItem
 import cn.coostack.usefulmagic.listener.DefendMagicListener
-import cn.coostack.usefulmagic.meteorite.MeteoriteManager
 import cn.coostack.usefulmagic.packet.c2s.PacketC2SFormationSettingChangeRequest
 import cn.coostack.usefulmagic.packet.c2s.PacketC2SFormationSettingRequest
 import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendAddRequest
 import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendListRequest
 import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendRemoveRequest
+import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendSettingsChangeRequest
 import cn.coostack.usefulmagic.packet.listener.server.FormationSettingChangePacketListener
 import cn.coostack.usefulmagic.packet.listener.server.FormationSettingRequestPacketListener
 import cn.coostack.usefulmagic.packet.listener.server.FriendAddListRequestHandler
 import cn.coostack.usefulmagic.packet.listener.server.FriendListRequestHandler
 import cn.coostack.usefulmagic.packet.listener.server.FriendRemoveListRequestHandler
+import cn.coostack.usefulmagic.packet.listener.server.FriendSettingsChangeRequestHandler
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CEnergyCrystalChange
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationBreak
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationCreate
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationSettingsResponse
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFriendChangeResponse
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFriendListResponse
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CManaDataToggle
+import cn.coostack.usefulmagic.packet.s2c.PacketS2CTrackerToggle
+import cn.coostack.usefulmagic.particles.particle.UsefulMagicParticleTypes
 import cn.coostack.usefulmagic.recipe.UsefulMagicRecipeTypes
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
@@ -67,13 +75,13 @@ object UsefulMagicFabric : ModInitializer {
             val player = h.player
             state.getDataFromServer(player.uuid)
         }
+        ServerPlayerEvents.COPY_FROM.register { oldPlayer, newPlayer, _ ->
+            newPlayer.copyManaDataFrom(oldPlayer)
+        }
         ServerPlayConnectionEvents.DISCONNECT.register { handler, server ->
             val player = handler.player ?: return@register
             SkyFallingRuneItem.playerMagicStyles.remove(player.uuid)
             SkyFallingRuneItem.playerTasks.remove(player.uuid)
-        }
-        ServerLifecycleEvents.SERVER_STOPPED.register { server ->
-            MeteoriteManager.clearAll()
         }
         ServerLivingEntityEvents.ALLOW_DAMAGE.register { entity, source, amount ->
             DefendMagicListener.call(entity, source, amount)
@@ -86,6 +94,18 @@ object UsefulMagicFabric : ModInitializer {
         FabricDefaultAttributeRegistry.register(
             UsefulMagicEntityTypes.MAGIC_BOOK_ENTITY_TYPE.get(),
             MagicBookEntity.createDefaultMobAttributes()
+        )
+        FabricDefaultAttributeRegistry.register(
+            UsefulMagicEntityTypes.MAGIC_DRAGON_ENTITY_TYPE.get(),
+            MagicDragonEntity.createDefaultMobAttributes()
+        )
+        FabricDefaultAttributeRegistry.register(
+            UsefulMagicEntityTypes.MAGIC_EYE_ENTITY_TYPE.get(),
+            MagicEyeEntity.createDefaultMobAttributes()
+        )
+        FabricDefaultAttributeRegistry.register(
+            UsefulMagicEntityTypes.MAGIC_SUB_EYE_ENTITY_TYPE.get(),
+            MagicSubEyeEntity.createDefaultMobAttributes()
         )
     }
 
@@ -117,6 +137,12 @@ object UsefulMagicFabric : ModInitializer {
         UsefulMagicItems.items.forEach {
             Registry.register(BuiltInRegistries.ITEM, it.id, it.getItem())
         }
+        UsefulMagicEffects.mobEffects.forEach {
+            Registry.register(BuiltInRegistries.MOB_EFFECT, it.id, it.get())
+        }
+        UsefulMagicParticleTypes.particleTypes.forEach {
+            Registry.register(BuiltInRegistries.PARTICLE_TYPE, it.id, it.get())
+        }
         val group = UsefulMagicItemGroups.usefulMagicMainGroup
         Registry.register(group.type, group.id, group.get())
 
@@ -146,9 +172,8 @@ object UsefulMagicFabric : ModInitializer {
         PayloadTypeRegistry.playC2S().register(
             PacketC2SFriendRemoveRequest.payloadID, PacketC2SFriendRemoveRequest.CODEC
         )
-
-        PayloadTypeRegistry.playS2C().register(
-            PacketS2CManaDataToggle.payloadID, PacketS2CManaDataToggle.CODEC
+        PayloadTypeRegistry.playC2S().register(
+            PacketC2SFriendSettingsChangeRequest.payloadID, PacketC2SFriendSettingsChangeRequest.CODEC
         )
         PayloadTypeRegistry.playS2C().register(
             PacketS2CFriendListResponse.payloadID, PacketS2CFriendListResponse.CODEC
@@ -167,6 +192,9 @@ object UsefulMagicFabric : ModInitializer {
         )
         PayloadTypeRegistry.playS2C().register(
             PacketS2CFormationBreak.payloadID, PacketS2CFormationBreak.CODEC
+        )
+        PayloadTypeRegistry.playS2C().register(
+            PacketS2CTrackerToggle.payloadID, PacketS2CTrackerToggle.CODEC
         )
     }
 
@@ -189,6 +217,12 @@ object UsefulMagicFabric : ModInitializer {
         }
 
         ServerPlayNetworking.registerGlobalReceiver(
+            PacketC2SFriendSettingsChangeRequest.payloadID
+        ) { packet, ctx ->
+            FriendSettingsChangeRequestHandler.receive(packet, FabricServerContext(ctx))
+        }
+
+        ServerPlayNetworking.registerGlobalReceiver(
             PacketC2SFormationSettingRequest.payloadID
         ) { packet, ctx ->
             FormationSettingRequestPacketListener.receive(packet, FabricServerContext(ctx))
@@ -199,6 +233,7 @@ object UsefulMagicFabric : ModInitializer {
         ) { packet, ctx ->
             FormationSettingChangePacketListener.receive(packet, FabricServerContext(ctx))
         }
+
     }
 
 }
