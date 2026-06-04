@@ -8,8 +8,8 @@ import cn.coostack.cooparticlesapi.extend.times
 import cn.coostack.cooparticlesapi.network.particle.composition.manager.ParticleCompositionManager
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.usefulmagic.extend.boxCenterPosition
-import cn.coostack.usefulmagic.particles.barrages.magic.AntiEntityDomainMagicBarrage
-import cn.coostack.usefulmagic.particles.barrages.magic.BarrageMagicBarrage
+import cn.coostack.usefulmagic.barrages.magic.AntiEntityDomainMagicBarrage
+import cn.coostack.usefulmagic.barrages.magic.BarrageMagicBarrage
 import cn.coostack.usefulmagic.particles.composition.magic.AntiEntityChargingComposition
 import cn.coostack.usefulmagic.particles.composition.magic.AntiEntityDomainComposition
 import cn.coostack.usefulmagic.particles.emitters.magic.AntiEntityDomainEmitter

@@ -158,8 +158,13 @@
   "dragon_magic_appear": {
     "subtitle": "sounds.usefulmagic.dragon_magic_appear",
     "sounds": [
-      "usefulmagic:dragon/dragon_magic_appear1",
-      "usefulmagic:dragon/dragon_magic_appear2"
+      "usefulmagic:dragon/dragon_magic_appear"
+    ]
+  },
+  "dragon_magic_ban": {
+    "subtitle": "sounds.usefulmagic.dragon_magic_ban",
+    "sounds": [
+      "usefulmagic:dragon/dragon_magic_ban"
     ]
   },
   "liquid_ball": {

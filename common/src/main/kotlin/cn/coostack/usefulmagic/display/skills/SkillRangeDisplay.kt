@@ -4,6 +4,7 @@ import cn.coostack.cooparticlesapi.animation.timeline.Eases
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.display.AutoDisplayEntity
+import cn.coostack.cooparticlesapi.platform.CooParticlesServices
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.usefulmagic.UsefulMagic
 import com.mojang.blaze3d.vertex.PoseStack
@@ -11,7 +12,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer
 import net.minecraft.client.Camera
 import net.minecraft.client.renderer.LightTexture
 import net.minecraft.client.renderer.MultiBufferSource
-import net.minecraft.client.renderer.RenderType
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.level.Level
@@ -58,7 +58,7 @@ class SkillRangeDisplay(pos: Vec3, world: Level?) : AutoDisplayEntity(pos, world
     var age = 0
 
     @CodecField
-    var overlayCount = 3
+    var bright = 2f
 
     init {
         manageRotation = false
@@ -83,21 +83,13 @@ class SkillRangeDisplay(pos: Vec3, world: Level?) : AutoDisplayEntity(pos, world
             return
         }
         val axisVector = normalizedAxis()
-        val consumer = buffer.getBuffer(RenderType.entityTranslucentEmissive(TEXTURE))
-        val solidConsumer = buffer.getBuffer(RenderType.entityTranslucentCull(TEXTURE))
+        val solidConsumer = buffer.getBuffer(
+            CooParticlesServices.PLATFORM.getRenderTypesProvider().entityCutoutEmissive(TEXTURE, bright)
+        )
 
         modelMatrixStack.pushPose()
         modelMatrixStack.mulPose(createRotation(axisVector, currentRoll(renderAge)))
         modelMatrixStack.scale(currentScale, currentScale, currentScale)
-        repeat(overlayCount.coerceAtLeast(0)) { layer ->
-            modelMatrixStack.pushPose()
-            val layerIndex = layer + 1
-            val layerScale = 1f + EMISSIVE_SCALE_STEP * layerIndex
-            modelMatrixStack.translate(0.0, 0.0, (EMISSIVE_DEPTH_STEP * layerIndex).toDouble())
-            modelMatrixStack.scale(layerScale, layerScale, 1f)
-            drawQuad(modelMatrixStack, consumer, axisVector)
-            modelMatrixStack.popPose()
-        }
         drawQuad(modelMatrixStack, solidConsumer, axisVector)
         modelMatrixStack.popPose()
     }

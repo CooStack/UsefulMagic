@@ -1,25 +1,28 @@
 package cn.coostack.usefulmagic.particles.composition.magic
 
+import cn.coostack.cooparticlesapi.animation.timeline.AngleAnimator
+import cn.coostack.cooparticlesapi.animation.timeline.Eases
+import cn.coostack.cooparticlesapi.animation.timeline.Timeline
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
-import cn.coostack.cooparticlesapi.animation.timeline.*
-import cn.coostack.cooparticlesapi.extend.asRelative
-import cn.coostack.cooparticlesapi.network.particle.composition.*
+import cn.coostack.cooparticlesapi.network.particle.composition.AutoSequencedParticleComposition
+import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
+import cn.coostack.cooparticlesapi.network.particle.composition.ParticleShapeComposition
+import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
-import cn.coostack.cooparticlesapi.particles.impl.*
+import cn.coostack.cooparticlesapi.particles.impl.ControlableEnchantmentEffect
+import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
+import cn.coostack.cooparticlesapi.utils.builder.FourierSeriesBuilder
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
+import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionAlphaHelper
+import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionBezierScaleHelper
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
+import org.joml.Vector3f
+import java.util.*
 import kotlin.math.PI
 import kotlin.random.Random
-import java.util.SortedMap
-import java.util.TreeMap
-import org.joml.Vector3f
-import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionBezierScaleHelper
-import cn.coostack.cooparticlesapi.utils.builder.FourierSeriesBuilder
-import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
-import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionAlphaHelper
 
 @CooAutoRegister
 class MeteoriteMagicComposition(position: Vec3, world: Level? = null) :
@@ -543,6 +546,7 @@ class MeteoriteMagicComposition(position: Vec3, world: Level? = null) :
             if (status.isDisable()) {
                 alphaHelper.decreaseAlpha()
             }
+            toggleRelative()
         }
     }
 }

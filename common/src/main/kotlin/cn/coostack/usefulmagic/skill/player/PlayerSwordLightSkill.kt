@@ -8,7 +8,7 @@ import cn.coostack.cooparticlesapi.network.particle.composition.manager.Particle
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
-import cn.coostack.usefulmagic.particles.barrages.entity.skill.GiantSwordLightBarrageMagic
+import cn.coostack.usefulmagic.barrages.entity.skill.GiantSwordLightBarrageMagic
 import cn.coostack.usefulmagic.particles.emitters.ParticleWaveEmitters
 import cn.coostack.usefulmagic.particles.composition.skill.SwordLightComposition
 import cn.coostack.usefulmagic.skill.api.Skill

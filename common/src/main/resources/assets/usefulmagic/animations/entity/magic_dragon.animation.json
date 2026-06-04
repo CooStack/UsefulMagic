@@ -1,7 +1,7 @@
 {
 	"format_version": "1.8.0",
 	"animations": {
-		"animation.model.飞行": {
+		"animation.model.fly": {
 			"loop": true,
 			"animation_length": 1.25,
 			"bones": {
@@ -126,7 +126,7 @@
 				}
 			}
 		},
-		"animation.model.起飞": {
+		"animation.model.take_off": {
 			"loop": "hold_on_last_frame",
 			"animation_length": 2,
 			"bones": {
@@ -373,7 +373,7 @@
 				}
 			}
 		},
-		"animation.model.张嘴": {
+		"animation.model.open_mouth": {
 			"loop": "hold_on_last_frame",
 			"animation_length": 2,
 			"bones": {
@@ -537,7 +537,7 @@
 				}
 			}
 		},
-		"animation.model.正吐息": {
+		"animation.model.breath_forward": {
 			"loop": true,
 			"animation_length": 2,
 			"bones": {
@@ -671,7 +671,7 @@
 				}
 			}
 		},
-		"animation.model.左转吐息": {
+		"animation.model.breath_turn_left": {
 			"loop": "hold_on_last_frame",
 			"animation_length": 2,
 			"bones": {
@@ -825,7 +825,7 @@
 				}
 			}
 		},
-		"animation.model.左吐息": {
+		"animation.model.breath_left": {
 			"loop": true,
 			"animation_length": 2,
 			"bones": {
@@ -959,7 +959,7 @@
 				}
 			}
 		},
-		"animation.model.右转吐息": {
+		"animation.model.breath_turn_right": {
 			"loop": "hold_on_last_frame",
 			"animation_length": 2,
 			"bones": {
@@ -1113,7 +1113,7 @@
 				}
 			}
 		},
-		"animation.model.左回正": {
+		"animation.model.breath_left_reset": {
 			"loop": "hold_on_last_frame",
 			"animation_length": 2,
 			"bones": {
@@ -1267,7 +1267,7 @@
 				}
 			}
 		},
-		"animation.model.右吐息": {
+		"animation.model.breath_right": {
 			"loop": true,
 			"animation_length": 2,
 			"bones": {
@@ -1401,7 +1401,7 @@
 				}
 			}
 		},
-		"animation.model.右回正": {
+		"animation.model.breath_right_reset": {
 			"loop": "hold_on_last_frame",
 			"animation_length": 2,
 			"bones": {
@@ -1555,7 +1555,7 @@
 				}
 			}
 		},
-		"animation.model.行走张嘴": {
+		"animation.model.walk_open_mouth": {
 			"loop": true,
 			"animation_length": 6,
 			"bones": {
@@ -2692,7 +2692,7 @@
 				}
 			}
 		},
-		"animation.model.结束吐息，抬头飞行": {
+		"animation.model.breath_finish_and_fly": {
 			"loop": "hold_on_last_frame",
 			"animation_length": 2,
 			"bones": {
@@ -2953,7 +2953,7 @@
 				}
 			}
 		},
-		"animation.model.行走吐息": {
+		"animation.model.walk_breath": {
 			"loop": true,
 			"animation_length": 6,
 			"bones": {
@@ -4085,7 +4085,7 @@
 				}
 			}
 		},
-		"animation.model.向上爆发打开翅膀": {
+		"animation.model.burst_up_open_wings": {
 			"animation_length": 2,
 			"bones": {
 				"Dragon": {
@@ -4327,7 +4327,7 @@
 				}
 			}
 		},
-		"animation.model.行走闭嘴": {
+		"animation.model.walk_close_mouth": {
 			"loop": true,
 			"animation_length": 6,
 			"bones": {
@@ -5464,7 +5464,7 @@
 				}
 			}
 		},
-		"animation.model.行走": {
+		"animation.model.walk": {
 			"loop": true,
 			"animation_length": 6,
 			"bones": {
@@ -6591,7 +6591,7 @@
 				}
 			}
 		},
-		"animation.model.眩晕倒下": {
+		"animation.model.dizzy_fall": {
 			"animation_length": 0.75,
 			"bones": {
 				"Dragon": {
@@ -6731,7 +6731,7 @@
 				}
 			}
 		},
-		"animation.model.眩晕待机": {
+		"animation.model.dizzy_idle": {
 			"loop": true,
 			"animation_length": 0.5417,
 			"bones": {
@@ -6792,7 +6792,7 @@
 				}
 			}
 		},
-		"animation.model.眩晕后重新站起来": {
+		"animation.model.dizzy_recover": {
 			"animation_length": 0.9167,
 			"bones": {
 				"Dragon": {

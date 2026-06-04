@@ -7,6 +7,7 @@ import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
 
 class RenderAction<T : RenderEntity>(val renderEntity: T) : AnimateAction(), Tickable<RenderAction<T>> {
     private val actions = ArrayList<RenderAction<T>.() -> Unit>()
+    private val postActions = ArrayList<RenderAction<T>.() -> Unit>()
     private var cancelMethod: RenderAction<T>.(T) -> Unit = {
         it.remove()
     }
@@ -22,6 +23,7 @@ class RenderAction<T : RenderEntity>(val renderEntity: T) : AnimateAction(), Tic
 
     override fun tick() {
         actions.forEach { it() }
+        postActions.forEach { it() }
     }
 
     override fun onStart() {
@@ -34,6 +36,11 @@ class RenderAction<T : RenderEntity>(val renderEntity: T) : AnimateAction(), Tic
 
     override fun addPreTickAction(action: RenderAction<T>.() -> Unit): RenderAction<T> {
         actions.add(action)
+        return this
+    }
+
+    override fun addPreTickActionPost(action: RenderAction<T>.() -> Unit): RenderAction<T> {
+        postActions.add(action)
         return this
     }
 }

@@ -2,9 +2,7 @@ package cn.coostack.usefulmagic.renderer
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
-import cn.coostack.cooparticlesapi.annotations.renderer.handle.RenderEntityHelper
 import cn.coostack.cooparticlesapi.renderer.AutoRenderEntity
-import cn.coostack.cooparticlesapi.renderer.RenderEntity
 import cn.coostack.cooparticlesapi.renderer.client.RenderUtil
 import cn.coostack.cooparticlesapi.renderer.effects.builtin.BuiltinRenderEffectDescriptors
 import cn.coostack.cooparticlesapi.renderer.effects.builtin.MaskBloomConfig
@@ -24,10 +22,8 @@ import cn.coostack.cooparticlesapi.renderer.shader.data.VertexData
 import cn.coostack.cooparticlesapi.renderer.shader.glsl.IdentifierShader
 import cn.coostack.cooparticlesapi.renderer.shader.vertex.SimpleVertexBuffer
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.entity.custom.MagicDragonEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.MagicDragonEntity
 import com.mojang.blaze3d.systems.RenderSystem
-import net.minecraft.network.FriendlyByteBuf
-import net.minecraft.network.codec.StreamCodec
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.Entity
@@ -40,7 +36,6 @@ import org.joml.Vector2f
 import org.joml.Vector3f
 import org.joml.Vector4f
 import kotlin.math.cos
-import kotlin.math.max
 import kotlin.math.sin
 
 private enum class MonsterRoarBlendMode {
@@ -434,10 +429,6 @@ class MonsterRoarRenderEntity(
         private const val NO_SOURCE_ENTITY = -1
         private const val MONSTER_ROAR_BLOOM_EFFECT_ID = "usefulmagic:monster_roar_bloom"
         private const val MONSTER_ROAR_BLOOM_PRIORITY = 260
-
-        @JvmField
-        val CODEC: StreamCodec<FriendlyByteBuf, RenderEntity> =
-            RenderEntityHelper.generateCodec(MonsterRoarRenderEntity())
 
         @JvmField
         val ID: ResourceLocation =

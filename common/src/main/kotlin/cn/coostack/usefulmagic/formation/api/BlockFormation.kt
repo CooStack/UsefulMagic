@@ -1,7 +1,5 @@
 package cn.coostack.usefulmagic.formation.api
 
-import cn.coostack.usefulmagic.entity.custom.formation.FormationCoreEntity
-import it.unimi.dsi.fastutil.booleans.BooleanIntMutablePair
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import java.util.UUID
@@ -76,8 +74,6 @@ interface BlockFormation {
      * 阵法在激活后, 返回true
      */
     fun isActiveFormation(): Boolean
-
-    fun createFormationEntity(): FormationCoreEntity
 
     /**
      * 处理阵法的所有功能 (包括防御, 攻击, 储存 等)

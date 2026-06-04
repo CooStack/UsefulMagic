@@ -1,10 +1,10 @@
 package cn.coostack.usefulmagic.entity.util.phases
 
-import cn.coostack.usefulmagic.entity.util.phases.dragon.*
-import cn.coostack.usefulmagic.entity.util.phases.eye.*
-import cn.coostack.usefulmagic.entity.util.phases.eye.sub.EyeFollowOwnerPhase
-import cn.coostack.usefulmagic.entity.util.phases.eye.sub.EyeFollowTargetPhase
-import cn.coostack.usefulmagic.entity.util.phases.eye.sub.EyeSuicidePhase
+import cn.coostack.usefulmagic.entity.custom.dragon.eye.phases.*
+import cn.coostack.usefulmagic.entity.custom.dragon.eye.phases.sub.EyeFollowOwnerPhase
+import cn.coostack.usefulmagic.entity.custom.dragon.eye.phases.sub.EyeFollowTargetPhase
+import cn.coostack.usefulmagic.entity.custom.dragon.eye.phases.sub.EyeSuicidePhase
+import cn.coostack.usefulmagic.entity.custom.dragon.phases.*
 import net.minecraft.world.entity.LivingEntity
 import java.util.function.Supplier
 
@@ -50,6 +50,8 @@ object PhaseRegistries {
         arrayOf<PhaseHolder<out LivingEntity>>(
             DragonCrossFlightPhase.HOLDER,
             DragonHoverFlightPhase.HOLDER,
+            DragonImpactSkillPhase.HOLDER,
+            DragonLookAndKeepDistancePhase.HOLDER,
             DragonNonePhase.HOLDER,
             DragonOrbitFlightPhase.HOLDER,
             DragonOrbitCloserFlightPhase.HOLDER,
@@ -62,8 +64,7 @@ object PhaseRegistries {
             TeleportRandomlyPhase.HOLDER,
             EyeFollowOwnerPhase.HOLDER,
             EyeSuicidePhase.HOLDER,
-            EyeFollowTargetPhase.HOLDER
+            EyeFollowTargetPhase.HOLDER,
         )
-
     }
 }

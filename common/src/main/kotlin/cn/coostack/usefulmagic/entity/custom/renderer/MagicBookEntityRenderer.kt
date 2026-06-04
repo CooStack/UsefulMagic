@@ -3,7 +3,7 @@ package cn.coostack.usefulmagic.entity.custom.renderer
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.entity.MagicBookEntityModel
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityLayers
-import cn.coostack.usefulmagic.entity.custom.MagicBookEntity
+import cn.coostack.usefulmagic.entity.custom.book.MagicBookEntity
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.entity.EntityRendererProvider

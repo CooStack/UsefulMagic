@@ -10,9 +10,10 @@ import cn.coostack.cooparticlesapi.extend.asRelative
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.usefulmagic.damagetypes.UsefulMagicDamageSources
 import cn.coostack.usefulmagic.meteorite.MeteoriteDisplay
-import cn.coostack.usefulmagic.particles.barrages.api.DamagedBarrage
+import cn.coostack.usefulmagic.barrages.api.DamagedBarrage
 import cn.coostack.usefulmagic.particles.emitters.StarryMeteoriteLocusEmitters
 import cn.coostack.usefulmagic.particles.emitters.magic.StarryMeteoriteSplitEmitter
+import cn.coostack.usefulmagic.renderer.MeteoriteAtmosphereFireRenderEntity
 import cn.coostack.usefulmagic.utils.FriendFilterHelper
 import net.minecraft.core.BlockPos
 import net.minecraft.server.level.ServerLevel
@@ -51,6 +52,7 @@ class StarryMainBarrage(loc: Vec3, world: ServerLevel, options: BarrageOption, d
         private const val SPLIT_DAMAGE_RADIUS_MULTIPLIER = 1.5
         private const val SPECIAL_SUB_DAMAGE_RATIO = 3.0 / 5.0
         private const val SPECIAL_SUB_SIZE_RATIO = 3.0 / 7.0
+        private val ATMOSPHERE_FIRE_COLOR = Vector3f(1.0f, 0.16f, 0.58f)
     }
 
     var targetSize = FloatConstSpeedAnimator(0.5f, damage.toFloat() / 10f)
@@ -62,6 +64,7 @@ class StarryMainBarrage(loc: Vec3, world: ServerLevel, options: BarrageOption, d
     private var splitTriggered = false
     private var trailStarted = false
     private val trailEmitter = createTrailEmitter()
+    private var atmosphereFire: MeteoriteAtmosphereFireRenderEntity? = null
 
     init {
         options.acrossBlock(true)
@@ -117,6 +120,7 @@ class StarryMainBarrage(loc: Vec3, world: ServerLevel, options: BarrageOption, d
         super.tick()
         flightTicks++
         trailEmitter.pos = loc
+        updateAtmosphereFire()
         val control = bindControl.get() as MeteoriteDisplay
         if (direction.lengthSqr() > 1e-6) {
             control.rotateToPoint(direction.asRelative())
@@ -162,6 +166,7 @@ class StarryMainBarrage(loc: Vec3, world: ServerLevel, options: BarrageOption, d
         }
         trailStarted = true
         ParticleEmittersManager.spawnEmitters(trailEmitter)
+        ensureAtmosphereFire()
     }
 
     private fun stopTrail() {
@@ -170,6 +175,29 @@ class StarryMainBarrage(loc: Vec3, world: ServerLevel, options: BarrageOption, d
         }
         trailEmitter.remove()
         trailStarted = false
+    }
+
+    private fun ensureAtmosphereFire() {
+        if (atmosphereFire != null) {
+            return
+        }
+        val fireDirection = if (direction.lengthSqr() > 1e-6) direction else Vec3(0.0, -1.0, 0.0)
+        atmosphereFire = MeteoriteAtmosphereFireRenderEntity.spawn(
+            world,
+            loc,
+            fireDirection,
+            targetSize.current.coerceAtLeast(MIN_SUB_SIZE.toFloat()),
+            color = Vector3f(ATMOSPHERE_FIRE_COLOR),
+            lifetime = MAX_FLIGHT_TICKS + 40,
+            fadeInTicks = 4,
+            fadeOutTicks = 10,
+            alpha = 0.82,
+        )
+    }
+
+    private fun updateAtmosphereFire() {
+        val fireDirection = if (direction.lengthSqr() > 1e-6) direction else Vec3(0.0, -1.0, 0.0)
+        atmosphereFire?.moveTo(loc, fireDirection)
     }
 
     private fun shouldSplit(): Boolean {
@@ -183,6 +211,8 @@ class StarryMainBarrage(loc: Vec3, world: ServerLevel, options: BarrageOption, d
         onSplit.forEach { it() }
         splitTriggered = true
         stopTrail()
+        atmosphereFire?.discard(8)
+        atmosphereFire = null
         spawnSplitExplosionEffect()
 
         val splitCount = Random.nextInt(MIN_SPLIT_COUNT, MAX_SPLIT_COUNT + 1)

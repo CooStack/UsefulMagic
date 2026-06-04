@@ -8,12 +8,13 @@
     "${mod_author}"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://space.bilibili.com/291397844",
+    "sources": "https://github.com/CooStack/UsefulMagic"
   },
   "license": "${license}",
   "icon": "${mod_id}.png",
   "environment": "*",
+  "accessWidener": "${mod_id}.accesswidener",
   "entrypoints": {
     "main": [
       {
@@ -43,6 +44,7 @@
     "fabric-api": "*",
     "minecraft": "${minecraft_version}",
     "java": ">=${java_version}",
+    "geckolib": ">=${geckolib_version}",
     "cooparticlesapi": ">=2.3.4"
   },
   "suggests": {

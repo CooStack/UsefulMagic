@@ -7,6 +7,7 @@ import cn.coostack.cooparticlesapi.network.particle.composition.manager.Particle
 import cn.coostack.cooparticlesapi.network.particle.data.minRangeTo
 import cn.coostack.usefulmagic.particles.composition.magic.MeteoriteMagicComposition
 import cn.coostack.usefulmagic.particles.emitters.meteorite.MeteoriteTailEmitter
+import cn.coostack.usefulmagic.renderer.MeteoriteAtmosphereFireRenderEntity
 import net.minecraft.core.BlockPos
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.LivingEntity
@@ -39,6 +40,7 @@ class MeteoriteAnimateAction(
         .apply {
             this.radius = targetSize.toDouble()
         }
+    var mainMeteoriteRenderer: MeteoriteAtmosphereFireRenderEntity? = null
 
     // 时间会有大概半秒的浮动
     var mergeSpeed = targetSize / 40
@@ -79,10 +81,13 @@ class MeteoriteAnimateAction(
         farFlySoundStarted = false
         nearFlySoundPlayed = false
         impactTriggered = false
+        mainMeteoriteRenderer = null
         pendingExplosionBlocks.clear()
         barrageState.start(this)
     }
 
     override fun onDone() {
+        mainMeteoriteRenderer?.discard(10)
+        mainMeteoriteRenderer = null
     }
 }

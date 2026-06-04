@@ -11,7 +11,7 @@ import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
 import cn.coostack.usefulmagic.damagetypes.UsefulMagicDamageSources
 import cn.coostack.usefulmagic.meteorite.MeteoriteImpactHelper
 import cn.coostack.usefulmagic.meteorite.MeteoriteDisplay
-import cn.coostack.usefulmagic.particles.barrages.api.DamagedBarrage
+import cn.coostack.usefulmagic.barrages.api.DamagedBarrage
 import cn.coostack.usefulmagic.particles.emitters.StarryMeteoriteLocusEmitters
 import cn.coostack.usefulmagic.particles.emitters.magic.StarryHugeBarrageExplosionEmitter
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents

@@ -1,7 +1,7 @@
 package cn.coostack.usefulmagic.states
 
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.beans.MagicPlayerData
+import cn.coostack.usefulmagic.profile.MagicPlayerData
 import net.minecraft.core.HolderLookup
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.MinecraftServer

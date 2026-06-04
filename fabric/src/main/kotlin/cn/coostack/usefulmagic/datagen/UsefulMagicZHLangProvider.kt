@@ -55,6 +55,7 @@ class UsefulMagicZHLangProvider(
             add(UsefulMagicItems.TUTORIAL_BOOK, "实用魔法手册")
             add(UsefulMagicItems.FRIEND_BOARD, "好友令牌")
             add(UsefulMagicItems.SKY_FALLING_RUNE, "超位魔法「天空坠落」 符文")
+            add(UsefulMagicItems.MAGIC_EYE_SPAWNER, "凝视之眼")
             // group
             add("item.useful_magic_main", "实用魔法")
             // block 信息
@@ -68,7 +69,8 @@ class UsefulMagicZHLangProvider(
             add(UsefulMagicBlocks.ENERGY_CRYSTAL_BLOCK, "能源水晶")
 
             add(UsefulMagicItems.BARRAGE_MAGIC, "魔法飞弹法术")
-            add(UsefulMagicItems.BEAM_MAGIC, "光束法术")
+            add(UsefulMagicItems.LASER_MAGIC, "激光法术")
+            add(UsefulMagicItems.LIGHT_BEAM_MAGIC, "光束法术")
             add(UsefulMagicItems.SWORD_QI_MAGIC, "剑气法术")
             add(UsefulMagicItems.GOLDEN_MAGIC, "黄金魔法")
             add(UsefulMagicItems.SWORD_FORMATION_MAGIC, "剑阵魔法")
@@ -84,6 +86,7 @@ class UsefulMagicZHLangProvider(
             add(UsefulMagicEntityTypes.MAGIC_DRAGON_ENTITY_TYPE, "渊瞳魔龙")
             add(UsefulMagicEntityTypes.MAGIC_EYE_ENTITY_TYPE, "渊瞳之眼")
             add(UsefulMagicEntityTypes.MAGIC_SUB_EYE_ENTITY_TYPE, "渊瞳珍珠")
+            add(UsefulMagicEntityTypes.MAGIC_HEART_ENTITY_TYPE, "渊瞳之心")
 
             // lore信息
             add("screen.shift", "§7按下shift查看更多信息")

@@ -11,6 +11,7 @@ import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.damagetypes.UsefulMagicDamageSources
 import cn.coostack.usefulmagic.extend.charging
+import cn.coostack.usefulmagic.extend.mana
 import cn.coostack.usefulmagic.particles.composition.magic.MagicBeamComposition
 import cn.coostack.usefulmagic.renderer.StraightLaserRenderEntity
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
@@ -21,6 +22,7 @@ import cn.coostack.usefulmagic.utils.MagicHelper
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.sounds.SoundSource
 import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.AABB
@@ -45,7 +47,7 @@ class LightBeamMagic(properties: Properties) : MagicItem(properties) {
         val chargeSoundTag = CacheKey.of<ServerManagedSoundInstance>(
             ResourceLocation.fromNamespaceAndPath(
                 UsefulMagic.MOD_ID,
-                "chargeSound"
+                "charge_sound"
             )
         )
 
@@ -53,7 +55,7 @@ class LightBeamMagic(properties: Properties) : MagicItem(properties) {
         val shootingSoundTag = CacheKey.of<ServerManagedSoundInstance>(
             ResourceLocation.fromNamespaceAndPath(
                 UsefulMagic.MOD_ID,
-                "shootingSound"
+                "shooting_sound"
             )
         )
 
@@ -89,12 +91,29 @@ class LightBeamMagic(properties: Properties) : MagicItem(properties) {
         composition.direction = shooter.forward.asRelative()
         // 这里进行step操作
 
-        step(shooter, wandStack, ballStack, time)
+        val maxTick = getMaxTick(shooter, wandStack)
+        val cycleTime = if (maxTick > 0) time % maxTick else time
+        step(shooter, wandStack, ballStack, cycleTime)
     }
 
 
     fun step(shooter: LivingEntity, wandStack: ItemStack, ballStack: ItemStack, time: Int) {
-        if (time < getMaxTick(shooter, wandStack) / 2) {
+        if (time < 20) {
+            shooter.cacher.getOrCreate(chargeSoundTag) {
+                ServerSoundManager.instance(
+                    UsefulMagicSoundEvents.DRAGON_HUGE_LASER_CHARGE_UP.get(),
+                    SoundSource.PLAYERS
+                )
+                    .entity(shooter)
+                    .visibleRange(256.0)
+                    .volumeFalloff(SoundVolumeFalloff.QUADRATIC)
+                    .pitch(1f)
+                    .volume(0.7f)
+                    .syncEveryTick(true)
+                    .layer("huge_beam")
+                    .stopWhenBoundEntityMissing(false)
+                    .spawn()
+            }
             // 蓄力阶段
             return
         }
@@ -129,7 +148,7 @@ class LightBeamMagic(properties: Properties) : MagicItem(properties) {
                 .spawn()
         }
         // 伤害阶段
-        attackAsLaser(shooter, beamStart, beamEnd, 4.0, MagicHelper.getMagicDamage(wandStack))
+        attackAsLaser(shooter, beamStart, beamEnd, 4.0, MagicHelper.getMagicDamage(wandStack), wandStack)
     }
 
 
@@ -168,21 +187,7 @@ class LightBeamMagic(properties: Properties) : MagicItem(properties) {
         wandStack: ItemStack,
         ballStack: ItemStack
     ) {
-        shooter.cacher.getOrCreate(chargeSoundTag) {
-            ServerSoundManager.instance(
-                UsefulMagicSoundEvents.DRAGON_HUGE_LASER_CHARGE_UP.get(),
-                SoundSource.PLAYERS
-            )
-                .entity(shooter)
-                .visibleRange(256.0)
-                .volumeFalloff(SoundVolumeFalloff.QUADRATIC)
-                .pitch(1f)
-                .volume(0.7f)
-                .syncEveryTick(true)
-                .layer("huge_beam")
-                .stopWhenBoundEntityMissing(false)
-                .spawn()
-        }
+
     }
 
     private fun getOrCreateContainer(shooter: LivingEntity) = ControlerTickSystem.get(shooter.uuid)
@@ -206,7 +211,24 @@ class LightBeamMagic(properties: Properties) : MagicItem(properties) {
         }
     }
 
-    private fun attackAsLaser(source: LivingEntity, start: Vec3, end: Vec3, r: Double, damage: Double) {
+    private fun attackAsLaser(
+        source: LivingEntity,
+        start: Vec3,
+        end: Vec3,
+        r: Double,
+        damage: Double,
+        wand: ItemStack
+    ) {
+
+        // 扣除魔力值 (因为是在蓄力期间就在伤害了，所以要直接扣除）
+        if (source is Player) {
+            val cost = MagicHelper.getManaCost(wand)
+            if (source.mana < cost && !(source.hasInfiniteMaterials())) {
+                return
+            }
+            source.mana -= cost
+        }
+
         // 伤害实体
         val direction = end - start
         val laserBox = AABB(start, end).inflate(r)

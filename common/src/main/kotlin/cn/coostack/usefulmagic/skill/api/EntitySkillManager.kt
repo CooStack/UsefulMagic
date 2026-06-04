@@ -1,17 +1,16 @@
 package cn.coostack.usefulmagic.skill.api
 
 import net.minecraft.world.entity.LivingEntity
+import java.util.LinkedHashMap
 import java.util.UUID
 import java.util.function.Predicate
-import kotlin.random.Random
 
-class EntitySkillManager(var owner: LivingEntity) {
+abstract class EntitySkillManager(var owner: LivingEntity) {
     val cacheUUID: UUID = UUID.randomUUID()
-    private val skills = HashMap<String, Skill<LivingEntity>>()
+    protected val skills = LinkedHashMap<String, Skill<LivingEntity>>()
 
-    private val countdownStorage = HashMap<String, Int>()
-    private var activeHoldingTick = 0
-    private val random = Random(System.currentTimeMillis())
+    protected val countdownStorage = LinkedHashMap<String, Int>()
+    protected var activeHoldingTick = 0
     var active: Skill<LivingEntity>? = null
         internal set
 
@@ -19,8 +18,10 @@ class EntitySkillManager(var owner: LivingEntity) {
         return skills.filter { predicate.test(it.value) }
     }
 
-    fun addSkill(skill: Skill<out LivingEntity>) {
-        skills[skill.getSkillID()] = skill.forOwner()
+    open fun addSkill(skill: Skill<out LivingEntity>) {
+        val ownerSkill = skill.forOwner()
+        skills[ownerSkill.getSkillID()] = ownerSkill
+        onSkillAdded(ownerSkill)
     }
 
     /**
@@ -31,33 +32,22 @@ class EntitySkillManager(var owner: LivingEntity) {
     }
 
     /**
-     * @return false 没有可用的技能
+     * @return true 有可用的技能
      */
-    fun hasAnySkillToChoice(): Boolean {
-        return !skills.keys.any {
-            (countdownStorage[it] ?: 0) <= 0
+    open fun hasAnySkillToChoice(): Boolean {
+        return skills.values.any {
+            canTriggerSkill(it)
         }
     }
 
     /**
-     * 根据权重随机选择一个技能
+     * 选择一个技能
      */
-    fun choiceSkill(): Skill<LivingEntity>? {
-        return skills.asSequence()
-            .filter {
-                val cd = !hasCD(it.key)
-                val value = it.value
-                if (value is SkillCondition<*>) {
-                    value.asOwnerCondition().canTrigger(owner) && cd
-                } else cd
-            }
-            .maxByOrNull {
-                random.nextInt(100) * it.value.chance
-            }?.value
-    }
+    abstract fun choiceSkill(): Skill<LivingEntity>?
 
-    fun setSkillCountdown(skill: Skill<LivingEntity>) {
+    open fun setSkillCountdown(skill: Skill<LivingEntity>) {
         countdownStorage[skill.getSkillID()] = skill.getSkillCountDown(owner)
+        onSkillCountdown(skill)
     }
 
 
@@ -65,7 +55,12 @@ class EntitySkillManager(var owner: LivingEntity) {
         if (!release) {
             active?.stopHolding(owner, activeHoldingTick)
         }
+        val activeSkill = active
+        (active as? SkillCancelable)?.canceled = true
         active = null
+        if (activeSkill != null) {
+            onActiveSkillReset(activeSkill, release)
+        }
         activeHoldingTick = 0
     }
 
@@ -95,14 +90,21 @@ class EntitySkillManager(var owner: LivingEntity) {
         return active != null
     }
 
-    fun setActiveSkill(skill: Skill<out LivingEntity>, cancelBefore: Boolean = false) {
-        if (cancelBefore) {
-            active?.stopHolding(owner, activeHoldingTick)
+    fun setActiveSkill(skill: Skill<out LivingEntity>) {
+
+        if (skill is SkillCancelable) {
+            skill.canceled = false
+        }
+
+        active?.let {
+            it.stopHolding(owner, activeHoldingTick)
+            onActiveSkillReset(it, false)
         }
         val ownerSkill = skill.forOwner()
         ownerSkill.onActive(owner)
         activeHoldingTick = 0
         active = ownerSkill
+        onActiveSkillSet(ownerSkill)
     }
 
     /**
@@ -119,7 +121,6 @@ class EntitySkillManager(var owner: LivingEntity) {
         if (activeHoldingTick++ >= activeSkill.getMaxHoldingTick(owner)) {
             activeSkill.onRelease(owner, activeHoldingTick)
             setSkillCountdown(activeSkill)
-            activeSkill.holdingTick(owner, activeHoldingTick)
             resetActiveSkill(true)
             return
         }
@@ -152,11 +153,37 @@ class EntitySkillManager(var owner: LivingEntity) {
         val iterator = countdownStorage.iterator()
         while (iterator.hasNext()) {
             val entry = iterator.next()
-            countdownStorage[entry.key] = entry.value - 1
-            if (entry.value <= 0) {
+            val newCountdown = entry.value - 1
+            if (newCountdown <= 0) {
+                val skill = skills[entry.key]
                 iterator.remove()
+                onSkillCooldownFinished(entry.key, skill)
+            } else {
+                entry.setValue(newCountdown)
             }
         }
+    }
+
+    protected fun canTriggerSkill(skill: Skill<LivingEntity>): Boolean {
+        if (hasCD(skill.getSkillID())) return false
+        return if (skill is SkillCondition<*>) {
+            skill.asOwnerCondition().canTrigger(owner)
+        } else true
+    }
+
+    protected open fun onSkillAdded(skill: Skill<LivingEntity>) {
+    }
+
+    protected open fun onSkillCountdown(skill: Skill<LivingEntity>) {
+    }
+
+    protected open fun onSkillCooldownFinished(id: String, skill: Skill<LivingEntity>?) {
+    }
+
+    protected open fun onActiveSkillSet(skill: Skill<LivingEntity>) {
+    }
+
+    protected open fun onActiveSkillReset(skill: Skill<LivingEntity>, release: Boolean) {
     }
 
     @Suppress("UNCHECKED_CAST")

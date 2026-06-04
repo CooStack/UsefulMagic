@@ -7,6 +7,7 @@ import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersMan
 
 class EmitterAction<T : ParticleEmitters>(val emitter: T) : AnimateAction(), Tickable<EmitterAction<T>> {
     private val actions = ArrayList<EmitterAction<T>.() -> Unit>()
+    private val postActions = ArrayList<EmitterAction<T>.() -> Unit>()
     private var cancelMethod: EmitterAction<T>.(T) -> Unit = {
         it.remove()
     }
@@ -17,11 +18,12 @@ class EmitterAction<T : ParticleEmitters>(val emitter: T) : AnimateAction(), Tic
     }
 
     override fun checkDone(): Boolean {
-        return emitter.cancelled
+        return emitter.canceled
     }
 
     override fun tick() {
         actions.forEach { it() }
+        postActions.forEach { it() }
     }
 
     override fun onStart() {
@@ -34,6 +36,11 @@ class EmitterAction<T : ParticleEmitters>(val emitter: T) : AnimateAction(), Tic
 
     override fun addPreTickAction(action: EmitterAction<T>.() -> Unit): EmitterAction<T> {
         actions.add(action)
+        return this
+    }
+
+    override fun addPreTickActionPost(action: EmitterAction<T>.() -> Unit): EmitterAction<T> {
+        postActions.add(action)
         return this
     }
 }

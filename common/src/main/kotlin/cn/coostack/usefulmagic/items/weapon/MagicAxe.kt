@@ -1,9 +1,7 @@
 package cn.coostack.usefulmagic.items.weapon
 
 import cn.coostack.cooparticlesapi.CooParticlesAPI
-import cn.coostack.cooparticlesapi.barrages.BarrageManager
 import cn.coostack.cooparticlesapi.barrages.HitBox
-import cn.coostack.cooparticlesapi.extend.relativize
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.network.particle.emitters.PhysicConstant
 import cn.coostack.cooparticlesapi.network.particle.emitters.type.EmittersShootTypes
@@ -12,6 +10,7 @@ import cn.coostack.usefulmagic.items.UsefulMagicToolMaterials
 import cn.coostack.usefulmagic.particles.emitters.DirectionShootEmitters
 import cn.coostack.usefulmagic.particles.emitters.LineEmitters
 import cn.coostack.usefulmagic.skill.api.EntitySkillManager
+import cn.coostack.usefulmagic.skill.api.EntityRandomSkillManager
 import cn.coostack.usefulmagic.skill.player.ComboCondition
 import cn.coostack.usefulmagic.skill.player.HeavyHitSkill
 import cn.coostack.usefulmagic.skill.player.PlayerSwordLightSkill
@@ -38,6 +37,7 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.LevelEvent
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
+import cn.coostack.cooparticlesapi.extend.*
 import java.util.*
 import java.util.function.Predicate
 import kotlin.math.pow
@@ -60,7 +60,7 @@ class MagicAxe(settings: Properties) : AxeItem(UsefulMagicToolMaterials.MAGIC, s
         val playerSkills = HashMap<UUID, EntitySkillManager>()
         fun getSkillManager(player: ServerPlayer): EntitySkillManager {
             return playerSkills.getOrPut(player.uuid) {
-                EntitySkillManager(player).apply {
+                EntityRandomSkillManager(player).apply {
                     // 添加技能
                     addSkill(HeavyHitSkill(7f))
                     addSkill(PlayerSwordSlashSkill(4f))
@@ -175,7 +175,7 @@ class MagicAxe(settings: Properties) : AxeItem(UsefulMagicToolMaterials.MAGIC, s
         val choice = skillManager.getSkills {
             it is ComboCondition && it.canTrigger(user)
         }.maxByOrNull { (it.value as ComboCondition).triggerComboMin }?.value ?: return super.use(world, user, hand)
-        skillManager.setActiveSkill(choice, false)
+        skillManager.setActiveSkill(choice)
         user.startUsingItem(hand)
         return InteractionResultHolder.consume(stack)
     }

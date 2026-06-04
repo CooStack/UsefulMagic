@@ -3,7 +3,7 @@ package cn.coostack.usefulmagic.items.weapon.magic
 import cn.coostack.cooparticlesapi.barrages.BarrageManager
 import cn.coostack.cooparticlesapi.extend.ofFloored
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes
-import cn.coostack.usefulmagic.particles.barrages.magic.BarrageMagicBarrage
+import cn.coostack.usefulmagic.barrages.magic.BarrageMagicBarrage
 import cn.coostack.usefulmagic.utils.MagicHelper
 import net.minecraft.network.chat.Component
 import net.minecraft.server.level.ServerLevel

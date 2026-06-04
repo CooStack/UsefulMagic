@@ -3,7 +3,6 @@ package cn.coostack.usefulmagic.renderer
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.renderer.AutoRenderEntity
-import cn.coostack.cooparticlesapi.renderer.RenderEntity
 import cn.coostack.cooparticlesapi.renderer.client.ClientRenderPipelineManager
 import cn.coostack.cooparticlesapi.renderer.client.RenderUtil
 import cn.coostack.cooparticlesapi.renderer.effects.builtin.BuiltinRenderEffectDescriptors
@@ -25,8 +24,6 @@ import cn.coostack.cooparticlesapi.renderer.shader.vertex.SimpleVertexBuffer
 import cn.coostack.usefulmagic.UsefulMagic
 import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.Minecraft
-import net.minecraft.network.FriendlyByteBuf
-import net.minecraft.network.codec.StreamCodec
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
@@ -554,9 +551,6 @@ class BillboardStarRenderEntity(
         private const val MIN_WORLD_SCALE = 0.05f
         private const val STAR_BLOOM_EFFECT_ID = "usefulmagic:billboard_star_bloom"
         private const val STAR_BLOOM_PRIORITY = 240
-
-        @JvmField
-        val CODEC: StreamCodec<FriendlyByteBuf, RenderEntity> = RenderEntity.createCodec(::BillboardStarRenderEntity)
 
         @JvmField
         val ID: ResourceLocation =

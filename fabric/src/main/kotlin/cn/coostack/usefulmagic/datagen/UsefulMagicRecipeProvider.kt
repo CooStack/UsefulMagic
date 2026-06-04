@@ -4,19 +4,26 @@ import cn.coostack.usefulmagic.blocks.UsefulMagicBlocks
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider
+import net.minecraft.advancements.AdvancementRequirements
+import net.minecraft.advancements.AdvancementRewards
 import net.minecraft.advancements.Criterion
 import net.minecraft.advancements.critereon.InventoryChangeTrigger
 import net.minecraft.advancements.critereon.ItemPredicate
+import net.minecraft.advancements.critereon.RecipeUnlockedTrigger
 import net.minecraft.core.HolderLookup
+import net.minecraft.data.recipes.RecipeBuilder
 import net.minecraft.data.recipes.RecipeCategory
 import net.minecraft.data.recipes.RecipeOutput
-import net.minecraft.data.recipes.ShapedRecipeBuilder
 import net.minecraft.tags.ItemTags
 import net.minecraft.tags.TagKey
 import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import net.minecraft.world.item.crafting.Ingredient
+import net.minecraft.world.item.crafting.ShapedRecipe
+import net.minecraft.world.item.crafting.ShapedRecipePattern
+import net.minecraft.world.level.ItemLike
 import java.util.concurrent.CompletableFuture
-import kotlin.math.exp
 
 class UsefulMagicRecipeProvider(
     output: FabricDataOutput,
@@ -24,159 +31,96 @@ class UsefulMagicRecipeProvider(
 ) :
     FabricRecipeProvider(output, registriesFuture) {
     override fun buildRecipes(exporter: RecipeOutput) {
-        ShapedRecipeBuilder
-            .shaped(RecipeCategory.MISC, UsefulMagicItems.TUTORIAL_BOOK.getItem(), 1)
-            .pattern(" T ")
-            .pattern("YBR")
-            .pattern(" H ")
-            .define('T', Items.SUGAR)
-            .define('Y', Items.GLOWSTONE_DUST)
-            .define('R', Items.REDSTONE)
-            .define('H', Items.GUNPOWDER)
-            .define('B', Items.BOOK)
-            .unlockedBy("has_item", conditionsFromItem(Items.BOOK))
-            .save(exporter)
-        ShapedRecipeBuilder
-            .shaped(RecipeCategory.COMBAT, UsefulMagicItems.WOODEN_WAND.getItem(), 1)
-            .pattern(" WW")
-            .pattern(" SW")
-            .pattern("S W")
-            .unlockedBy("has_item", conditionsFromTag(ItemTags.PLANKS))
-            .define('W', ItemTags.PLANKS)
-            .define('S', Items.STICK)
-            .save(exporter)
-
-        ShapedRecipeBuilder
-            .shaped(RecipeCategory.COMBAT, UsefulMagicItems.STONE_WAND.getItem(), 1)
-            .pattern(" SS")
-            .pattern(" WS")
-            .pattern("# S")
-            .unlockedBy("has_item", conditionsFromItem(UsefulMagicItems.WOODEN_WAND.getItem()))
-            .define('S', Items.COBBLESTONE)
-            .define('#', Items.STICK)
-            .define('W', UsefulMagicItems.WOODEN_WAND.getItem())
-            .save(exporter)
-
-        ShapedRecipeBuilder
-            .shaped(RecipeCategory.COMBAT, UsefulMagicItems.COPPER_WAND.getItem(), 1)
-            .unlockedBy("has_item", conditionsFromItem(UsefulMagicItems.STONE_WAND.getItem()))
-            .pattern(" CC")
-            .pattern(" SC")
-            .pattern("E C")
-            .define('C', Items.COPPER_INGOT)
-            .define('E', Items.ENDER_PEARL)
-            .define('S', UsefulMagicItems.STONE_WAND.getItem())
-            .save(exporter)
-
-
-        ShapedRecipeBuilder
-            .shaped(RecipeCategory.MISC, UsefulMagicItems.LARGE_MANA_BOTTLE.getItem(), 1)
-            .pattern(" G ")
-            .pattern("G G")
-            .pattern("GGG")
-            .unlockedBy("has_item", conditionsFromItem(Items.GLASS))
-            .define('G', Items.GLASS)
-            .save(exporter)
-
-        ShapedRecipeBuilder
-            .shaped(RecipeCategory.MISC, UsefulMagicItems.MANA_BOTTLE.getItem(), 4)
-            .pattern("G G")
-            .pattern("GGG")
-            .unlockedBy("has_item", conditionsFromItem(Items.GLASS))
-            .define('G', Items.GLASS)
-            .save(exporter)
-
-        ShapedRecipeBuilder
-            .shaped(RecipeCategory.MISC, UsefulMagicItems.SMALL_MANA_BOTTLE.getItem(), 8)
-            .pattern("G")
-            .pattern("G")
-            .unlockedBy("has_item", conditionsFromItem(Items.GLASS))
-            .define('G', Items.GLASS)
-            .save(exporter)
-
-        ShapedRecipeBuilder
-            .shaped(RecipeCategory.BUILDING_BLOCKS, UsefulMagicBlocks.ALTAR_BLOCK_CORE.get(), 1)
-            .pattern(" B ")
-            .pattern("OEO")
-            .pattern("OOO")
-            .unlockedBy("has_item", conditionsFromItem(Items.OBSIDIAN))
-            .define('O', Items.OBSIDIAN)
-            .define('E', Items.ENDER_EYE)
-            .define('B', Items.BLAZE_POWDER)
-            .save(exporter)
-
-        ShapedRecipeBuilder
-            .shaped(RecipeCategory.BUILDING_BLOCKS, UsefulMagicBlocks.ALTAR_BLOCK.get(), 1)
-            .pattern("OBO")
-            .pattern("OOO")
-            .unlockedBy("has_item", conditionsFromItem(Items.OBSIDIAN))
-            .define('O', Items.OBSIDIAN)
-            .define('B', Items.BLAZE_POWDER)
-            .save(exporter)
-
-        ShapedRecipeBuilder
-            .shaped(RecipeCategory.BUILDING_BLOCKS, UsefulMagicBlocks.MAGIC_CORE.get(), 1)
-            .pattern("OOO")
-            .pattern("O O")
-            .pattern("OOO")
-            .unlockedBy("has_item", conditionsFromItem(Items.OBSIDIAN))
-            .define('O', Items.OBSIDIAN)
-            .save(exporter)
-
-        ShapedRecipeBuilder
-            .shaped(RecipeCategory.COMBAT, UsefulMagicItems.MANA_STAR.getItem(), 1)
-            .unlockedBy("has_item", conditionsFromItem(Items.ENDER_PEARL))
-            .pattern(" E ")
-            .pattern("ERE")
-            .pattern(" E ")
-            .define('E', Items.ENDER_PEARL)
-            .define('R', Items.REDSTONE)
-            .save(exporter)
-
-
-        ShapedRecipeBuilder
-            .shaped(RecipeCategory.COMBAT, UsefulMagicItems.BEAM_MAGIC.getItem(), 1)
-            .unlockedBy("has_item", conditionsFromItem(UsefulMagicItems.BARRAGE_MAGIC.getItem()))
-            .pattern("BEB")
-            .pattern("EME")
-            .pattern("BEB")
-            .define('E', Items.ENDER_PEARL)
-            .define('B', Items.BLAZE_ROD)
-            .define('M', UsefulMagicItems.BARRAGE_MAGIC.getItem())
-            .save(exporter)
-
-        ShapedRecipeBuilder
-            .shaped(RecipeCategory.COMBAT, UsefulMagicItems.SWORD_QI_MAGIC.getItem(), 1)
-            .unlockedBy("has_item", conditionsFromItem(Items.IRON_SWORD))
-            .pattern("AMA")
-            .pattern("MSM")
-            .pattern("AMA")
-            .define('S', Items.IRON_SWORD)
-            .define('A', Items.AMETHYST_SHARD)
-            .define('M', UsefulMagicItems.MANA_STAR.getItem())
-            .save(exporter)
-
-
-        ShapedRecipeBuilder
-            .shaped(RecipeCategory.COMBAT, UsefulMagicItems.BARRAGE_MAGIC.getItem(), 1)
-            .unlockedBy("has_item", conditionsFromItem(UsefulMagicItems.BARRAGE_MAGIC.getItem()))
-            .pattern(" I ")
-            .pattern("IBI")
-            .pattern(" I ")
-            .define('I', Items.IRON_INGOT)
-            .define('B', Items.BLAZE_ROD)
-            .save(exporter)
-
-
-        ShapedRecipeBuilder
-            .shaped(RecipeCategory.FOOD, UsefulMagicItems.MANA_CRYSTAL.getItem(), 1)
-            .unlockedBy("has_item", conditionsFromItem(UsefulMagicItems.MANA_STAR.getItem()))
-            .pattern("CCC")
-            .pattern("CMC")
-            .pattern("CCC")
-            .define('C', Items.AMETHYST_SHARD)
-            .define('M', UsefulMagicItems.MANA_STAR.getItem())
-            .save(exporter)
+        saveShaped(
+            exporter, RecipeCategory.MISC, UsefulMagicItems.TUTORIAL_BOOK.getItem(),
+            listOf(" T ", "YBR", " H "),
+            mapOf('T' to item(Items.SUGAR), 'Y' to item(Items.GLOWSTONE_DUST), 'R' to item(Items.REDSTONE), 'H' to item(Items.GUNPOWDER), 'B' to item(Items.BOOK)),
+            conditionsFromItem(Items.BOOK)
+        )
+        saveShaped(
+            exporter, RecipeCategory.COMBAT, UsefulMagicItems.WOODEN_WAND.getItem(),
+            listOf(" WW", " SW", "S W"),
+            mapOf('W' to tag(ItemTags.PLANKS), 'S' to item(Items.STICK)),
+            conditionsFromTag(ItemTags.PLANKS)
+        )
+        saveShaped(
+            exporter, RecipeCategory.COMBAT, UsefulMagicItems.STONE_WAND.getItem(),
+            listOf(" SS", " WS", "# S"),
+            mapOf('S' to item(Items.COBBLESTONE), '#' to item(Items.STICK), 'W' to item(UsefulMagicItems.WOODEN_WAND.getItem())),
+            conditionsFromItem(UsefulMagicItems.WOODEN_WAND.getItem())
+        )
+        saveShaped(
+            exporter, RecipeCategory.COMBAT, UsefulMagicItems.COPPER_WAND.getItem(),
+            listOf(" CC", " SC", "E C"),
+            mapOf('C' to item(Items.COPPER_INGOT), 'E' to item(Items.ENDER_PEARL), 'S' to item(UsefulMagicItems.STONE_WAND.getItem())),
+            conditionsFromItem(UsefulMagicItems.STONE_WAND.getItem())
+        )
+        saveShaped(
+            exporter, RecipeCategory.MISC, UsefulMagicItems.LARGE_MANA_BOTTLE.getItem(),
+            listOf(" G ", "G G", "GGG"),
+            mapOf('G' to item(Items.GLASS)),
+            conditionsFromItem(Items.GLASS)
+        )
+        saveShaped(
+            exporter, RecipeCategory.MISC, UsefulMagicItems.MANA_BOTTLE.getItem(), 4,
+            listOf("G G", "GGG"),
+            mapOf('G' to item(Items.GLASS)),
+            conditionsFromItem(Items.GLASS)
+        )
+        saveShaped(
+            exporter, RecipeCategory.MISC, UsefulMagicItems.SMALL_MANA_BOTTLE.getItem(), 8,
+            listOf("G", "G"),
+            mapOf('G' to item(Items.GLASS)),
+            conditionsFromItem(Items.GLASS)
+        )
+        saveShaped(
+            exporter, RecipeCategory.BUILDING_BLOCKS, UsefulMagicBlocks.ALTAR_BLOCK_CORE.get(),
+            listOf(" B ", "OEO", "OOO"),
+            mapOf('O' to item(Items.OBSIDIAN), 'E' to item(Items.ENDER_EYE), 'B' to item(Items.BLAZE_POWDER)),
+            conditionsFromItem(Items.OBSIDIAN)
+        )
+        saveShaped(
+            exporter, RecipeCategory.BUILDING_BLOCKS, UsefulMagicBlocks.ALTAR_BLOCK.get(),
+            listOf("OBO", "OOO"),
+            mapOf('O' to item(Items.OBSIDIAN), 'B' to item(Items.BLAZE_POWDER)),
+            conditionsFromItem(Items.OBSIDIAN)
+        )
+        saveShaped(
+            exporter, RecipeCategory.BUILDING_BLOCKS, UsefulMagicBlocks.MAGIC_CORE.get(),
+            listOf("OOO", "O O", "OOO"),
+            mapOf('O' to item(Items.OBSIDIAN)),
+            conditionsFromItem(Items.OBSIDIAN)
+        )
+        saveShaped(
+            exporter, RecipeCategory.COMBAT, UsefulMagicItems.MANA_STAR.getItem(),
+            listOf(" E ", "ERE", " E "),
+            mapOf('E' to item(Items.ENDER_PEARL), 'R' to item(Items.REDSTONE)),
+            conditionsFromItem(Items.ENDER_PEARL)
+        )
+        saveShaped(
+            exporter, RecipeCategory.COMBAT, UsefulMagicItems.LASER_MAGIC.getItem(),
+            listOf("BEB", "EME", "BEB"),
+            mapOf('E' to item(Items.ENDER_PEARL), 'B' to item(Items.BLAZE_ROD), 'M' to item(UsefulMagicItems.BARRAGE_MAGIC.getItem())),
+            conditionsFromItem(UsefulMagicItems.BARRAGE_MAGIC.getItem())
+        )
+        saveShaped(
+            exporter, RecipeCategory.COMBAT, UsefulMagicItems.SWORD_QI_MAGIC.getItem(),
+            listOf("AMA", "MSM", "AMA"),
+            mapOf('S' to item(Items.IRON_SWORD), 'A' to item(Items.AMETHYST_SHARD), 'M' to item(UsefulMagicItems.MANA_STAR.getItem())),
+            conditionsFromItem(Items.IRON_SWORD)
+        )
+        saveShaped(
+            exporter, RecipeCategory.COMBAT, UsefulMagicItems.BARRAGE_MAGIC.getItem(),
+            listOf(" I ", "IBI", " I "),
+            mapOf('I' to item(Items.IRON_INGOT), 'B' to item(Items.BLAZE_ROD)),
+            conditionsFromItem(UsefulMagicItems.BARRAGE_MAGIC.getItem())
+        )
+        saveShaped(
+            exporter, RecipeCategory.FOOD, UsefulMagicItems.MANA_CRYSTAL.getItem(),
+            listOf("CCC", "CMC", "CCC"),
+            mapOf('C' to item(Items.AMETHYST_SHARD), 'M' to item(UsefulMagicItems.MANA_STAR.getItem())),
+            conditionsFromItem(UsefulMagicItems.MANA_STAR.getItem())
+        )
 
         UsefulMagicAltarRecipeBuilder()
             .output(UsefulMagicItems.GOLDEN_MAGIC.getItem())
@@ -274,6 +218,55 @@ class UsefulMagicRecipeProvider(
 
     private fun conditionsFromItem(obsidian: Item): Criterion<*> {
         return InventoryChangeTrigger.TriggerInstance.hasItems(obsidian)
+    }
+
+    private fun item(item: ItemLike): Ingredient {
+        return Ingredient.of(item)
+    }
+
+    private fun tag(tag: TagKey<Item>): Ingredient {
+        return Ingredient.of(tag)
+    }
+
+    private fun saveShaped(
+        exporter: RecipeOutput,
+        category: RecipeCategory,
+        result: ItemLike,
+        rows: List<String>,
+        definitions: Map<Char, Ingredient>,
+        criterion: Criterion<*>
+    ) {
+        saveShaped(exporter, category, result, 1, rows, definitions, criterion)
+    }
+
+    private fun saveShaped(
+        exporter: RecipeOutput,
+        category: RecipeCategory,
+        result: ItemLike,
+        count: Int,
+        rows: List<String>,
+        definitions: Map<Char, Ingredient>,
+        criterion: Criterion<*>
+    ) {
+        val id = RecipeBuilder.getDefaultRecipeId(result)
+        val advancement = exporter.advancement()
+            .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(id))
+            .addCriterion("has_item", criterion)
+            .rewards(AdvancementRewards.Builder.recipe(id))
+            .requirements(AdvancementRequirements.Strategy.OR)
+        val recipe = ShapedRecipe(
+            "",
+            RecipeBuilder.determineBookCategory(category),
+            ShapedRecipePattern.of(definitions, rows),
+            ItemStack(result.asItem(), count),
+            true
+        )
+
+        exporter.accept(
+            id,
+            recipe,
+            advancement.build(id.withPrefix("recipes/${category.getFolderName()}/"))
+        )
     }
 
 }

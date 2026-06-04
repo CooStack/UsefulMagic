@@ -1,6 +1,6 @@
 package cn.coostack.usefulmagic.entity.custom.renderer
 
-import cn.coostack.usefulmagic.entity.custom.MagicDragonEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.MagicDragonEntity
 import cn.coostack.usefulmagic.entity.custom.model.MagicDragonModel
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.renderer.LightTexture
@@ -13,8 +13,8 @@ import software.bernie.geckolib.renderer.GeoEntityRenderer
 class MagicDragonRenderer(context: EntityRendererProvider.Context) :
     GeoEntityRenderer<MagicDragonEntity>(context, MagicDragonModel()) {
     init {
-        withScale(2f)
-        shadowRadius = 2.4f
+        withScale(MagicDragonEntity.RENDER_SCALE)
+        shadowRadius = 2.4f * MagicDragonEntity.SCALE_MULTIPLIER
     }
 
     override fun getRenderType(

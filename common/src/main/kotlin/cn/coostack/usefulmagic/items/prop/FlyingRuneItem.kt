@@ -43,7 +43,7 @@ class FlyingRuneItem : Item(Properties().stacksTo(1)) {
 
         private fun handleDisableFlying(entity: ServerPlayer) {
             val emitters = getEmittersFromUUID(entity.uuid) ?: let { return }
-            emitters.cancelled = true
+            emitters.canceled = true
             resetEmitters(entity.uuid)
         }
 

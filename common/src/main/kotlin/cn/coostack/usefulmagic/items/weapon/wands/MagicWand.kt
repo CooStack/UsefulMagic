@@ -1,6 +1,6 @@
 package cn.coostack.usefulmagic.items.weapon.wands
 
-import cn.coostack.usefulmagic.beans.PreferMagicData
+import cn.coostack.usefulmagic.profile.PreferMagicData
 import cn.coostack.usefulmagic.extend.chargedItem
 import cn.coostack.usefulmagic.extend.charging
 import cn.coostack.usefulmagic.extend.chargingTick
@@ -308,6 +308,11 @@ class MagicWand(properties: Properties) : Item(properties) {
             // 这里要扣除魔力值
             if (shooter is Player && !shooter.hasInfiniteMaterials()) {
                 shooter.mana -= MagicHelper.getManaCost(stack)
+            }
+            if (cd > 0) {
+                shooter.resetChargeState()
+            } else {
+                shooter.chargingTick = 0
             }
         } else {
             item.usingTick(shooter, stack, magicBall, world, chargingTick)

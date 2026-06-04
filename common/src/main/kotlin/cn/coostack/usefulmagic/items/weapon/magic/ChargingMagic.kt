@@ -51,7 +51,6 @@ abstract class ChargingMagic<T : ParticleComposition>(properties: Properties) : 
         wandStack: ItemStack,
         ballStack: ItemStack
     ) {
-        getOrCreateComposition(shooter, world)
     }
 
     fun <T : ParticleComposition> controlEntryOf(

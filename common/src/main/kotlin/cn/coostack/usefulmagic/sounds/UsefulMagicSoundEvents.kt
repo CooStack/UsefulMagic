@@ -31,6 +31,7 @@ object UsefulMagicSoundEvents {
 
     @JvmStatic
     val MAGIC_EXPLODE = register("magic_explode")
+
     @JvmStatic
     val STAR = register("star")
 
@@ -93,6 +94,9 @@ object UsefulMagicSoundEvents {
 
     @JvmStatic
     val DRAGON_MAGIC_APPEAR = register("dragon_magic_appear")
+
+    @JvmStatic
+    val DRAGON_MAGIC_BAN = register("dragon_magic_ban")
 
     @JvmStatic
     fun register(name: String): CommonDeferredSoundEvent {

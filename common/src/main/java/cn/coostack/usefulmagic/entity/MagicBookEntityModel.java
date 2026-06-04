@@ -5,19 +5,14 @@
 package cn.coostack.usefulmagic.entity;
 
 import cn.coostack.usefulmagic.entity.animation.MagicBookEntityAnimation;
-import cn.coostack.usefulmagic.entity.custom.MagicBookEntity;
+import cn.coostack.usefulmagic.entity.custom.book.MagicBookEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.model.AnimationUtils;
-import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HierarchicalModel;
-import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 
 public class MagicBookEntityModel extends HierarchicalModel<MagicBookEntity> {

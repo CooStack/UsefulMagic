@@ -4,7 +4,7 @@ import cn.coostack.cooparticlesapi.CooParticlesAPI
 import cn.coostack.cooparticlesapi.barrages.BarrageManager
 import cn.coostack.cooparticlesapi.extend.plus
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
-import cn.coostack.usefulmagic.particles.barrages.magic.SwordQiBarrage
+import cn.coostack.usefulmagic.barrages.magic.SwordQiBarrage
 import cn.coostack.usefulmagic.utils.MagicHelper
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.LivingEntity

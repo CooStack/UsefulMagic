@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec3
+import java.util.function.Predicate
 
 fun Entity.asHolder(): CooTrackerHolder = this as CooTrackerHolder
 
@@ -136,4 +137,13 @@ fun Entity.canSee(to: Vec3): Boolean {
         HitResult.Type.ENTITY -> true
         else -> false
     }
+}
+
+inline fun <reified T : LivingEntity> Entity.searchEntities(boxSize: Double, filter: Predicate<T>): List<T> {
+    return level().getEntitiesOfClass<T>(T::class.java, boundingBox.inflate(boxSize), filter)
+}
+
+
+fun Entity.searchLivingEntities(boxSize: Double, filter: Predicate<LivingEntity>): List<LivingEntity> {
+    return level().getEntitiesOfClass(LivingEntity::class.java, boundingBox.inflate(boxSize), filter)
 }

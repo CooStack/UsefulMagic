@@ -4,7 +4,7 @@ import cn.coostack.cooparticlesapi.barrages.AbstractBarrage
 import cn.coostack.cooparticlesapi.barrages.Barrage
 import cn.coostack.cooparticlesapi.barrages.BarrageHitResult
 import cn.coostack.usefulmagic.formation.api.FormationTargetOption
-import cn.coostack.usefulmagic.particles.barrages.api.DamagedBarrage
+import cn.coostack.usefulmagic.barrages.api.DamagedBarrage
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3

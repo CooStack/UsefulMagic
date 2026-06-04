@@ -3,10 +3,11 @@ package cn.coostack.usefulmagic
 import cn.coostack.usefulmagic.blocks.UsefulMagicBlocks
 import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
-import cn.coostack.usefulmagic.entity.custom.MagicBookEntity
-import cn.coostack.usefulmagic.entity.custom.MagicDragonEntity
-import cn.coostack.usefulmagic.entity.custom.MagicEyeEntity
-import cn.coostack.usefulmagic.entity.custom.MagicSubEyeEntity
+import cn.coostack.usefulmagic.entity.custom.book.MagicBookEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.MagicDragonEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicEyeEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicHeartEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicSubEyeEntity
 import cn.coostack.usefulmagic.effects.UsefulMagicEffects
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes
 import cn.coostack.usefulmagic.items.UsefulMagicItems
@@ -63,6 +64,10 @@ object UsefulMagicNeo {
         event.put(
             UsefulMagicEntityTypes.MAGIC_SUB_EYE_ENTITY_TYPE.get(),
             MagicSubEyeEntity.createDefaultMobAttributes().build()
+        )
+        event.put(
+            UsefulMagicEntityTypes.MAGIC_HEART_ENTITY_TYPE.get(),
+            MagicHeartEntity.createDefaultMobAttributes().build()
         )
     }
 

@@ -3,7 +3,6 @@ package cn.coostack.usefulmagic.renderer
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.renderer.AutoRenderEntity
-import cn.coostack.cooparticlesapi.renderer.RenderEntity
 import cn.coostack.cooparticlesapi.renderer.client.ClientRenderPipelineManager
 import cn.coostack.cooparticlesapi.renderer.client.RenderUtil
 import cn.coostack.cooparticlesapi.renderer.effects.builtin.BuiltinRenderEffectDescriptors
@@ -26,8 +25,6 @@ import cn.coostack.usefulmagic.items.prop.SkyFallingRuneItem
 import cn.coostack.usefulmagic.UsefulMagic
 import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.Minecraft
-import net.minecraft.network.FriendlyByteBuf
-import net.minecraft.network.codec.StreamCodec
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
@@ -441,9 +438,6 @@ class SkyFallingRenderEntity(
         val MAX_RADIUS = SkyFallingRuneItem.EXPLOSION_MAX_RADIUS.toFloat()
         private const val MIN_RADIUS = 0.75f
         private const val MIN_VISIBLE_ALPHA = 0.001f
-
-        @JvmField
-        val CODEC: StreamCodec<FriendlyByteBuf, RenderEntity> = RenderEntity.createCodec(::SkyFallingRenderEntity)
 
         @JvmField
         val ID: ResourceLocation =

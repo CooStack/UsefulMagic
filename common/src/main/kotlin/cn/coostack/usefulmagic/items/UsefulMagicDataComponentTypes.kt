@@ -2,12 +2,11 @@ package cn.coostack.usefulmagic.items
 
 import cn.coostack.cooparticlesapi.platform.registry.CommonDeferredComponentType
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.beans.PreferMagicData
+import cn.coostack.usefulmagic.profile.PreferMagicData
 import com.mojang.serialization.Codec
 import net.minecraft.core.component.DataComponentType
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.phys.Vec3
 import java.util.function.Supplier
 
 object UsefulMagicDataComponentTypes {

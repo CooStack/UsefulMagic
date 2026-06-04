@@ -24,6 +24,7 @@ import cn.coostack.usefulmagic.particles.composition.explosion.ExplosionMagicCom
 import cn.coostack.usefulmagic.particles.composition.explosion.ExplosionStarComposition
 import cn.coostack.usefulmagic.particles.emitters.explosion.ExplosionLineEmitters
 import cn.coostack.usefulmagic.renderer.BillboardStarRenderEntity
+import cn.coostack.usefulmagic.renderer.MeteoriteAtmosphereFireRenderEntity
 import cn.coostack.usefulmagic.renderer.SkyFallingRenderEntity
 import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
@@ -59,7 +60,15 @@ class DebuggerItem : Item(Properties()) {
         val shader = if (user.isShiftKeyDown) {
             SkyFallingRenderEntity(world, user.position())
         } else {
-            BillboardStarRenderEntity(world, target)
+            MeteoriteAtmosphereFireRenderEntity(world)
+                .configure(
+                    center = target,
+                    moveDirection = user.forward,
+                    meteoriteSize = 2.2f,
+                    maxLifetime = 100,
+                    fadeIn = 8,
+                    fadeOut = 18,
+                )
         }
         ServerRenderEntityManager.spawn(shader)
     }
@@ -300,4 +309,3 @@ class DebuggerItem : Item(Properties()) {
     }
 
 }
-

@@ -12,7 +12,7 @@ import cn.coostack.usefulmagic.extend.boxCenterPosition
 import cn.coostack.usefulmagic.extend.canSee
 import cn.coostack.usefulmagic.extend.charging
 import cn.coostack.usefulmagic.extend.resetChargeState
-import cn.coostack.usefulmagic.particles.barrages.magic.SwordFormationBarrage
+import cn.coostack.usefulmagic.barrages.magic.SwordFormationBarrage
 import cn.coostack.usefulmagic.particles.composition.magic.GoldenMagicChargingComposition
 import cn.coostack.usefulmagic.particles.composition.magic.SwordFormationMagicChargingComposition
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents

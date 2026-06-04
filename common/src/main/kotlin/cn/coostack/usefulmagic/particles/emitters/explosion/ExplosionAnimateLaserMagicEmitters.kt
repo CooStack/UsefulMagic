@@ -111,7 +111,7 @@ class ExplosionAnimateLaserMagicEmitters(pos: Vec3, world: Level?) : ClassPartic
         this.maxTick = emitters.maxTick
         this.delay = emitters.delay
         this.uuid = emitters.uuid
-        this.cancelled = emitters.cancelled
+        this.canceled = emitters.canceled
         this.playing = emitters.playing
     }
 

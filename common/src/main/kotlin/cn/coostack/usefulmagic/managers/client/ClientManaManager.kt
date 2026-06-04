@@ -1,6 +1,6 @@
 package cn.coostack.usefulmagic.managers.client
 
-import cn.coostack.usefulmagic.beans.MagicPlayerData
+import cn.coostack.usefulmagic.profile.MagicPlayerData
 import net.minecraft.client.Minecraft
 import java.util.UUID
 

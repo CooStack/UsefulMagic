@@ -11,7 +11,7 @@ import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.blocks.entity.MagicCoreBlockEntity
-import cn.coostack.usefulmagic.entity.custom.MagicBookEntity
+import cn.coostack.usefulmagic.entity.custom.book.MagicBookEntity
 import cn.coostack.usefulmagic.extend.isOf
 import cn.coostack.usefulmagic.particles.animation.EmittersAnimate
 import cn.coostack.usefulmagic.particles.animation.ParticleAnimation

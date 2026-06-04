@@ -70,7 +70,7 @@ class UsefulMagicItemTagProvider(
             .add(UsefulMagicItems.LIGHTNING_MAGIC)
             .add(UsefulMagicItems.HEALTH_MAGIC)
             .add(UsefulMagicItems.GOLDEN_MAGIC)
-            .add(UsefulMagicItems.BEAM_MAGIC)
+            .add(UsefulMagicItems.LASER_MAGIC)
             .add(UsefulMagicItems.SWORD_FORMATION_MAGIC)
             .add(UsefulMagicItems.SWORD_QI_MAGIC)
 

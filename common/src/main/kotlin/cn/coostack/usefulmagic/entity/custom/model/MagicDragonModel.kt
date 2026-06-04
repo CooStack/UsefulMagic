@@ -1,8 +1,9 @@
 package cn.coostack.usefulmagic.entity.custom.model
 
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.entity.custom.MagicDragonEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.MagicDragonEntity
 import net.minecraft.resources.ResourceLocation
+import software.bernie.geckolib.animation.AnimationState
 import software.bernie.geckolib.model.GeoModel
 
 /**
@@ -16,6 +17,10 @@ import software.bernie.geckolib.model.GeoModel
  * 和 `MagicDragonSkillAnimationState`。
  */
 class MagicDragonModel : GeoModel<MagicDragonEntity>() {
+    companion object {
+        private var loggedAnimationSamples = 0
+    }
+
     @Suppress("OVERRIDE_DEPRECATION")
     override fun getModelResource(animatable: MagicDragonEntity): ResourceLocation {
         return ResourceLocation.fromNamespaceAndPath(
@@ -37,5 +42,31 @@ class MagicDragonModel : GeoModel<MagicDragonEntity>() {
             UsefulMagic.MOD_ID,
             "animations/entity/magic_dragon.animation.json"
         )
+    }
+
+    override fun setCustomAnimations(
+        animatable: MagicDragonEntity,
+        instanceId: Long,
+        animationState: AnimationState<MagicDragonEntity>
+    ) {
+        super.setCustomAnimations(animatable, instanceId, animationState)
+        if (loggedAnimationSamples >= 8) {
+            return
+        }
+
+        val rightWing = getBone("chibangyou").orElse(null)
+        val leftWing = getBone("chibangzuo").orElse(null)
+        val root = getBone("Dragon").orElse(null)
+        UsefulMagic.logger.info(
+            "MagicDragon geo sample #{}: entity={}, tick={}, rightWingRotZ={}, leftWingRotZ={}, rootPosY={}, rootRotX={}",
+            loggedAnimationSamples + 1,
+            animatable.id,
+            "%.3f".format(animationState.animationTick),
+            rightWing?.rotZ,
+            leftWing?.rotZ,
+            root?.posY,
+            root?.rotX
+        )
+        loggedAnimationSamples++
     }
 }

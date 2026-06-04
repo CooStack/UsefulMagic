@@ -1,14 +1,14 @@
 package cn.coostack.usefulmagic.entity.custom.renderer
 
+import cn.coostack.cooparticlesapi.platform.CooParticlesServices
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.entity.custom.MagicEyeEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicEyeEntity
 import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
 import net.minecraft.client.renderer.LightTexture
 import net.minecraft.client.renderer.MultiBufferSource
-import net.minecraft.client.renderer.RenderType
 import net.minecraft.client.renderer.entity.EntityRenderer
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.client.renderer.entity.LivingEntityRenderer
@@ -76,7 +76,8 @@ class MagicEyeEntityRenderer(context: EntityRendererProvider.Context) : EntityRe
             64f,
             innerDrift,
             255,
-            -0.014f
+            -0.014f,
+            bright = 2f
         )
         renderShell(
             poseStack,
@@ -87,7 +88,8 @@ class MagicEyeEntityRenderer(context: EntityRendererProvider.Context) : EntityRe
             30f,
             outerDrift,
             255,
-            -0.026f
+            -0.026f,
+            bright = 2f
         )
         renderBillboardLayer(
             poseStack,
@@ -98,7 +100,8 @@ class MagicEyeEntityRenderer(context: EntityRendererProvider.Context) : EntityRe
             overlay,
             255,
             0.012f,
-            Math3DUtil.colorOf(255, 215, 0)
+            Math3DUtil.colorOf(255, 215, 0),
+            2f
         )
         renderBillboardLayer(
             poseStack,
@@ -108,7 +111,8 @@ class MagicEyeEntityRenderer(context: EntityRendererProvider.Context) : EntityRe
             0f,
             overlay,
             255,
-            0.026f
+            0.026f,
+            bright = 1f
         )
         poseStack.popPose()
 
@@ -128,12 +132,13 @@ class MagicEyeEntityRenderer(context: EntityRendererProvider.Context) : EntityRe
         overlay: Int,
         alpha: Int,
         depthOffset: Float,
-        color: Vector3f = Vector3f(1f)
+        color: Vector3f = Vector3f(1f),
+        bright: Float = 1f
     ) {
         poseStack.pushPose()
         poseStack.mulPose(entityRenderDispatcher.cameraOrientation())
         poseStack.mulPose(Axis.ZP.rotationDegrees(rollDegrees))
-        drawQuadLayer(poseStack, buffer, texture, halfSize, overlay, alpha, depthOffset, color)
+        drawQuadLayer(poseStack, buffer, texture, halfSize, overlay, alpha, depthOffset, color, bright)
         poseStack.popPose()
     }
 
@@ -147,13 +152,14 @@ class MagicEyeEntityRenderer(context: EntityRendererProvider.Context) : EntityRe
         secondaryRotation: Float,
         alpha: Int,
         depthOffset: Float,
-        color: Vector3f = Vector3f(1f)
+        color: Vector3f = Vector3f(1f),
+        bright: Float = 1f
     ) {
         poseStack.pushPose()
         poseStack.mulPose(Axis.YP.rotationDegrees(primaryRotation))
         poseStack.mulPose(Axis.XP.rotationDegrees(tiltDegrees))
         poseStack.mulPose(Axis.ZP.rotationDegrees(secondaryRotation))
-        drawQuadLayer(poseStack, buffer, TRACKED_TEXTURE, halfSize, overlay, alpha, depthOffset, color)
+        drawQuadLayer(poseStack, buffer, TRACKED_TEXTURE, halfSize, overlay, alpha, depthOffset, color, bright)
         poseStack.popPose()
     }
 
@@ -165,9 +171,12 @@ class MagicEyeEntityRenderer(context: EntityRendererProvider.Context) : EntityRe
         overlay: Int,
         alpha: Int,
         depthOffset: Float,
-        color: Vector3f = Vector3f(1f)
+        color: Vector3f = Vector3f(1f),
+        bright: Float = 1f
     ) {
-        val solid = buffer.getBuffer(RenderType.entityTranslucentCull(texture))
+        val solid = buffer.getBuffer(
+            CooParticlesServices.PLATFORM.getRenderTypesProvider().entityCutoutEmissive(texture, bright)
+        )
 
         poseStack.pushPose()
         poseStack.translate(0.0, 0.0, depthOffset.toDouble())
@@ -189,10 +198,10 @@ class MagicEyeEntityRenderer(context: EntityRendererProvider.Context) : EntityRe
         putVertex(consumer, pose, halfSize, halfSize, 0f, 1f, 0f, overlay, alpha, 0f, 0f, 1f, color)
         putVertex(consumer, pose, -halfSize, halfSize, 0f, 0f, 0f, overlay, alpha, 0f, 0f, 1f, color)
 
-        putVertex(consumer, pose, -halfSize, halfSize, 0f, 0f, 0f, overlay, alpha, 0f, 0f, -1f, color)
-        putVertex(consumer, pose, halfSize, halfSize, 0f, 1f, 0f, overlay, alpha, 0f, 0f, -1f, color)
-        putVertex(consumer, pose, halfSize, -halfSize, 0f, 1f, 1f, overlay, alpha, 0f, 0f, -1f, color)
-        putVertex(consumer, pose, -halfSize, -halfSize, 0f, 0f, 1f, overlay, alpha, 0f, 0f, -1f, color)
+        putVertex(consumer, pose, -halfSize, halfSize, 0f, 0f, 0f, overlay, alpha, 0f, 0f, 1f, color)
+        putVertex(consumer, pose, halfSize, halfSize, 0f, 1f, 0f, overlay, alpha, 0f, 0f, 1f, color)
+        putVertex(consumer, pose, halfSize, -halfSize, 0f, 1f, 1f, overlay, alpha, 0f, 0f, 1f, color)
+        putVertex(consumer, pose, -halfSize, -halfSize, 0f, 0f, 1f, overlay, alpha, 0f, 0f, 1f, color)
     }
 
     private fun putVertex(

@@ -1,40 +1,26 @@
 package cn.coostack.usefulmagic
 
 import cn.coostack.cooparticlesapi.platform.network.FabricClientContext
-import cn.coostack.usefulmagic.client.tooltip.FabricLoadedMagicClientTooltip
 import cn.coostack.usefulmagic.blocks.UsefulMagicBlocks
 import cn.coostack.usefulmagic.blocks.entity.AltarBlockCoreEntityRenderer
 import cn.coostack.usefulmagic.blocks.entity.AltarBlockEntityRenderer
 import cn.coostack.usefulmagic.blocks.entity.MagicCoreBlockEntityRenderer
 import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
 import cn.coostack.usefulmagic.blocks.entity.formation.renderer.CrystalEntityRenderer
+import cn.coostack.usefulmagic.client.tooltip.FabricLoadedMagicClientTooltip
 import cn.coostack.usefulmagic.entity.MagicBookEntityModel
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityLayers
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
-import cn.coostack.usefulmagic.entity.custom.renderer.FormationCoreRenderer
-import cn.coostack.usefulmagic.entity.custom.renderer.MagicBookEntityRenderer
-import cn.coostack.usefulmagic.entity.custom.renderer.MagicDragonRenderer
-import cn.coostack.usefulmagic.entity.custom.renderer.MagicEyeEntityRenderer
-import cn.coostack.usefulmagic.entity.custom.renderer.MagicSubEyeEntityRenderer
+import cn.coostack.usefulmagic.entity.custom.renderer.*
 import cn.coostack.usefulmagic.gui.mana.ManaBarCallback
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes.LARGE_REVIVE_USE_COUNT
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import cn.coostack.usefulmagic.items.consumer.LargeManaRevive
 import cn.coostack.usefulmagic.items.weapon.wands.LoadedMagicTooltip
-import cn.coostack.usefulmagic.packet.listener.client.FormationPacketListener
-import cn.coostack.usefulmagic.packet.listener.client.FormationSettingsPacketResponseListener
-import cn.coostack.usefulmagic.packet.listener.client.FriendChangeResponsePacketListener
-import cn.coostack.usefulmagic.packet.listener.client.FriendResponsePacketListener
-import cn.coostack.usefulmagic.packet.listener.client.TrackerToggleListener
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CEnergyCrystalChange
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationBreak
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationCreate
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationSettingsResponse
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CFriendChangeResponse
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CFriendListResponse
-import cn.coostack.usefulmagic.packet.s2c.PacketS2CTrackerToggle
-import cn.coostack.usefulmagic.particles.particle.WaveParticleProvider
+import cn.coostack.usefulmagic.packet.listener.client.*
+import cn.coostack.usefulmagic.packet.s2c.*
 import cn.coostack.usefulmagic.particles.particle.UsefulMagicParticleTypes
+import cn.coostack.usefulmagic.particles.particle.WaveParticleProvider
 import com.mojang.blaze3d.platform.InputConstants
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap
@@ -94,11 +80,10 @@ object UsefulMagicFabricClient : ClientModInitializer {
     }
 
     private fun loadEntities() {
-
-        EntityRendererRegistry.register(UsefulMagicEntityTypes.FORMATION_CORE_ENTITY.get(), ::FormationCoreRenderer)
         EntityRendererRegistry.register(UsefulMagicEntityTypes.MAGIC_DRAGON_ENTITY_TYPE.get(), ::MagicDragonRenderer)
         EntityRendererRegistry.register(UsefulMagicEntityTypes.MAGIC_EYE_ENTITY_TYPE.get(), ::MagicEyeEntityRenderer)
         EntityRendererRegistry.register(UsefulMagicEntityTypes.MAGIC_SUB_EYE_ENTITY_TYPE.get(), ::MagicSubEyeEntityRenderer)
+        EntityRendererRegistry.register(UsefulMagicEntityTypes.MAGIC_HEART_ENTITY_TYPE.get(), ::MagicHeartEntityRenderer)
         EntityModelLayerRegistry.registerModelLayer(
             UsefulMagicEntityLayers.MAGIC_BOOK_ENTITY_LAYER,
             MagicBookEntityModel::createBodyLayer

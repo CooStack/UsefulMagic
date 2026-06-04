@@ -6,8 +6,8 @@ import cn.coostack.usefulmagic.effects.UsefulMagicEffects
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import cn.coostack.usefulmagic.listener.DefendMagicListener
-import cn.coostack.usefulmagic.particles.barrages.api.EntityMagicDamagedBarrage
-import cn.coostack.usefulmagic.particles.barrages.api.PlayerMagicDamagedBarrage
+import cn.coostack.usefulmagic.barrages.api.EntityMagicDamagedBarrage
+import cn.coostack.usefulmagic.barrages.api.PlayerMagicDamagedBarrage
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item

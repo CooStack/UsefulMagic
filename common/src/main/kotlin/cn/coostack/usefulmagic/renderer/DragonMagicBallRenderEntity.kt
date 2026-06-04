@@ -2,19 +2,11 @@ package cn.coostack.usefulmagic.renderer
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
-import cn.coostack.cooparticlesapi.annotations.renderer.handle.RenderEntityHelper
 import cn.coostack.cooparticlesapi.renderer.AutoRenderEntity
-import cn.coostack.cooparticlesapi.renderer.RenderEntity
 import cn.coostack.cooparticlesapi.renderer.client.RenderUtil
 import cn.coostack.cooparticlesapi.renderer.effects.builtin.BuiltinRenderEffectDescriptors
 import cn.coostack.cooparticlesapi.renderer.effects.builtin.MaskBloomConfig
-import cn.coostack.cooparticlesapi.renderer.runtime.FramePostRenderEntityRenderer
-import cn.coostack.cooparticlesapi.renderer.runtime.LocalRenderInput
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderContributionCollector
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderContributionInput
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderEntityInstance
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderEntityReleaseHook
-import cn.coostack.cooparticlesapi.renderer.runtime.WorldPassRenderEntityRenderer
+import cn.coostack.cooparticlesapi.renderer.runtime.*
 import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
 import cn.coostack.cooparticlesapi.renderer.shader.ShaderProgramBuilder
 import cn.coostack.cooparticlesapi.renderer.shader.api.CooShaderProgram
@@ -25,8 +17,6 @@ import cn.coostack.cooparticlesapi.renderer.shader.vertex.SimpleVertexBuffer
 import cn.coostack.cooparticlesapi.renderer.utils.ShaderUtil
 import cn.coostack.usefulmagic.UsefulMagic
 import com.mojang.blaze3d.systems.RenderSystem
-import net.minecraft.network.FriendlyByteBuf
-import net.minecraft.network.codec.StreamCodec
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.level.Level
@@ -57,6 +47,9 @@ class DragonMagicBallRenderEntity(
     var alpha: Double = 1.0
 
     @CodecField
+    var brightness: Float = 1.0f
+
+    @CodecField
     var cloudOpacity: Double = 0.62
 
     @CodecField
@@ -64,6 +57,9 @@ class DragonMagicBallRenderEntity(
 
     @CodecField
     var bloomIntensity: Double = 0.82
+
+    @CodecField
+    var bloomEnabled: Boolean = true
 
     @CodecField
     var growingByScale: Boolean = true
@@ -135,7 +131,7 @@ class DragonMagicBallRenderEntity(
                 passColor = baseColor,
                 scale = worldSize * 0.74f,
                 passAlpha = visibleAlpha * 0.78f,
-                brightness = surfaceBrightness.toFloat().coerceIn(0f, 4f) * (0.96f + pulse * 0.12f),
+                brightness = currentBrightness(surfaceBrightness.toFloat().coerceIn(0f, 4f) * (0.96f + pulse * 0.12f)),
                 time = time,
                 discardProgress = currentDiscardProgress(input.tickDelta),
                 passMode = PASS_SURFACE,
@@ -149,7 +145,7 @@ class DragonMagicBallRenderEntity(
                 passColor = hotColor,
                 scale = worldSize * 0.78f,
                 passAlpha = visibleAlpha * 0.24f,
-                brightness = surfaceBrightness.toFloat().coerceIn(0f, 4f) * (1.20f + pulse * 0.28f),
+                brightness = currentBrightness(surfaceBrightness.toFloat().coerceIn(0f, 4f) * (1.20f + pulse * 0.28f)),
                 time = time * 1.18f,
                 discardProgress = currentDiscardProgress(input.tickDelta),
                 passMode = PASS_SURFACE,
@@ -163,7 +159,7 @@ class DragonMagicBallRenderEntity(
                 passColor = Vector3f(baseColor).lerp(Vector3f(0.92f, 0.96f, 1.0f), 0.58f),
                 scale = worldSize * 1.16f,
                 passAlpha = visibleAlpha * cloudOpacity.toFloat().coerceIn(0f, 1f),
-                brightness = 0.94f + pulse * 0.06f,
+                brightness = currentBrightness(0.94f + pulse * 0.06f),
                 time = time * 0.64f,
                 discardProgress = currentDiscardProgress(input.tickDelta),
                 passMode = PASS_CLOUD,
@@ -182,6 +178,9 @@ class DragonMagicBallRenderEntity(
         input: RenderContributionInput<DragonMagicBallRenderEntity>,
         collector: RenderContributionCollector,
     ) {
+        if (!bloomEnabled) {
+            return
+        }
         val visibleAlpha = currentAlpha(input.frameContext.tickDelta)
         if (visibleAlpha <= MIN_VISIBLE_ALPHA) {
             return
@@ -255,6 +254,18 @@ class DragonMagicBallRenderEntity(
         return this
     }
 
+    fun setBrightness(brightness: Float): DragonMagicBallRenderEntity {
+        this.brightness = brightness.coerceAtLeast(0f)
+        markDirty()
+        return this
+    }
+
+    fun setBloomEnabled(enabled: Boolean): DragonMagicBallRenderEntity {
+        bloomEnabled = enabled
+        markDirty()
+        return this
+    }
+
     fun discard(shrink: Boolean = discardByShrink): DragonMagicBallRenderEntity {
         if (discarding) {
             return this
@@ -305,7 +316,7 @@ class DragonMagicBallRenderEntity(
                 passColor = hotColor,
                 scale = worldSize * 0.74f,
                 passAlpha = visibleAlpha * (0.26f + pulse * 0.08f),
-                brightness = surfaceBrightness.toFloat().coerceIn(0f, 4f) * 1.36f,
+                brightness = currentBrightness(surfaceBrightness.toFloat().coerceIn(0f, 4f) * 1.36f),
                 time = time,
                 discardProgress = currentDiscardProgress(tickDelta),
                 passMode = PASS_BLOOM,
@@ -317,7 +328,7 @@ class DragonMagicBallRenderEntity(
                 passColor = baseColor,
                 scale = worldSize * 0.48f,
                 passAlpha = visibleAlpha * 0.15f,
-                brightness = surfaceBrightness.toFloat().coerceIn(0f, 4f) * 1.62f,
+                brightness = currentBrightness(surfaceBrightness.toFloat().coerceIn(0f, 4f) * 1.62f),
                 time = time * 1.26f,
                 discardProgress = currentDiscardProgress(tickDelta),
                 passMode = PASS_BLOOM,
@@ -433,9 +444,14 @@ class DragonMagicBallRenderEntity(
         return normalized
     }
 
+    private fun currentBrightness(base: Float): Float {
+        return base * brightness.coerceAtLeast(0f)
+    }
+
     private fun buildBloomConfig(tickDelta: Float): MaskBloomConfig {
         val sizeScale = (currentSize(tickDelta) / DEFAULT_SIZE).coerceIn(0.45f, 2.4f)
-        val strength = bloomIntensity.toFloat().coerceIn(0f, 4f)
+        val brightnessScale = brightness.coerceAtLeast(0f)
+        val strength = bloomIntensity.toFloat().coerceIn(0f, 4f) * brightnessScale
         val pulse = currentPulse(tickDelta)
         return DRAGON_MAGIC_BALL_BLOOM_CONFIG.copy(
             blurSigma = DRAGON_MAGIC_BALL_BLOOM_CONFIG.blurSigma * sizeScale,
@@ -458,13 +474,6 @@ class DragonMagicBallRenderEntity(
         private const val PASS_BLOOM = 2
         private const val DRAGON_MAGIC_BALL_BLOOM_EFFECT_ID = "usefulmagic:dragon_magic_ball_bloom"
         private const val DRAGON_MAGIC_BALL_BLOOM_PRIORITY = 250
-
-        @JvmField
-        val CODEC: StreamCodec<FriendlyByteBuf, RenderEntity> =
-            RenderEntityHelper.generateCodec(DragonMagicBallRenderEntity())
-
-        @JvmField
-        val codec: StreamCodec<FriendlyByteBuf, RenderEntity> = CODEC
 
         @JvmField
         val ID: ResourceLocation =

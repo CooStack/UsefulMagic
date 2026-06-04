@@ -1,9 +1,6 @@
 ﻿package cn.coostack.usefulmagic.formation
 
 import cn.coostack.cooparticlesapi.barrages.BarrageManager
-import cn.coostack.cooparticlesapi.extend.minus
-import cn.coostack.cooparticlesapi.extend.ofFloored
-import cn.coostack.cooparticlesapi.extend.relativize
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
@@ -11,54 +8,44 @@ import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.platform.CooParticlesServices
 import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
-import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.usefulmagic.UsefulMagic
+import cn.coostack.usefulmagic.barrages.api.DamagedBarrage
 import cn.coostack.usefulmagic.blocks.entity.formation.EnergyCrystalsBlockEntity
 import cn.coostack.usefulmagic.blocks.entity.formation.RecoverCrystalBlockEntity
-import cn.coostack.usefulmagic.entity.custom.formation.FormationCoreEntity
-import cn.coostack.usefulmagic.extend.boxCenterPosition
-import cn.coostack.usefulmagic.formation.api.AttackCrystal
-import cn.coostack.usefulmagic.formation.api.BlockFormation
-import cn.coostack.usefulmagic.formation.api.DefendCrystal
-import cn.coostack.usefulmagic.formation.api.FormationCrystal
-import cn.coostack.usefulmagic.formation.api.FormationScale
-import cn.coostack.usefulmagic.formation.api.FormationSettings
-import cn.coostack.usefulmagic.formation.api.FormationTargetOption
+import cn.coostack.usefulmagic.formation.api.*
 import cn.coostack.usefulmagic.formation.target.BarrageTargetOption
 import cn.coostack.usefulmagic.formation.target.LivingEntityTargetOption
 import cn.coostack.usefulmagic.formation.target.ProjectileEntityTargetOption
 import cn.coostack.usefulmagic.managers.server.ServerFormationManager
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationBreak
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationCreate
-import cn.coostack.usefulmagic.particles.barrages.api.DamagedBarrage
 import cn.coostack.usefulmagic.particles.emitters.CircleEmitters
 import cn.coostack.usefulmagic.particles.emitters.LightningParticleEmitters
-import cn.coostack.usefulmagic.renderer.DefendCrystalRenderEntity
 import cn.coostack.usefulmagic.particles.style.formation.FormationStyle
 import cn.coostack.usefulmagic.particles.style.formation.LargeFormationStyle
 import cn.coostack.usefulmagic.particles.style.formation.MidFormationStyle
 import cn.coostack.usefulmagic.particles.style.formation.SmallFormationStyle
+import cn.coostack.usefulmagic.renderer.DefendCrystalRenderEntity
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.sounds.SoundSource
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.entity.player.Player
-import net.minecraft.world.entity.projectile.Projectile
-import net.minecraft.server.level.ServerPlayer
-import net.minecraft.server.level.ServerLevel
-import net.minecraft.sounds.SoundSource
-import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.entity.animal.AbstractFish
 import net.minecraft.world.entity.animal.Animal
 import net.minecraft.world.entity.monster.Monster
-import net.minecraft.world.phys.Vec3
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.entity.projectile.Projectile
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.AABB
-import java.util.UUID
+import net.minecraft.world.phys.Vec3
+import cn.coostack.cooparticlesapi.extend.*
+import java.util.*
 import kotlin.math.roundToInt
 
 class CrystalFormation(override var world: Level?, override var owner: UUID?, override var formationCore: Vec3) :
     BlockFormation {
-    var bindEntity: FormationCoreEntity? = null
-        private set
     var style: FormationStyle? = null
     var defendEntity: DefendCrystalRenderEntity? = null
     override var uuid: UUID = UUID.randomUUID()
@@ -223,16 +210,7 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
         return active && formationHealth > 0f
     }
 
-    /**
-     * 在阵法成功构建时
-     * 生成实体，在 FormationCore 的上方
-     */
-    override fun createFormationEntity(): FormationCoreEntity {
-        val entity = FormationCoreEntity(world!!)
-        entity.core = ofFloored(formationCore)
-        world!!.addFreshEntity(entity)
-        return entity
-    }
+
 
     override fun tryBuildFormation(): Boolean {
         world ?: return false

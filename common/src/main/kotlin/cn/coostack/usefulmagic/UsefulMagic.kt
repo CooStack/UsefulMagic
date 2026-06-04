@@ -33,7 +33,6 @@ import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-// TODO 死亡魔力属性丢失...
 object UsefulMagic {
     @JvmField
     val logger: Logger = LoggerFactory.getLogger("UsefulMagic")
@@ -42,15 +41,11 @@ object UsefulMagic {
     lateinit var server: MinecraftServer
     lateinit var state: ManaServerState
     fun init() {
-        PhaseRegistries.init()
         logger.info("正在加载 UsefulMagic")
         loadRegistries()
         loadStyles()
         PhaseRegistries.init()
-        CooKeyBindingManager.register(
-            UsefulMagicKeys.CHARGE_MAGIC, InputConstants.Type.KEYSYM,
-            InputConstants.KEY_R, "category.usefulmagic.keys"
-        )
+
     }
 
     fun setupServer(server: MinecraftServer) {

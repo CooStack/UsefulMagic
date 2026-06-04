@@ -7,19 +7,15 @@ import cn.coostack.usefulmagic.blocks.entity.AltarBlockEntityRenderer
 import cn.coostack.usefulmagic.blocks.entity.MagicCoreBlockEntityRenderer
 import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
 import cn.coostack.usefulmagic.blocks.entity.formation.renderer.CrystalEntityRenderer
+import cn.coostack.usefulmagic.client.tooltip.NeoLoadedMagicClientTooltip
 import cn.coostack.usefulmagic.entity.MagicBookEntityModel
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityLayers
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
-import cn.coostack.usefulmagic.entity.custom.renderer.FormationCoreRenderer
-import cn.coostack.usefulmagic.entity.custom.renderer.MagicBookEntityRenderer
-import cn.coostack.usefulmagic.entity.custom.renderer.MagicDragonRenderer
-import cn.coostack.usefulmagic.entity.custom.renderer.MagicEyeEntityRenderer
-import cn.coostack.usefulmagic.entity.custom.renderer.MagicSubEyeEntityRenderer
-import cn.coostack.usefulmagic.client.tooltip.NeoLoadedMagicClientTooltip
+import cn.coostack.usefulmagic.entity.custom.renderer.*
 import cn.coostack.usefulmagic.items.UsefulMagicItemGroups
 import cn.coostack.usefulmagic.items.weapon.wands.LoadedMagicTooltip
-import cn.coostack.usefulmagic.particles.particle.WaveParticleProvider
 import cn.coostack.usefulmagic.particles.particle.UsefulMagicParticleTypes
+import cn.coostack.usefulmagic.particles.particle.WaveParticleProvider
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.client.KeyMapping
 import net.minecraft.core.registries.BuiltInRegistries
@@ -27,9 +23,9 @@ import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.common.EventBusSubscriber
 import net.neoforged.neoforge.client.event.EntityRenderersEvent
-import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent
 import net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent
 import net.neoforged.neoforge.registries.RegisterEvent
 import org.lwjgl.glfw.GLFW
 
@@ -57,10 +53,10 @@ object ClientInitializedListener {
 
     @SubscribeEvent
     fun registerEntityRender(event: EntityRenderersEvent.RegisterRenderers) {
-        event.registerEntityRenderer(UsefulMagicEntityTypes.FORMATION_CORE_ENTITY.get(), ::FormationCoreRenderer)
         event.registerEntityRenderer(UsefulMagicEntityTypes.MAGIC_DRAGON_ENTITY_TYPE.get(), ::MagicDragonRenderer)
         event.registerEntityRenderer(UsefulMagicEntityTypes.MAGIC_EYE_ENTITY_TYPE.get(), ::MagicEyeEntityRenderer)
         event.registerEntityRenderer(UsefulMagicEntityTypes.MAGIC_SUB_EYE_ENTITY_TYPE.get(), ::MagicSubEyeEntityRenderer)
+        event.registerEntityRenderer(UsefulMagicEntityTypes.MAGIC_HEART_ENTITY_TYPE.get(), ::MagicHeartEntityRenderer)
         event.registerEntityRenderer(
             UsefulMagicEntityTypes.MAGIC_BOOK_ENTITY_TYPE.get(),
             ::MagicBookEntityRenderer

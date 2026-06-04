@@ -11,6 +11,7 @@ import cn.coostack.usefulmagic.damagetypes.UsefulMagicDamageSources
 import cn.coostack.usefulmagic.extend.minus
 import cn.coostack.usefulmagic.extend.plus
 import cn.coostack.usefulmagic.particles.emitters.magic.MeteoriteExplosionEmitter
+import cn.coostack.usefulmagic.renderer.MeteoriteAtmosphereFireRenderEntity
 import cn.coostack.usefulmagic.renderer.UsefulMagicPostEffects
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import cn.coostack.usefulmagic.utils.FriendFilterHelper
@@ -51,9 +52,17 @@ object MeteoriteState {
                     context.tailEmitter.direction = -dir
                     context.barrageMagicComposition.remove()
                     ParticleEmittersManager.spawnEmitters(context.tailEmitter)
+                    context.mainMeteoriteRenderer = MeteoriteAtmosphereFireRenderEntity.spawn(
+                        context.world,
+                        mainBarrage.loc,
+                        mainBarrage.direction,
+                        mainBarrage.targetSize.targetNum.toFloat(),
+                        lifetime = 20 * 20,
+                    )
                     mainBarrage.addPreTickAction {
                         context.tailEmitter.teleportTo(loc)
                         context.tailEmitter.direction = -dir
+                        context.mainMeteoriteRenderer?.moveTo(loc, direction)
                     }.addHitOnServer {
                         if (context.impactTriggered) return@addHitOnServer
                         val fallDir = dir.normalize()
@@ -78,7 +87,9 @@ object MeteoriteState {
                             radius = entityDamageRadius,
                             fullDamageRadius = context.targetSize.toDouble()
                         )
-                        context.tailEmitter.cancelled = true
+                        context.tailEmitter.canceled = true
+                        context.mainMeteoriteRenderer?.discard(12)
+                        context.mainMeteoriteRenderer = null
                         ServerCameraUtil.sendShake(context.world, loc, 256.0, 5.0, 20, 240.0, false)
                         context.world.players().filter {
                             it.position().distanceTo(loc) <= 256.0
@@ -105,6 +116,8 @@ object MeteoriteState {
                 tryPlayMeteorNearFlySound(context, mainBarrage.loc)
             }
             if (context.mainBarrage!!.tick > 1000 && context.mainBarrage!!.valid) {
+                context.mainMeteoriteRenderer?.discard(10)
+                context.mainMeteoriteRenderer = null
                 context.mainBarrage!!.remove()
                 context.fallingFinished = true
             }
@@ -124,6 +137,8 @@ object MeteoriteState {
             context.farFlySoundStarted = false
             context.nearFlySoundPlayed = false
             context.impactTriggered = false
+            context.mainMeteoriteRenderer?.discard(10)
+            context.mainMeteoriteRenderer = null
             context.pendingExplosionBlocks.clear()
         }
     }

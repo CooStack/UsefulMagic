@@ -22,7 +22,7 @@ class EmitterAnimate(val emitters: ParticleEmitters, duration: Int) : ParticleAn
     }
 
     override fun cancel() {
-        emitters.cancelled = true
+        emitters.canceled = true
         valid = false
     }
 }

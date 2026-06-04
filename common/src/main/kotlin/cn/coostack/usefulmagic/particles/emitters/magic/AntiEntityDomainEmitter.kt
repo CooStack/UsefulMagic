@@ -1,21 +1,18 @@
 package cn.coostack.usefulmagic.particles.emitters.magic
 
-import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
-import cn.coostack.cooparticlesapi.network.particle.emitters.*
-import cn.coostack.cooparticlesapi.network.particle.emitters.command.*
-import cn.coostack.cooparticlesapi.network.particle.emitters.command.curve.*
-import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
+import cn.coostack.cooparticlesapi.network.particle.emitters.AutoParticleEmitters
+import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
+import cn.coostack.cooparticlesapi.network.particle.emitters.SimpleRandomParticleData
+import cn.coostack.cooparticlesapi.particles.ParticleCameraOption
 import cn.coostack.cooparticlesapi.particles.control.ParticleControler
-import cn.coostack.cooparticlesapi.particles.impl.*
+import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
+import cn.coostack.cooparticlesapi.supports.TextureSheetsEnum
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import net.minecraft.client.particle.ParticleRenderType
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
-import java.util.function.Supplier
-import kotlin.math.*
 import kotlin.random.Random
 
 @CooAutoRegister
@@ -84,6 +81,12 @@ class AntiEntityDomainEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(p
 
                 template1.apply {
                     effect = ControlableEndRodEffect(uuid)
+                    cameraOption = ParticleCameraOption.AXIS_BILLBOARD
+                    axis = Vec3(0.0, 1.0, 0.0)
+                    uniformSize = false
+                    weightSize = data1.getRandomSize() / 2
+                    heightSize = 0.9f + weightSize
+                    setTextureSheet(TextureSheetsEnum.ADDITION_BLEND_TRANSLUCENT)
                 }
 
                 res.addAll(
@@ -110,7 +113,6 @@ class AntiEntityDomainEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(p
                             val speed = data1.getRandomSpeed()
                             template1.clone().apply {
                                 maxAge = data1.getRandomParticleMaxAge()
-                                size = data1.getRandomSize()
                                 val baseDir = Vec3(0.0, -0.15, 0.0)
                                 velocity =
                                     if (baseDir.lengthSqr() < 1e-8) Vec3.ZERO else baseDir.normalize().scale(speed)

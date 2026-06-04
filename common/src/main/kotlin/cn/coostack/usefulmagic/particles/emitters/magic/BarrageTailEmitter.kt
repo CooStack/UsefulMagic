@@ -30,7 +30,7 @@ class BarrageTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, w
     val command = ParticleCommandQueue()
         .add(
             ParticleNoiseCommand()
-                .strength(0.025)
+                .strength(0.25)
                 .frequency(1.3)
                 .speed(2.0)
                 .affectY(1.0)
@@ -60,8 +60,10 @@ class BarrageTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, w
         speedLimit = 32.0
         sign = 0
     }
+
     @CodecField
     var right = Vector3f(1f)
+
     @CodecField
     var randomData = SimpleRandomParticleData().apply {
         minAge = 5

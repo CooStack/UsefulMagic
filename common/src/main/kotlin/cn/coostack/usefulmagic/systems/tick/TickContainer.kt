@@ -102,6 +102,7 @@ class TickContainer {
         while (iterator.hasNext()) {
             val status = iterator.next()
             if (!status.isValid()) {
+                status.remove()
                 iterator.remove()
             }
         }

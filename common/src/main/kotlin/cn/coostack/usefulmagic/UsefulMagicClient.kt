@@ -1,10 +1,15 @@
 package cn.coostack.usefulmagic
 
 import cn.coostack.cooparticlesapi.CooParticlesAPIClient
+import cn.coostack.cooparticlesapi.CooShaderReloadSupport
+import cn.coostack.cooparticlesapi.key.CooKeyBindingManager
 import cn.coostack.cooparticlesapi.renderer.client.ClientRenderPipelineManager
-import cn.coostack.usefulmagic.renderer.UsefulMagicShaderPipelines
+import cn.coostack.cooparticlesapi.renderer.shader.ShaderReloadSignal
 import cn.coostack.usefulmagic.gui.friend.FriendManagerScreen
+import cn.coostack.usefulmagic.renderer.UsefulMagicRenderTypes
+import cn.coostack.usefulmagic.renderer.UsefulMagicShaderPipelines
 import cn.coostack.usefulmagic.utils.ParticleOption
+import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
 
@@ -19,6 +24,10 @@ object UsefulMagicClient {
 
     fun init() {
         renderEntitiesPendingInit = true
+        CooKeyBindingManager.register(
+            UsefulMagicKeys.CHARGE_MAGIC, InputConstants.Type.KEYSYM,
+            InputConstants.KEY_R, "category.usefulmagic.keys"
+        )
     }
 
     fun loadKeyBindings(key: KeyMapping) {
@@ -61,6 +70,13 @@ object UsefulMagicClient {
         ClientRenderPipelineManager.resizeTo(width, height)
         CooParticlesAPIClient.initShaderPrograms()
         UsefulMagicShaderPipelines.init()
+        UsefulMagicRenderTypes.init(Minecraft.getInstance().resourceManager)
+        CooShaderReloadSupport.registerReloadListener { signal ->
+            if (signal is ShaderReloadSignal.FullReload) {
+                UsefulMagicRenderTypes.init(signal.resourceManager)
+            }
+            null
+        }
         renderEntitiesInitialized = true
         renderEntitiesPendingInit = false
     }

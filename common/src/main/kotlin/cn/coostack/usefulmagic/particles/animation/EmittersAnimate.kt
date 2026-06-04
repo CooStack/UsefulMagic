@@ -42,6 +42,6 @@ class EmittersAnimate(
     override fun cancel() {
         valid = false
         start = false
-        spawnedEmitters.onEach { emitter ->emitter.cancelled = true }.clear()
+        spawnedEmitters.onEach { emitter ->emitter.canceled = true }.clear()
     }
 }

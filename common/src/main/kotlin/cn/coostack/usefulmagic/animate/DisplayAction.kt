@@ -7,6 +7,7 @@ import cn.coostack.cooparticlesapi.display.DisplayEntityManager
 
 class DisplayAction<T : DisplayEntity>(val displayEntity: T) : AnimateAction(), Tickable<DisplayAction<T>> {
     private val actions = ArrayList<DisplayAction<T>.() -> Unit>()
+    private val postActions = ArrayList<DisplayAction<T>.() -> Unit>()
     private var cancelMethod: DisplayAction<T>.(T) -> Unit = {
         it.remove()
     }
@@ -22,6 +23,7 @@ class DisplayAction<T : DisplayEntity>(val displayEntity: T) : AnimateAction(), 
 
     override fun tick() {
         actions.forEach { it() }
+        postActions.forEach { it() }
     }
 
     override fun onStart() {
@@ -34,6 +36,11 @@ class DisplayAction<T : DisplayEntity>(val displayEntity: T) : AnimateAction(), 
 
     override fun addPreTickAction(action: DisplayAction<T>.() -> Unit): DisplayAction<T> {
         actions.add(action)
+        return this
+    }
+
+    override fun addPreTickActionPost(action: DisplayAction<T>.() -> Unit): DisplayAction<T> {
+        postActions.add(action)
         return this
     }
 }

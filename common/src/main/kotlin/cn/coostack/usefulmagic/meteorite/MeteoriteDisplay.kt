@@ -2,8 +2,7 @@ package cn.coostack.usefulmagic.meteorite
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
-import cn.coostack.cooparticlesapi.annotations.display.handle.DisplayEntityHelper
-import cn.coostack.cooparticlesapi.display.DisplayEntity
+import cn.coostack.cooparticlesapi.display.AutoDisplayEntity
 import cn.coostack.cooparticlesapi.extend.unaryMinus
 import cn.coostack.cooparticlesapi.utils.MinecraftRendererUtil
 import com.mojang.blaze3d.vertex.PoseStack
@@ -13,15 +12,13 @@ import net.minecraft.client.renderer.LightTexture
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.client.renderer.texture.OverlayTexture
-import net.minecraft.network.FriendlyByteBuf
-import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.Vec3
 import org.joml.Matrix4f
 
 @CooAutoRegister
-class MeteoriteDisplay(pos: Vec3, world: Level?) : DisplayEntity(pos, world) {
+class MeteoriteDisplay(pos: Vec3, world: Level?) : AutoDisplayEntity(pos, world) {
     init {
         manageRotation = false
     }
@@ -60,9 +57,5 @@ class MeteoriteDisplay(pos: Vec3, world: Level?) : DisplayEntity(pos, world) {
 
     override fun transformOffset(): Vec3 {
         return -renderCenterOffset()
-    }
-
-    override fun getCodec(): StreamCodec<FriendlyByteBuf, DisplayEntity> {
-        return DisplayEntityHelper.generateCodec(this)
     }
 }

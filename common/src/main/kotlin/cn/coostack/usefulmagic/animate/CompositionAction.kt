@@ -7,6 +7,7 @@ import cn.coostack.cooparticlesapi.network.particle.composition.manager.Particle
 
 class CompositionAction<T : ParticleComposition>(val composition: T) : AnimateAction(), Tickable<CompositionAction<T>> {
     private val actions = ArrayList<CompositionAction<T>.() -> Unit>()
+    private val postActions = ArrayList<CompositionAction<T>.() -> Unit>()
     private var cancelMethod: CompositionAction<T>.(T) -> Unit = {
         it.remove()
     }
@@ -22,6 +23,7 @@ class CompositionAction<T : ParticleComposition>(val composition: T) : AnimateAc
 
     override fun tick() {
         actions.forEach { it() }
+        postActions.forEach { it() }
     }
 
     override fun onStart() {
@@ -34,6 +36,11 @@ class CompositionAction<T : ParticleComposition>(val composition: T) : AnimateAc
 
     override fun addPreTickAction(action: CompositionAction<T>.() -> Unit): CompositionAction<T> {
         actions.add(action)
+        return this
+    }
+
+    override fun addPreTickActionPost(action: CompositionAction<T>.() -> Unit): CompositionAction<T> {
+        postActions.add(action)
         return this
     }
 }

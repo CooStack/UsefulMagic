@@ -93,6 +93,14 @@ object UsefulMagicPostEffects {
         }
     }
 
+    /**
+     * 创建冲刺用 RGB 分离径向模糊后处理。
+     *
+     * @param durationTicks 效果持续 tick 数，小于 1 时按 1 tick 处理；生命周期会驱动 shader 的 progress 淡出。
+     * @param strength 整体效果强度，影响模糊、色散、中心提亮和边缘压暗的共同脉冲。
+     * @param chromaticStrength RGB 色散强度，越大红绿蓝通道分离偏移越明显。
+     * @param blurStrength 向屏幕中心方向采样的径向模糊强度，越大拖影越长、最终模糊混合越明显。
+     */
     fun rgbDashBlur(
         durationTicks: Int = 14,
         strength: Float = 1f,

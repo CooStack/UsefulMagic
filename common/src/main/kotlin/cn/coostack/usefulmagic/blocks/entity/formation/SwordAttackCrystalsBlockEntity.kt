@@ -1,19 +1,16 @@
 ﻿package cn.coostack.usefulmagic.blocks.entity.formation
 
 import cn.coostack.cooparticlesapi.barrages.BarrageManager
-import cn.coostack.cooparticlesapi.barrages.BarrageOption
-import cn.coostack.cooparticlesapi.barrages.HitBox
-import cn.coostack.cooparticlesapi.extend.relativize
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.usefulmagic.UsefulMagic
+import cn.coostack.usefulmagic.barrages.SwordAttackFormationBarrage
 import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
 import cn.coostack.usefulmagic.formation.api.AttackCrystal
 import cn.coostack.usefulmagic.formation.api.BlockFormation
 import cn.coostack.usefulmagic.formation.api.FormationTargetOption
 import cn.coostack.usefulmagic.formation.target.BarrageTargetOption
 import cn.coostack.usefulmagic.formation.target.ProjectileEntityTargetOption
-import cn.coostack.usefulmagic.particles.barrages.SwordAttackFormationBarrage
 import cn.coostack.usefulmagic.particles.composition.EndRodSwordComposition
 import cn.coostack.usefulmagic.particles.style.formation.crystal.CrystalStyle
 import cn.coostack.usefulmagic.particles.style.formation.crystal.SwordAttackCrystalStyle
@@ -25,6 +22,7 @@ import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.Vec3
+import cn.coostack.cooparticlesapi.extend.*
 import kotlin.random.Random
 
 class SwordAttackCrystalsBlockEntity(pos: BlockPos, state: BlockState) :

@@ -6,12 +6,14 @@ import cn.coostack.usefulmagic.UsefulMagic.state
 import cn.coostack.usefulmagic.blocks.UsefulMagicBlocks
 import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
-import cn.coostack.usefulmagic.entity.custom.MagicBookEntity
+import cn.coostack.usefulmagic.entity.custom.book.MagicBookEntity
 import cn.coostack.usefulmagic.effects.UsefulMagicEffects
-import cn.coostack.usefulmagic.entity.custom.MagicDragonEntity
-import cn.coostack.usefulmagic.entity.custom.MagicEyeEntity
-import cn.coostack.usefulmagic.entity.custom.MagicSubEyeEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.MagicDragonEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicEyeEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicHeartEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicSubEyeEntity
 import cn.coostack.usefulmagic.extend.copyManaDataFrom
+import cn.coostack.usefulmagic.extend.markManaDataDirty
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes
 import cn.coostack.usefulmagic.items.UsefulMagicItemGroups
 import cn.coostack.usefulmagic.items.UsefulMagicItems
@@ -40,6 +42,7 @@ import cn.coostack.usefulmagic.particles.particle.UsefulMagicParticleTypes
 import cn.coostack.usefulmagic.recipe.UsefulMagicRecipeTypes
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import net.fabricmc.api.ModInitializer
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -74,9 +77,14 @@ object UsefulMagicFabric : ModInitializer {
         ServerPlayConnectionEvents.JOIN.register { h, _, _ ->
             val player = h.player
             state.getDataFromServer(player.uuid)
+            player.markManaDataDirty()
         }
         ServerPlayerEvents.COPY_FROM.register { oldPlayer, newPlayer, _ ->
             newPlayer.copyManaDataFrom(oldPlayer)
+            newPlayer.markManaDataDirty()
+        }
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register { player, _, _ ->
+            player.markManaDataDirty()
         }
         ServerPlayConnectionEvents.DISCONNECT.register { handler, server ->
             val player = handler.player ?: return@register
@@ -106,6 +114,10 @@ object UsefulMagicFabric : ModInitializer {
         FabricDefaultAttributeRegistry.register(
             UsefulMagicEntityTypes.MAGIC_SUB_EYE_ENTITY_TYPE.get(),
             MagicSubEyeEntity.createDefaultMobAttributes()
+        )
+        FabricDefaultAttributeRegistry.register(
+            UsefulMagicEntityTypes.MAGIC_HEART_ENTITY_TYPE.get(),
+            MagicHeartEntity.createDefaultMobAttributes()
         )
     }
 

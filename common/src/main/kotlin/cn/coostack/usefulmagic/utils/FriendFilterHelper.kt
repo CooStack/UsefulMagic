@@ -1,7 +1,7 @@
 package cn.coostack.usefulmagic.utils
 
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.beans.MagicPlayerData
+import cn.coostack.usefulmagic.profile.MagicPlayerData
 import net.minecraft.world.entity.NeutralMob
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.LivingEntity

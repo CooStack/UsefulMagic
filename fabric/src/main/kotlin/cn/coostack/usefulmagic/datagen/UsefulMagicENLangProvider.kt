@@ -54,6 +54,7 @@ class UsefulMagicENLangProvider(
             add(UsefulMagicItems.TUTORIAL_BOOK, "Useful Magic Guide");
             add(UsefulMagicItems.FRIEND_BOARD, "Friend Token");
             add(UsefulMagicItems.SKY_FALLING_RUNE, "Grand Magic: Sky falling Rune");
+            add(UsefulMagicItems.MAGIC_EYE_SPAWNER, "Gazing Eye");
 
             // group
             add("item.useful_magic_main", "Useful Magic");
@@ -69,7 +70,8 @@ class UsefulMagicENLangProvider(
             add(UsefulMagicBlocks.ENERGY_CRYSTAL_BLOCK, "Energy Crystal");
 
             add(UsefulMagicItems.BARRAGE_MAGIC, "Barrage Spell");
-            add(UsefulMagicItems.BEAM_MAGIC, "Beam Spell");
+            add(UsefulMagicItems.LASER_MAGIC, "Laser Spell");
+            add(UsefulMagicItems.LIGHT_BEAM_MAGIC, "Beam Spell");
             add(UsefulMagicItems.SWORD_QI_MAGIC,"Sword Light Spell")
             add(UsefulMagicItems.GOLDEN_MAGIC, "Golden Spell")
             add(UsefulMagicItems.SWORD_FORMATION_MAGIC, "Sword Formation Spell")
@@ -85,6 +87,7 @@ class UsefulMagicENLangProvider(
             add(UsefulMagicEntityTypes.MAGIC_DRAGON_ENTITY_TYPE, "Abyssal Pupil Dragon");
             add(UsefulMagicEntityTypes.MAGIC_EYE_ENTITY_TYPE, "Eye of the Abyss");
             add(UsefulMagicEntityTypes.MAGIC_SUB_EYE_ENTITY_TYPE, "Abyssal Pearl");
+            add(UsefulMagicEntityTypes.MAGIC_HEART_ENTITY_TYPE, "Abyssal Heart");
 
             // lore / tooltip
             add("screen.shift", "§7Hold Shift for more information");

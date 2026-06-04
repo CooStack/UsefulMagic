@@ -2,16 +2,13 @@ package cn.coostack.usefulmagic.items
 
 import cn.coostack.cooparticlesapi.platform.registry.CommonDeferredItem
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.beans.PreferMagicData
 import cn.coostack.usefulmagic.items.consumer.*
 import cn.coostack.usefulmagic.items.misc.TutorialBookItem
-import cn.coostack.usefulmagic.items.prop.DefendCoreItem
-import cn.coostack.usefulmagic.items.prop.FlyingRuneItem
-import cn.coostack.usefulmagic.items.prop.FriendBoardItem
-import cn.coostack.usefulmagic.items.prop.SkyFallingRuneItem
+import cn.coostack.usefulmagic.items.prop.*
 import cn.coostack.usefulmagic.items.weapon.MagicAxe
 import cn.coostack.usefulmagic.items.weapon.magic.*
 import cn.coostack.usefulmagic.items.weapon.wands.MagicWand
+import cn.coostack.usefulmagic.profile.PreferMagicData
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.AxeItem
 import net.minecraft.world.item.Item
@@ -79,8 +76,8 @@ object UsefulMagicItems {
     }
 
     @JvmField
-    val BEAM_MAGIC = register(
-        "beam_magic"
+    val LASER_MAGIC = register(
+        "laser_magic"
     ) {
         BeamMagic(
             Item.Properties()
@@ -102,10 +99,10 @@ object UsefulMagicItems {
             Item.Properties()
                 .stacksTo(1)
                 .component(UsefulMagicDataComponentTypes.MAGIC_LEVEL.get(), 6)
-                .component(UsefulMagicDataComponentTypes.MAGIC_BASE_MANA_COST.get(), 500)
+                .component(UsefulMagicDataComponentTypes.MAGIC_BASE_MANA_COST.get(), 50) // 50 pre-tick
                 .component(UsefulMagicDataComponentTypes.MAGIC_BASE_USAGE.get(), 60)
                 .component(UsefulMagicDataComponentTypes.MAGIC_MIN_USAGE.get(), 60)
-                .component(UsefulMagicDataComponentTypes.MAGIC_BASE_DAMAGE.get(), 10.0)
+                .component(UsefulMagicDataComponentTypes.MAGIC_BASE_DAMAGE.get(), 3.0)
                 .component(UsefulMagicDataComponentTypes.MAGIC_RELEASE_CD.get(), 50)
         )
     }
@@ -288,7 +285,7 @@ object UsefulMagicItems {
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
                     scaledPrefer(0.02, 0.01, 0.01, 0.01)
-                        .putPrefer(BEAM_MAGIC.getItem(), 5)
+                        .putPrefer(LASER_MAGIC.getItem(), 5)
                 )
         )
     }
@@ -384,7 +381,7 @@ object UsefulMagicItems {
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
                     scaledPrefer(0.1, 0.1, 0.1, 0.1)
                         .putPrefer(BARRAGE_MAGIC.getItem(), 2)
-                        .putPrefer(BEAM_MAGIC.getItem(), 3)
+                        .putPrefer(LASER_MAGIC.getItem(), 3)
                         .putPrefer(SWORD_FORMATION_MAGIC.getItem(), 3)
                 )
         )
@@ -411,7 +408,7 @@ object UsefulMagicItems {
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
                     scaledPrefer(0.1, 0.12, 0.1, 0.1)
                         .putPrefer(BARRAGE_MAGIC.getItem(), 2)
-                        .putPrefer(BEAM_MAGIC.getItem(), 3)
+                        .putPrefer(LASER_MAGIC.getItem(), 3)
                         .putPrefer(LIGHTNING_MAGIC.getItem(), 1)
                         .putPrefer(SWORD_FORMATION_MAGIC.getItem(), 5)
                 )
@@ -510,7 +507,7 @@ object UsefulMagicItems {
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
                     scaledPrefer(0.06, 0.05, 0.04, 0.06)
                         .putPrefer(LIGHTNING_MAGIC.getItem(), -5)
-                        .putPrefer(BEAM_MAGIC.getItem(), -5)
+                        .putPrefer(LASER_MAGIC.getItem(), -5)
                         .putPrefer(BARRAGE_MAGIC.getItem(), -5)
                         .putPrefer(SWORD_FORMATION_MAGIC.getItem(), -5)
                         .putPrefer(HEALTH_MAGIC.getItem(), 5)
@@ -538,7 +535,7 @@ object UsefulMagicItems {
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
                     scaledPrefer(0.1, 0.15, 0.1, 0.15)
-                        .putPrefer(BEAM_MAGIC.getItem(), -3)
+                        .putPrefer(LASER_MAGIC.getItem(), -3)
                         .putPrefer(BARRAGE_MAGIC.getItem(), 3)
                         .putPrefer(SWORD_FORMATION_MAGIC.getItem(), 3)
                         .putPrefer(HEALTH_MAGIC.getItem(), -5)
@@ -567,7 +564,7 @@ object UsefulMagicItems {
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
                     scaledPrefer(0.1, 0.15, 0.1, 0.15)
-                        .putPrefer(BEAM_MAGIC.getItem(), 3)
+                        .putPrefer(LASER_MAGIC.getItem(), 3)
                         .putPrefer(BARRAGE_MAGIC.getItem(), -5)
                         .putPrefer(LIGHTNING_MAGIC.getItem(), 5)
                         .putPrefer(HEALTH_MAGIC.getItem(), 2)
@@ -596,7 +593,7 @@ object UsefulMagicItems {
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
                     scaledPrefer(0.12, 0.15, 0.13, 0.15)
-                        .putPrefer(BEAM_MAGIC.getItem(), -5)
+                        .putPrefer(LASER_MAGIC.getItem(), -5)
                         .putPrefer(BARRAGE_MAGIC.getItem(), -5)
                         .putPrefer(LIGHTNING_MAGIC.getItem(), 2)
                         .putPrefer(SWORD_FORMATION_MAGIC.getItem(), 3)
@@ -605,6 +602,7 @@ object UsefulMagicItems {
                         .putPrefer(STARRY_MAGIC.getItem(), 3)
                         .putPrefer(METEORITE_MAGIC.getItem(), 4)
                         .putPrefer(EXPLOSION_MAGIC.getItem(), 5)
+                        .putPrefer(LIGHT_BEAM_MAGIC.getItem(), 5)
                 )
         )
     }
@@ -712,6 +710,11 @@ object UsefulMagicItems {
     val SKY_FALLING_RUNE = register(
         "sky_falling_rune", { SkyFallingRuneItem() }
     )
+
+    @JvmField
+    val MAGIC_EYE_SPAWNER = register(
+        "magic_eye_spawner"
+    ) { MagicEyeSpawner(Item.Properties().stacksTo(16)) }
 
     fun register(id: String, item: Supplier<Item>): CommonDeferredItem {
         val common = CommonDeferredItem(ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, id), item)

@@ -2,11 +2,11 @@ package cn.coostack.usefulmagic.entity
 
 import cn.coostack.cooparticlesapi.platform.registry.CommonDeferredEntityType
 import cn.coostack.usefulmagic.UsefulMagic
-import cn.coostack.usefulmagic.entity.custom.MagicBookEntity
-import cn.coostack.usefulmagic.entity.custom.MagicDragonEntity
-import cn.coostack.usefulmagic.entity.custom.MagicEyeEntity
-import cn.coostack.usefulmagic.entity.custom.MagicSubEyeEntity
-import cn.coostack.usefulmagic.entity.custom.formation.FormationCoreEntity
+import cn.coostack.usefulmagic.entity.custom.book.MagicBookEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.MagicDragonEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicEyeEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicHeartEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicSubEyeEntity
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
@@ -24,15 +24,11 @@ object UsefulMagicEntityTypes {
 
     val MAGIC_DRAGON_ENTITY_TYPE: CommonDeferredEntityType<MagicDragonEntity> = register("magic_dragon_entity") {
         EntityType.Builder.of(::MagicDragonEntity, MobCategory.CREATURE)
-            .sized(9.0f, 4.0f)
+            .sized(MagicDragonEntity.COLLISION_WIDTH, MagicDragonEntity.COLLISION_HEIGHT)
             .clientTrackingRange(128)
             .build("magic_dragon_entity")
     }
 
-    val FORMATION_CORE_ENTITY: CommonDeferredEntityType<FormationCoreEntity> = register("formation_core_entity") {
-        EntityType.Builder.of(::FormationCoreEntity, MobCategory.CREATURE)
-            .sized(4f, 2f).build("formation_core_entity")
-    }
 
     val MAGIC_EYE_ENTITY_TYPE: CommonDeferredEntityType<MagicEyeEntity> = register("magic_eye_entity") {
         EntityType.Builder.of(::MagicEyeEntity, MobCategory.CREATURE)
@@ -46,6 +42,13 @@ object UsefulMagicEntityTypes {
             .sized(0.81f, 0.81f)
             .clientTrackingRange(128)
             .build("magic_sub_eye_entity")
+    }
+
+    val MAGIC_HEART_ENTITY_TYPE: CommonDeferredEntityType<MagicHeartEntity> = register("magic_heart_entity") {
+        EntityType.Builder.of(::MagicHeartEntity, MobCategory.CREATURE)
+            .sized(2.43f, 2.43f)
+            .clientTrackingRange(128)
+            .build("magic_heart_entity")
     }
 
     fun <T : Entity> register(id: String, type: Supplier<EntityType<T>>): CommonDeferredEntityType<T> {

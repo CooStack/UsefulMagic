@@ -55,7 +55,7 @@ class FlyingRuneCloudEmitters(var player: UUID, pos: Vec3, world: Level?) : Clas
 
     override fun doTick() {
         val player = world?.getPlayerByUUID(player) ?: let {
-            cancelled = true
+            canceled = true
             return
         }
         this.pos = player.position()

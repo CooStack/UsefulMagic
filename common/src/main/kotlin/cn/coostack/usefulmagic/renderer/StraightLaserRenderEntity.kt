@@ -2,9 +2,7 @@ package cn.coostack.usefulmagic.renderer
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
-import cn.coostack.cooparticlesapi.annotations.renderer.handle.RenderEntityHelper
 import cn.coostack.cooparticlesapi.renderer.AutoRenderEntity
-import cn.coostack.cooparticlesapi.renderer.RenderEntity
 import cn.coostack.cooparticlesapi.renderer.client.ClientRenderPipelineManager
 import cn.coostack.cooparticlesapi.renderer.client.RenderUtil
 import cn.coostack.cooparticlesapi.renderer.effects.builtin.BuiltinRenderEffectDescriptors
@@ -21,8 +19,6 @@ import cn.coostack.cooparticlesapi.renderer.shader.vertex.SimpleVertexBuffer
 import cn.coostack.usefulmagic.UsefulMagic
 import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.Minecraft
-import net.minecraft.network.FriendlyByteBuf
-import net.minecraft.network.codec.StreamCodec
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.Entity
@@ -766,10 +762,6 @@ class StraightLaserRenderEntity(
         private const val LAYER_OUTER_TEXTURE = 0
         private const val LAYER_INNER_GLOW = 1
         private const val LAYER_OUTER_BLOOM = 2
-
-        @JvmField
-        val CODEC: StreamCodec<FriendlyByteBuf, RenderEntity> =
-            RenderEntityHelper.generateCodec(StraightLaserRenderEntity())
 
         @JvmField
         val ID: ResourceLocation =

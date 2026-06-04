@@ -37,15 +37,20 @@ object KeyListener {
             return
         }
         val item = wand.item as MagicWand
-        // 冷却
-        if (player.cooldowns.isOnCooldown(item)) {
+        val cancel = event.isReleased(UsefulMagicKeys.CHARGE_MAGIC)
+        val wandIdentity = System.identityHashCode(wand)
+
+        if (handleChargingItemExchange(player, wand, wandIdentity, world)) {
             return
         }
-
-        val cancel = event.isReleased(UsefulMagicKeys.CHARGE_MAGIC)
-
-        val wandIdentity = System.identityHashCode(wand)
-        if (handleChargingItemExchange(player, wand, wandIdentity, world)) {
+        // 冷却时仍然要允许松键清理服务端蓄力状态，不能直接吞掉 release 事件
+        if (player.cooldowns.isOnCooldown(item)) {
+            if (cancel) {
+                if (player.charging) {
+                    item.stopCharge(player, world, wand, player.chargingTick, false)
+                }
+                player.resetChargeState()
+            }
             return
         }
         if (UsefulMagicEffects.isMagicSealed(player)) {

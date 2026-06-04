@@ -15,7 +15,7 @@ import cn.coostack.cooparticlesapi.particles.impl.ControlableFallingDustEffect
 import cn.coostack.cooparticlesapi.utils.MinecraftRendererUtil
 import cn.coostack.usefulmagic.extend.boxCenterPosition
 import cn.coostack.usefulmagic.extend.canSee
-import cn.coostack.usefulmagic.particles.barrages.magic.GoldenMagicBarrage
+import cn.coostack.usefulmagic.barrages.magic.GoldenMagicBarrage
 import cn.coostack.usefulmagic.particles.composition.magic.BlockBorderComposition
 import cn.coostack.usefulmagic.particles.emitters.magic.BlockFragmentEmitters
 import cn.coostack.usefulmagic.utils.FriendFilterHelper

@@ -15,7 +15,7 @@ import cn.coostack.usefulmagic.formation.target.BarrageTargetOption
 import cn.coostack.usefulmagic.formation.target.LivingEntityTargetOption
 import cn.coostack.usefulmagic.formation.target.ProjectileEntityTargetOption
 import cn.coostack.usefulmagic.meteorite.MeteoriteBarrage
-import cn.coostack.usefulmagic.particles.barrages.api.DamagedBarrage
+import cn.coostack.usefulmagic.barrages.api.DamagedBarrage
 import cn.coostack.usefulmagic.particles.style.formation.crystal.CrystalStyle
 import cn.coostack.usefulmagic.particles.style.formation.crystal.DefendCrystalStyle
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
