@@ -1,6 +1,5 @@
 package cn.coostack.usefulmagic
 
-import cn.coostack.cooparticlesapi.key.CooKeyBindingManager
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.usefulmagic.blocks.UsefulMagicBlocks
 import cn.coostack.usefulmagic.data.tracked.TrackerManager
@@ -28,7 +27,6 @@ import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import cn.coostack.usefulmagic.states.ManaServerState
 import cn.coostack.usefulmagic.systems.tick.ControlerTickSystem
 import cn.coostack.usefulmagic.utils.ComboUtil
-import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -47,10 +45,6 @@ object UsefulMagic {
         loadRegistries()
         loadStyles()
         PhaseRegistries.init()
-        CooKeyBindingManager.register(
-            UsefulMagicKeys.CHARGE_MAGIC, InputConstants.Type.KEYSYM,
-            InputConstants.KEY_R, "category.usefulmagic.keys"
-        )
     }
 
     fun setupServer(server: MinecraftServer) {

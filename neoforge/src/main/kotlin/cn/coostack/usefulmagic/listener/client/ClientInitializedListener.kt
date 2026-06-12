@@ -1,7 +1,9 @@
 package cn.coostack.usefulmagic.listener.client
 
+import cn.coostack.cooparticlesapi.key.CooKeyBindingManager
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.UsefulMagicClient
+import cn.coostack.usefulmagic.UsefulMagicKeys
 import cn.coostack.usefulmagic.blocks.entity.AltarBlockCoreEntityRenderer
 import cn.coostack.usefulmagic.blocks.entity.AltarBlockEntityRenderer
 import cn.coostack.usefulmagic.blocks.entity.MagicCoreBlockEntityRenderer
@@ -37,6 +39,10 @@ import org.lwjgl.glfw.GLFW
 object ClientInitializedListener {
     @SubscribeEvent
     fun onKeybinding(event: RegisterKeyMappingsEvent) {
+        CooKeyBindingManager.register(
+            UsefulMagicKeys.CHARGE_MAGIC, InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_R, "category.usefulmagic.keys"
+        )
         val binding = KeyMapping(
             "key.friend_ui.open",
             InputConstants.Type.KEYSYM,

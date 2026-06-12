@@ -45,7 +45,7 @@ class LightBeamMagic(properties: Properties) : MagicItem(properties) {
         val chargeSoundTag = CacheKey.of<ServerManagedSoundInstance>(
             ResourceLocation.fromNamespaceAndPath(
                 UsefulMagic.MOD_ID,
-                "chargeSound"
+                "charge_sound"
             )
         )
 
@@ -53,7 +53,7 @@ class LightBeamMagic(properties: Properties) : MagicItem(properties) {
         val shootingSoundTag = CacheKey.of<ServerManagedSoundInstance>(
             ResourceLocation.fromNamespaceAndPath(
                 UsefulMagic.MOD_ID,
-                "shootingSound"
+                "shooting_sound"
             )
         )
 

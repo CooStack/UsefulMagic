@@ -1,5 +1,6 @@
 package cn.coostack.usefulmagic
 
+import cn.coostack.cooparticlesapi.key.CooKeyBindingManager
 import cn.coostack.cooparticlesapi.platform.network.FabricClientContext
 import cn.coostack.usefulmagic.client.tooltip.FabricLoadedMagicClientTooltip
 import cn.coostack.usefulmagic.blocks.UsefulMagicBlocks
@@ -68,6 +69,10 @@ object UsefulMagicFabricClient : ClientModInitializer {
     }
 
     fun loadKeyBindings() {
+        CooKeyBindingManager.register(
+            UsefulMagicKeys.CHARGE_MAGIC, InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_R, "category.usefulmagic.keys"
+        )
         UsefulMagicClient.loadKeyBindings(
             KeyBindingHelper.registerKeyBinding(
                 KeyMapping(
