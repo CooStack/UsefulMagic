@@ -24,6 +24,7 @@ import cn.coostack.usefulmagic.renderer.CylinderLaserRenderEntity
 import cn.coostack.usefulmagic.renderer.ShotWaveBillboardRenderEntity
 import cn.coostack.usefulmagic.renderer.UsefulMagicPostEffects
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
+import cn.coostack.usefulmagic.utils.EntityUtil
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundSource
 import net.minecraft.world.effect.MobEffectInstance
@@ -87,9 +88,7 @@ class DragonBanMagicSkill : DragonSkill() {
             256.0,
         )
 
-        world.getEntitiesOfClass(LivingEntity::class.java, source.boundingBox.inflate(256.0)) {
-            it.isAlive
-        }.forEach {
+        world.getEntitiesOfClass(LivingEntity::class.java, source.boundingBox.inflate(256.0), EntityUtil.filterDragon).forEach {
             it.hurt(UsefulMagicDamageSources.entityDamage(it.level(), source, source), 10f)
             it.addEffect(MobEffectInstance(UsefulMagicEffects.MAGIC_SEALED.asHolder(), 20 * 60))
             if (it is ServerPlayer) {
@@ -139,6 +138,7 @@ class DragonBanMagicSkill : DragonSkill() {
                         this.minCount = 3
                         this.maxCount = 5
                     }
+                    this.color = Math3DUtil.colorOf(250, 236, 254)
                     this.radius = 72.0
                     this.maxTick = -1
                     ParticleEmittersManager.spawnEmitters(this)
@@ -149,12 +149,13 @@ class DragonBanMagicSkill : DragonSkill() {
             // 或者是一个缩小的一个能量脉冲 billboard
             ShotWaveBillboardRenderEntity.spawn(
                 holdingEntity.serverLevel!!, holdingEntity.boxCenterPosition(), 5, 5,
-                limitScale = 1f,
+                limitScale = 0.5f,
                 timeoutTick = 60,
-                scaleSpeed = -8f,
+                scaleSpeed = -16f,
                 roll = Random.nextFloat(),
                 alpha = 0.1,
-                initialScale = 60F
+                initialScale = 120F,
+                useWave2Texture = false
             )
         }
         ServerCameraUtil.sendShake(

@@ -54,6 +54,7 @@ class UsefulMagicZHLangProvider(
             add(UsefulMagicItems.FLYING_RUNE, "飞行符文")
             add(UsefulMagicItems.TUTORIAL_BOOK, "实用魔法手册")
             add(UsefulMagicItems.FRIEND_BOARD, "好友令牌")
+            add(UsefulMagicItems.SPELL_BAG, "法术收纳袋")
             add(UsefulMagicItems.SKY_FALLING_RUNE, "超位魔法「天空坠落」 符文")
             add(UsefulMagicItems.MAGIC_EYE_SPAWNER, "凝视之眼")
             // group
@@ -163,6 +164,8 @@ class UsefulMagicZHLangProvider(
             add("item.usefulmagic.magic.base_usage", "§7法术基本蓄力: %s")
 
             add("item.usefulmagic.magic.barrage_magic", "§7蓄力释放一个魔法球")
+            add("item.usefulmagic.spell_bag.fullness", "§7法术: %s/%s")
+            add("item.usefulmagic.spell_bag.empty", "空")
 
             //sounds信息
             add("sounds.usefulmagic.electric_effect", "电击")
@@ -190,6 +193,10 @@ class UsefulMagicZHLangProvider(
             add("sounds.usefulmagic.rock_loop", "岩石回旋")
 
             // gui
+            add("key.friend_ui.open", "打开好友页面")
+            add("key.usefulmagic.charge_magic", "使用法术")
+            add("category.ui.friend", "好友")
+            add("category.usefulmagic.keys", "实用魔法")
             add("screen.title.friend_manager_title", "朋友管理器")
             add("screen.friend_manager.page_prev", "上一页")
             add("screen.friend_manager.page_next", "下一页")

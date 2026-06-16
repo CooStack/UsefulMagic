@@ -22,9 +22,9 @@ import cn.coostack.usefulmagic.animate.CompositionAction
 import cn.coostack.usefulmagic.animate.RenderAction
 import cn.coostack.usefulmagic.animate.TickableAction
 import cn.coostack.usefulmagic.entity.custom.dragon.MagicDragonEntity
-import cn.coostack.usefulmagic.entity.custom.dragon.playDragonSoundOnce
 import cn.coostack.usefulmagic.entity.custom.dragon.display.DragonCircleEyeDisplay
 import cn.coostack.usefulmagic.entity.custom.dragon.emitters.TrackingTailEmitter
+import cn.coostack.usefulmagic.entity.custom.dragon.playDragonSoundOnce
 import cn.coostack.usefulmagic.entity.custom.dragon.skills.emitter.MagicRuneRingComposition
 import cn.coostack.usefulmagic.entity.custom.dragon.skills.emitter.MagicRuneRingEffects
 import cn.coostack.usefulmagic.entity.custom.dragon.spawn.composition.MagicDragonSpawnLaserComposition
@@ -32,6 +32,7 @@ import cn.coostack.usefulmagic.entity.custom.dragon.spawn.composition.MagicDrago
 import cn.coostack.usefulmagic.entity.custom.dragon.spawn.composition.MagicDragonSpawningFloorComposition
 import cn.coostack.usefulmagic.extend.lerpAsProgress
 import cn.coostack.usefulmagic.renderer.DragonMagicBallRenderEntity
+import cn.coostack.usefulmagic.renderer.ShotWaveBillboardRenderEntity
 import cn.coostack.usefulmagic.renderer.StraightLaserRenderEntity
 import cn.coostack.usefulmagic.renderer.UsefulMagicPostEffects
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
@@ -45,6 +46,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import kotlin.math.PI
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 /**
@@ -348,6 +350,7 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
 
         class LaserCharging : State {
             val count = 10
+
             // 定义一下常量偏移
             val offsets = ArrayDeque<Vec3>(
                 PointsBuilder()
@@ -356,52 +359,11 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                     .map { it.toVector() }
             )
 
-            var rewindDisplayed = false
             override fun tick(runtime: DragonSpawner, tick: Int) {
                 val step = 40
+                // 判定是否放置完所有的激光了
                 if (tick > step * count) {
-                    val remainingCount = tick - step * count
-
-                    if (tick % 60 == 0){
-                        playDragonSoundOnce(
-                            runtime.spawnLevel,
-                            runtime.conjurePosition,
-                            SoundEvents.ENDER_DRAGON_GROWL,
-                            SoundSource.HOSTILE,
-                            18f,
-                            0.6f + Random.nextFloat() * 0.2f,
-                            256.0,
-                        )
-                    }
-
-                    if (!rewindDisplayed && remainingCount > 4 * 20) {
-                        rewindDisplayed = true
-                        ServerSoundManager.instance(
-                            UsefulMagicSoundEvents.DRAGON_REWIND.get(),
-                            SoundSource.HOSTILE
-                        )
-                            .world(runtime.spawnLevel)
-                            .position(runtime.conjurePosition)
-                            .layer("rewind")
-                            .visibleRange(256.0)
-                            .volumeFalloff(SoundVolumeFalloff.QUADRATIC)
-                            .syncEveryTick(true)
-                            .relative()
-                            .spawn()
-                        runtime["rewind"] = true
-                        val dragonPos = runtime.conjurePosition.add(0.0, 64.0, 0.0)
-                        runtime["rewind_compositions"] = MagicRuneRingEffects.spawnRewindRings(
-                            dragonPos,
-                            runtime.spawnLevel
-                        )
-                        runtime.invokeAsIfPrecent<Animate>("collect_emitter_animate") {
-                            it.cancel()
-                        }
-
-                    }
-                    if (remainingCount > 20 * 8) {
-                        runtime.state = End()
-                    }
+                    runtime.state = PrepareSpawn(160)
                     return
                 }
                 if (tick % step != 0 || offsets.isEmpty()) {
@@ -464,6 +426,83 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
 
             override fun end(runtime: DragonSpawner, tick: Int) {
 
+            }
+        }
+
+        class PrepareSpawn(var remainingCount: Int) : State {
+            var lastSpawnTick = 0
+            var rewindDisplayed = false
+            override fun tick(
+                runtime: DragonSpawner,
+                tick: Int
+            ) {
+                // 定期龙叫
+                if (tick % 60 == 0) {
+                    playDragonSoundOnce(
+                        runtime.spawnLevel,
+                        runtime.conjurePosition,
+                        SoundEvents.ENDER_DRAGON_GROWL,
+                        SoundSource.HOSTILE,
+                        18f,
+                        0.6f + Random.nextFloat() * 0.2f,
+                        256.0,
+                    )
+                }
+                val dragonPos = runtime.conjurePosition.add(0.0, 64.0, 0.0)
+                val steppedProgress = tick.toDouble() / remainingCount
+                // 计算速度
+                val steppedTick = steppedProgress.lerpAsProgress(15, 3).roundToInt()
+                if (lastSpawnTick-- <= 0) {
+                    lastSpawnTick = steppedTick
+                    ShotWaveBillboardRenderEntity.spawn(
+                        runtime.spawnLevel, dragonPos, 5, 5,
+                        limitScale = 1f,
+                        timeoutTick = 60,
+                        scaleSpeed = -24f,
+                        roll = 0.8f,
+                        alpha = 0.1,
+                        initialScale = 240F
+                    )
+                }
+
+
+                // 准备结束
+                if (!rewindDisplayed && tick > 4 * 20) {
+                    rewindDisplayed = true
+                    ServerSoundManager.instance(
+                        UsefulMagicSoundEvents.DRAGON_REWIND.get(),
+                        SoundSource.HOSTILE
+                    )
+                        .world(runtime.spawnLevel)
+                        .position(runtime.conjurePosition)
+                        .layer("rewind")
+                        .visibleRange(256.0)
+                        .volumeFalloff(SoundVolumeFalloff.QUADRATIC)
+                        .syncEveryTick(true)
+                        .relative()
+                        .spawn()
+                    runtime["rewind"] = true
+                    runtime["rewind_compositions"] = MagicRuneRingEffects.spawnRewindRings(
+                        dragonPos,
+                        runtime.spawnLevel
+                    )
+                    runtime.invokeAsIfPrecent<Animate>("collect_emitter_animate") {
+                        it.cancel()
+                    }
+                }
+                // 结束
+                if (tick > remainingCount) {
+                    runtime.state = End()
+                }
+            }
+
+            override fun start(runtime: DragonSpawner) {
+            }
+
+            override fun end(
+                runtime: DragonSpawner,
+                tick: Int
+            ) {
             }
 
         }

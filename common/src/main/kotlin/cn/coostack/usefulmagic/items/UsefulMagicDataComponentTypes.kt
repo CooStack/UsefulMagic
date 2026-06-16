@@ -6,7 +6,6 @@ import cn.coostack.usefulmagic.profile.PreferMagicData
 import com.mojang.serialization.Codec
 import net.minecraft.core.component.DataComponentType
 import net.minecraft.resources.ResourceLocation
-import net.minecraft.world.item.ItemStack
 import java.util.function.Supplier
 
 object UsefulMagicDataComponentTypes {
@@ -101,7 +100,7 @@ object UsefulMagicDataComponentTypes {
      */
     @JvmField
     val WAND_MAGIC = register("wand_magic") {
-        DataComponentType.builder<ItemStack>().persistent(ItemStack.OPTIONAL_CODEC).build()
+        DataComponentType.builder<WandMagicData>().persistent(WandMagicData.CODEC).build()
     }
 
     /**

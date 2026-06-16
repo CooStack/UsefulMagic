@@ -477,7 +477,7 @@ class DragonDeathrattleSkill : DragonSkill() {
                     entity,
                     UsefulMagicSoundEvents.DRAGON_HUGE_LASER_SHOOT.get(),
                     SoundSource.HOSTILE,
-                    1.4f,
+                    0.5f,
                     1f,
                     256.0,
                 )

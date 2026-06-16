@@ -8,6 +8,7 @@ import cn.coostack.usefulmagic.extend.mana
 import cn.coostack.usefulmagic.extend.resetChargeState
 import cn.coostack.usefulmagic.effects.UsefulMagicEffects
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes
+import cn.coostack.usefulmagic.items.WandMagicData
 import cn.coostack.usefulmagic.items.weapon.magic.MagicItem
 import cn.coostack.usefulmagic.utils.MagicHelper
 import net.minecraft.core.component.DataComponents
@@ -77,10 +78,12 @@ class MagicWand(properties: Properties) : Item(properties) {
         // 副手是空气
         if (ball.isEmpty) {
             // 如果里面有东西那就拿出来
-            val oldBall = stack.get(UsefulMagicDataComponentTypes.WAND_MAGIC.get()) ?: ItemStack.EMPTY
+            val oldBall = getLoadedMagic(stack)
             if (!oldBall.isEmpty) {
-                player.setItemInHand(ballSlotHand, oldBall.copyAndClear())
+                player.setItemInHand(ballSlotHand, oldBall.copy())
+                setLoadedMagic(stack, ItemStack.EMPTY)
             }
+            return
         }
 
         if (!MagicHelper.isLevelEnough(stack, ball)) {
@@ -89,13 +92,13 @@ class MagicWand(properties: Properties) : Item(properties) {
         }
 
         // 这里切换
-        val oldBall = stack.get(UsefulMagicDataComponentTypes.WAND_MAGIC.get()) ?: ItemStack.EMPTY
+        val oldBall = getLoadedMagic(stack)
         if (oldBall.isEmpty) {
-            stack.set(UsefulMagicDataComponentTypes.WAND_MAGIC.get(), ball.copyAndClear())
+            setLoadedMagic(stack, ball.copyAndClear())
         } else {
             // exchange
-            player.setItemInHand(ballSlotHand, oldBall.copyAndClear())
-            stack.set(UsefulMagicDataComponentTypes.WAND_MAGIC.get(), ball.copyAndClear())
+            player.setItemInHand(ballSlotHand, oldBall.copy())
+            setLoadedMagic(stack, ball.copyAndClear())
         }
     }
 
@@ -206,7 +209,7 @@ class MagicWand(properties: Properties) : Item(properties) {
         val wandSpeedFactor = stack.get(UsefulMagicDataComponentTypes.WAND_SPEED_FACTOR.get()) ?: 1.0
         val prefer = stack.get(UsefulMagicDataComponentTypes.WAND_PREFER.get()) ?: return
         // 获取法球类型
-        val magicBall = stack.get(UsefulMagicDataComponentTypes.WAND_MAGIC.get()) ?: ItemStack.EMPTY
+        val magicBall = getLoadedMagic(stack)
 
         val preferLevel = prefer.getPreferLevel(magicBall)
         val preferComponent = PreferMagicData.getPreferTranslateKey(preferLevel)
@@ -292,7 +295,8 @@ class MagicWand(properties: Properties) : Item(properties) {
             return
         }
         // 这里调用ball的
-        val magicBall = stack.get(UsefulMagicDataComponentTypes.WAND_MAGIC.get()) ?: return
+        val magicBall = getLoadedMagic(stack)
+        if (magicBall.isEmpty) return
         val item = magicBall.item
         if (item !is MagicItem) return
         val maxTick = MagicHelper.getMaxChargingTick(stack)
@@ -329,7 +333,8 @@ class MagicWand(properties: Properties) : Item(properties) {
      * @param max
      */
     fun stopCharge(shooter: LivingEntity, world: Level, stack: ItemStack, chargingTick: Int, max: Boolean) {
-        val magicBall = stack.get(UsefulMagicDataComponentTypes.WAND_MAGIC.get()) ?: return
+        val magicBall = getLoadedMagic(stack)
+        if (magicBall.isEmpty) return
         if (!MagicHelper.isLevelEnough(stack, magicBall)) {
             return
         }
@@ -341,7 +346,8 @@ class MagicWand(properties: Properties) : Item(properties) {
         if (shooter is Player && UsefulMagicEffects.isMagicSealed(shooter)) {
             return
         }
-        val magicBall = stack.get(UsefulMagicDataComponentTypes.WAND_MAGIC.get()) ?: return
+        val magicBall = getLoadedMagic(stack)
+        if (magicBall.isEmpty) return
         if (!MagicHelper.isLevelEnough(stack, magicBall)) {
             return
         }
@@ -349,15 +355,20 @@ class MagicWand(properties: Properties) : Item(properties) {
         item.startUse(shooter, world, stack, magicBall)
     }
 
-    private fun getLoadedMagic(stack: ItemStack): ItemStack {
-        return stack.get(UsefulMagicDataComponentTypes.WAND_MAGIC.get()) ?: ItemStack.EMPTY
+    fun getLoadedMagic(stack: ItemStack): ItemStack {
+        return stack.get(UsefulMagicDataComponentTypes.WAND_MAGIC.get())?.toStack() ?: ItemStack.EMPTY
     }
 
-    private fun setLoadedMagic(stack: ItemStack, magic: ItemStack) {
-        stack.set(UsefulMagicDataComponentTypes.WAND_MAGIC.get(), magic)
+    fun setLoadedMagic(stack: ItemStack, magic: ItemStack) {
+        val data = WandMagicData.fromStack(magic)
+        if (data == null) {
+            stack.remove(UsefulMagicDataComponentTypes.WAND_MAGIC.get())
+        } else {
+            stack.set(UsefulMagicDataComponentTypes.WAND_MAGIC.get(), data)
+        }
     }
 
-    private fun canLoadMagic(wandStack: ItemStack, magicStack: ItemStack): Boolean {
+    fun canLoadMagic(wandStack: ItemStack, magicStack: ItemStack): Boolean {
         if (magicStack.isEmpty || magicStack.item !is MagicItem) {
             return false
         }
@@ -368,7 +379,7 @@ class MagicWand(properties: Properties) : Item(properties) {
         return MagicHelper.isLevelEnough(wandStack, magicStack)
     }
 
-    private fun cancelChargeIfNeeded(player: Player, wandStack: ItemStack) {
+    fun cancelChargeIfNeeded(player: Player, wandStack: ItemStack) {
         if (!player.charging) {
             return
         }

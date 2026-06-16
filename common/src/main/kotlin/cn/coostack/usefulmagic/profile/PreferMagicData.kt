@@ -26,12 +26,12 @@ import kotlin.math.absoluteValue
  * - 魔力减免 [manaReductionFactor]
  * 公式如下: final = (1 + level * preferFactor) * (base * wandFactor)
  */
-class PreferMagicData(
+data class PreferMagicData(
     val damageFactor: Double,
     val usageReductionFactor: Double,
     val cdReductionFactor: Double,
     val manaReductionFactor: Double,
-    preferItemsData: Map<Item, Int> = emptyMap()
+    val preferItems: Map<Item, Int> = emptyMap()
 ) {
     companion object {
         @JvmStatic
@@ -71,12 +71,10 @@ class PreferMagicData(
                 Codec.DOUBLE.fieldOf("cd_reduction_factor").forGetter { it.cdReductionFactor },
                 Codec.DOUBLE.fieldOf("mana_reduction_factor").forGetter { it.manaReductionFactor },
                 PREFER_ITEMS_CODEC.optionalFieldOf("prefer_items", emptyMap<Item, Int>())
-                    .forGetter { it.preferItems }
+                    .forGetter(PreferMagicData::preferItems)
             ).apply(instance, ::PreferMagicData)
         }
     }
-
-    private val preferItems = HashMap(preferItemsData)
 
     fun isPreferItem(item: Item): Boolean {
         return preferItems.containsKey(item)
@@ -86,8 +84,7 @@ class PreferMagicData(
     fun getPreferLevel(item: ItemStack) = preferItems[item.item] ?: 0
 
     fun putPrefer(item: Item, level: Int): PreferMagicData {
-        preferItems[item] = level
-        return this
+        return copy(preferItems = preferItems + (item to level))
     }
 
     fun getDamageFactor(item: ItemStack) = getDamageFactor(item.item)

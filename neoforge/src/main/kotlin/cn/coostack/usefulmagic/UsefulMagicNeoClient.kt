@@ -10,6 +10,7 @@ import cn.coostack.usefulmagic.gui.friend.FriendManagerScreen
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes.LARGE_REVIVE_USE_COUNT
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import cn.coostack.usefulmagic.items.consumer.LargeManaRevive
+import cn.coostack.usefulmagic.items.prop.SpellBagItem
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.renderer.ItemBlockRenderTypes
@@ -46,6 +47,12 @@ object UsefulMagicNeoClient {
         ) { stack: ItemStack, world: Level?, entity: LivingEntity?, seed: Int ->
             val count = stack.get(LARGE_REVIVE_USE_COUNT.get()) ?: LargeManaRevive.MAX_USAGE
             1f - (count.toFloat() / LargeManaRevive.MAX_USAGE)
+        }
+        ItemProperties.register(
+            UsefulMagicItems.SPELL_BAG.getItem(),
+            ResourceLocation.withDefaultNamespace("open")
+        ) { stack: ItemStack, world: Level?, entity: LivingEntity?, seed: Int ->
+            if (SpellBagItem.hasMagicContents(stack)) 0f else 1f
         }
     }
 

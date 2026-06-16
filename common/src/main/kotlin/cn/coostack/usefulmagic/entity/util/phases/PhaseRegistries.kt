@@ -66,5 +66,8 @@ object PhaseRegistries {
             EyeSuicidePhase.HOLDER,
             EyeFollowTargetPhase.HOLDER,
         )
+        register(DragonShotPhase.ID) {
+            DragonShotPhase()
+        }
     }
 }

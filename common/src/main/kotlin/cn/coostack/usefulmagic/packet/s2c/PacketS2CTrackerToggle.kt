@@ -12,8 +12,18 @@ import net.minecraft.resources.ResourceLocation
  * - 发送方提供完整tracker
  * - 接收方接受发生变更的data
  */
-class PacketS2CTrackerToggle(val tracker: CooDataTracker, val targetID: Int) :
+class PacketS2CTrackerToggle private constructor(
+    val tracker: CooDataTracker,
+    val targetID: Int,
+    private val dirtyData: Map<String, Any>
+) :
     CustomPacketPayload {
+    constructor(tracker: CooDataTracker, targetID: Int) : this(
+        tracker,
+        targetID,
+        tracker.getDirtiesDataAndClean()
+    )
+
     companion object {
         val payloadID = CustomPacketPayload.Type<PacketS2CTrackerToggle>(
             ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "tracker_toggle")
@@ -21,7 +31,7 @@ class PacketS2CTrackerToggle(val tracker: CooDataTracker, val targetID: Int) :
 
         val CODEC = CustomPacketPayload.codec<FriendlyByteBuf, PacketS2CTrackerToggle>(
             { data, buf ->
-                val dirties = data.tracker.getDirtiesDataAndClean()
+                val dirties = data.dirtyData
                 buf.writeInt(dirties.size)
                 buf.writeInt(data.targetID)
                 dirties.forEach { (string, any) ->
@@ -45,7 +55,7 @@ class PacketS2CTrackerToggle(val tracker: CooDataTracker, val targetID: Int) :
                     tracker.trackedDirties[key] = false
                     tracker.trackedTypes[key] = type
                 }
-                PacketS2CTrackerToggle(tracker, id)
+                PacketS2CTrackerToggle(tracker, id, tracker.trackedData.toMap())
             }
         )
     }

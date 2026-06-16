@@ -16,8 +16,13 @@ import kotlin.math.roundToInt
 
 object MagicHelper {
 
+    private fun getLoadedMagic(wand: ItemStack): ItemStack {
+        return wand.get(UsefulMagicDataComponentTypes.WAND_MAGIC.get())?.toStack() ?: ItemStack.EMPTY
+    }
+
     fun getMagicDamage(wand: ItemStack): Double {
-        val ball = wand.get(UsefulMagicDataComponentTypes.WAND_MAGIC.get()) ?: return 0.0
+        val ball = getLoadedMagic(wand)
+        if (ball.isEmpty) return 0.0
         val base = ball.get(UsefulMagicDataComponentTypes.MAGIC_BASE_DAMAGE.get()) ?: return 0.0
         val prefer = wand.get(UsefulMagicDataComponentTypes.WAND_PREFER.get()) ?: return 0.0
         val wandReduction = prefer.getDamageFactor(ball)
@@ -34,7 +39,8 @@ object MagicHelper {
      */
     fun getMaxChargingTick(wand: ItemStack): Int {
         val factor = wand.get(UsefulMagicDataComponentTypes.WAND_SPEED_FACTOR.get()) ?: return -1
-        val magicBall = wand.get(UsefulMagicDataComponentTypes.WAND_MAGIC.get()) ?: return 0
+        val magicBall = getLoadedMagic(wand)
+        if (magicBall.isEmpty) return 0
         if (!isLevelEnough(wand, magicBall)) {
             return 0
         }
@@ -48,7 +54,8 @@ object MagicHelper {
     }
 
     fun getManaCost(wand: ItemStack): Int {
-        val ball = wand.get(UsefulMagicDataComponentTypes.WAND_MAGIC.get()) ?: return 0
+        val ball = getLoadedMagic(wand)
+        if (ball.isEmpty) return 0
         val base = ball.get(UsefulMagicDataComponentTypes.MAGIC_BASE_MANA_COST.get()) ?: return 0
         val effect = wand.get(UsefulMagicDataComponentTypes.WAND_REDUCTION.get()) ?: return 0
         val prefer = wand.get(UsefulMagicDataComponentTypes.WAND_PREFER.get()) ?: return 0
@@ -59,7 +66,8 @@ object MagicHelper {
     }
 
     fun getFinalCD(wand: ItemStack): Int {
-        val ball = wand.get(UsefulMagicDataComponentTypes.WAND_MAGIC.get()) ?: return 0
+        val ball = getLoadedMagic(wand)
+        if (ball.isEmpty) return 0
         val base = ball.get(UsefulMagicDataComponentTypes.MAGIC_RELEASE_CD.get()) ?: return 0
         val effect = wand.get(UsefulMagicDataComponentTypes.WAND_SPEED_FACTOR.get()) ?: return 0
         val wandAddition = effect * base

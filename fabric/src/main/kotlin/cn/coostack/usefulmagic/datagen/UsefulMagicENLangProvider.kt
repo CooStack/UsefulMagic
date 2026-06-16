@@ -53,6 +53,7 @@ class UsefulMagicENLangProvider(
             add(UsefulMagicItems.FLYING_RUNE, "Flight Rune");
             add(UsefulMagicItems.TUTORIAL_BOOK, "Useful Magic Guide");
             add(UsefulMagicItems.FRIEND_BOARD, "Friend Token");
+            add(UsefulMagicItems.SPELL_BAG, "Spell Bag");
             add(UsefulMagicItems.SKY_FALLING_RUNE, "Grand Magic: Sky falling Rune");
             add(UsefulMagicItems.MAGIC_EYE_SPAWNER, "Gazing Eye");
 
@@ -247,6 +248,8 @@ class UsefulMagicENLangProvider(
             add("item.usefulmagic.magic.base_usage", "§7Base Charge Time: %s")
 
             add("item.usefulmagic.magic.barrage_magic", "§7Charge and release a magic orb")
+            add("item.usefulmagic.spell_bag.fullness", "§7Spells: %s/%s")
+            add("item.usefulmagic.spell_bag.empty", "Empty")
             // sounds
             add("sounds.usefulmagic.electric_effect", "Electric Shock");
             add("sounds.usefulmagic.magic_activate", "Magic Activation");
@@ -273,6 +276,10 @@ class UsefulMagicENLangProvider(
             add("sounds.usefulmagic.rock_loop", "Rock Loop");
 
             // gui
+            add("key.friend_ui.open", "Open Friend Page");
+            add("key.usefulmagic.charge_magic", "Use Spell");
+            add("category.ui.friend", "Friends");
+            add("category.usefulmagic.keys", "Useful Magic");
             add("screen.title.friend_manager_title", "Friend Manager");
             add("screen.friend_manager.page_prev", "Previous Page");
             add("screen.friend_manager.page_next", "Next Page");

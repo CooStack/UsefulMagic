@@ -25,8 +25,8 @@ object UsefulMagicClient {
     fun init() {
         renderEntitiesPendingInit = true
         CooKeyBindingManager.register(
-            UsefulMagicKeys.CHARGE_MAGIC, InputConstants.Type.KEYSYM,
-            InputConstants.KEY_R, "category.usefulmagic.keys"
+            UsefulMagicKeys.CHARGE_MAGIC, InputConstants.Type.MOUSE,
+            InputConstants.MOUSE_BUTTON_RIGHT, "category.usefulmagic.keys"
         )
     }
 

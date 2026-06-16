@@ -15,9 +15,9 @@ object NeoForgeWatcherSender : WatcherSender {
         self: Boolean
     ) {
         if (self) {
-            PacketDistributor.sendToPlayersTrackingEntity(entity, packet)
-        } else {
             PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, packet)
+        } else {
+            PacketDistributor.sendToPlayersTrackingEntity(entity, packet)
         }
     }
 }

@@ -13,7 +13,7 @@ import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicEyeEntity
 import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicHeartEntity
 import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicSubEyeEntity
 import cn.coostack.usefulmagic.extend.copyManaDataFrom
-import cn.coostack.usefulmagic.extend.markManaDataDirty
+import cn.coostack.usefulmagic.extend.syncManaDataToClient
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes
 import cn.coostack.usefulmagic.items.UsefulMagicItemGroups
 import cn.coostack.usefulmagic.items.UsefulMagicItems
@@ -77,14 +77,14 @@ object UsefulMagicFabric : ModInitializer {
         ServerPlayConnectionEvents.JOIN.register { h, _, _ ->
             val player = h.player
             state.getDataFromServer(player.uuid)
-            player.markManaDataDirty()
+            player.syncManaDataToClient()
         }
         ServerPlayerEvents.COPY_FROM.register { oldPlayer, newPlayer, _ ->
             newPlayer.copyManaDataFrom(oldPlayer)
-            newPlayer.markManaDataDirty()
+            newPlayer.syncManaDataToClient()
         }
         ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register { player, _, _ ->
-            player.markManaDataDirty()
+            player.syncManaDataToClient()
         }
         ServerPlayConnectionEvents.DISCONNECT.register { handler, server ->
             val player = handler.player ?: return@register

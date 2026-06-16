@@ -8,11 +8,13 @@ import cn.coostack.usefulmagic.blocks.entity.MagicCoreBlockEntityRenderer
 import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
 import cn.coostack.usefulmagic.blocks.entity.formation.renderer.CrystalEntityRenderer
 import cn.coostack.usefulmagic.client.tooltip.NeoLoadedMagicClientTooltip
+import cn.coostack.usefulmagic.client.tooltip.NeoSpellBagClientTooltip
 import cn.coostack.usefulmagic.entity.MagicBookEntityModel
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityLayers
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
 import cn.coostack.usefulmagic.entity.custom.renderer.*
 import cn.coostack.usefulmagic.items.UsefulMagicItemGroups
+import cn.coostack.usefulmagic.items.prop.SpellBagTooltip
 import cn.coostack.usefulmagic.items.weapon.wands.LoadedMagicTooltip
 import cn.coostack.usefulmagic.particles.particle.UsefulMagicParticleTypes
 import cn.coostack.usefulmagic.particles.particle.WaveParticleProvider
@@ -77,6 +79,9 @@ object ClientInitializedListener {
     fun registerTooltipComponent(event: RegisterClientTooltipComponentFactoriesEvent) {
         event.register(LoadedMagicTooltip::class.java) { tooltip ->
             NeoLoadedMagicClientTooltip(tooltip.magicStack)
+        }
+        event.register(SpellBagTooltip::class.java) { tooltip ->
+            NeoSpellBagClientTooltip(tooltip)
         }
     }
 

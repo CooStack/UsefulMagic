@@ -1,7 +1,9 @@
 package cn.coostack.usefulmagic.listener.server
 
 import cn.coostack.usefulmagic.UsefulMagic
+import cn.coostack.usefulmagic.UsefulMagic.state
 import cn.coostack.usefulmagic.extend.copyManaDataFrom
+import cn.coostack.usefulmagic.extend.syncManaDataToClient
 import cn.coostack.usefulmagic.listener.DefendMagicListener
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.common.EventBusSubscriber
@@ -20,5 +22,17 @@ object PlayerListener {
     @SubscribeEvent
     fun onClone(event: PlayerEvent.Clone) {
         event.entity.copyManaDataFrom(event.original)
+        event.entity.syncManaDataToClient()
+    }
+
+    @SubscribeEvent
+    fun onLogin(event: PlayerEvent.PlayerLoggedInEvent) {
+        state.getDataFromServer(event.entity.uuid)
+        event.entity.syncManaDataToClient()
+    }
+
+    @SubscribeEvent
+    fun onChangedDimension(event: PlayerEvent.PlayerChangedDimensionEvent) {
+        event.entity.syncManaDataToClient()
     }
 }

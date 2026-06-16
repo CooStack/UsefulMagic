@@ -2,10 +2,12 @@ package cn.coostack.usefulmagic.extend
 
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.usefulmagic.data.tracked.CooTrackerHolder
+import cn.coostack.usefulmagic.data.tracked.TrackerManager
 import cn.coostack.usefulmagic.entity.MagicEntityDataInit
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.phys.HitResult
@@ -102,6 +104,12 @@ fun Entity.resetChargeState() {
     chargingTick = 0
     chargedItem = ItemStack.EMPTY
     chargedItemIdentity = 0
+    if (!level().isClientSide) {
+        TrackerManager.applyHolder(this)
+        if (this is Player) {
+            TrackerManager.schedulePlayerChargeStateResync(this)
+        }
+    }
 }
 
 fun Entity.canSee(another: Entity): Boolean {

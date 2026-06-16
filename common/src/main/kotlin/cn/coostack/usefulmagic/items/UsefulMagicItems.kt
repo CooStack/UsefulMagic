@@ -9,11 +9,12 @@ import cn.coostack.usefulmagic.items.weapon.MagicAxe
 import cn.coostack.usefulmagic.items.weapon.magic.*
 import cn.coostack.usefulmagic.items.weapon.wands.MagicWand
 import cn.coostack.usefulmagic.profile.PreferMagicData
+import net.minecraft.core.component.DataComponents
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.AxeItem
 import net.minecraft.world.item.Item
-import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Rarity
+import net.minecraft.world.item.component.ItemContainerContents
 import java.util.function.Supplier
 
 object UsefulMagicItems {
@@ -256,8 +257,6 @@ object UsefulMagicItems {
                     UsefulMagicDataComponentTypes.WAND_REDUCTION.get(), scaledWandReduction(0.0)
                 ).component(
                     UsefulMagicDataComponentTypes.WAND_SPEED_FACTOR.get(), scaledWandSpeedFactor(1.25)
-                ).component(
-                    UsefulMagicDataComponentTypes.WAND_MAGIC.get(), ItemStack.EMPTY
                 )
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
@@ -279,8 +278,6 @@ object UsefulMagicItems {
                     UsefulMagicDataComponentTypes.WAND_REDUCTION.get(), scaledWandReduction(0.05)
                 ).component(
                     UsefulMagicDataComponentTypes.WAND_SPEED_FACTOR.get(), scaledWandSpeedFactor(0.91)
-                ).component(
-                    UsefulMagicDataComponentTypes.WAND_MAGIC.get(), ItemStack.EMPTY
                 )
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
@@ -303,8 +300,6 @@ object UsefulMagicItems {
                     UsefulMagicDataComponentTypes.WAND_REDUCTION.get(), scaledWandReduction(0.1)
                 ).component(
                     UsefulMagicDataComponentTypes.WAND_SPEED_FACTOR.get(), scaledWandSpeedFactor(0.67)
-                ).component(
-                    UsefulMagicDataComponentTypes.WAND_MAGIC.get(), ItemStack.EMPTY
                 )
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
@@ -326,8 +321,6 @@ object UsefulMagicItems {
                     UsefulMagicDataComponentTypes.WAND_REDUCTION.get(), scaledWandReduction(0.18)
                 ).component(
                     UsefulMagicDataComponentTypes.WAND_SPEED_FACTOR.get(), scaledWandSpeedFactor(0.45)
-                ).component(
-                    UsefulMagicDataComponentTypes.WAND_MAGIC.get(), ItemStack.EMPTY
                 )
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
@@ -350,8 +343,6 @@ object UsefulMagicItems {
                     UsefulMagicDataComponentTypes.WAND_REDUCTION.get(), scaledWandReduction(-0.1)
                 ).component(
                     UsefulMagicDataComponentTypes.WAND_SPEED_FACTOR.get(), scaledWandSpeedFactor(0.238)
-                ).component(
-                    UsefulMagicDataComponentTypes.WAND_MAGIC.get(), ItemStack.EMPTY
                 )
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
@@ -374,8 +365,6 @@ object UsefulMagicItems {
                     UsefulMagicDataComponentTypes.WAND_REDUCTION.get(), scaledWandReduction(0.3)
                 ).component(
                     UsefulMagicDataComponentTypes.WAND_SPEED_FACTOR.get(), scaledWandSpeedFactor(0.333)
-                ).component(
-                    UsefulMagicDataComponentTypes.WAND_MAGIC.get(), ItemStack.EMPTY
                 )
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
@@ -401,8 +390,6 @@ object UsefulMagicItems {
                     UsefulMagicDataComponentTypes.WAND_REDUCTION.get(), scaledWandReduction(0.4)
                 ).component(
                     UsefulMagicDataComponentTypes.WAND_SPEED_FACTOR.get(), scaledWandSpeedFactor(0.125)
-                ).component(
-                    UsefulMagicDataComponentTypes.WAND_MAGIC.get(), ItemStack.EMPTY
                 )
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
@@ -445,8 +432,6 @@ object UsefulMagicItems {
                     UsefulMagicDataComponentTypes.WAND_REDUCTION.get(), scaledWandReduction(0.4)
                 ).component(
                     UsefulMagicDataComponentTypes.WAND_SPEED_FACTOR.get(), scaledWandSpeedFactor(0.125)
-                ).component(
-                    UsefulMagicDataComponentTypes.WAND_MAGIC.get(), ItemStack.EMPTY
                 )
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
@@ -472,8 +457,6 @@ object UsefulMagicItems {
                     UsefulMagicDataComponentTypes.WAND_REDUCTION.get(), scaledWandReduction(0.42)
                 ).component(
                     UsefulMagicDataComponentTypes.WAND_SPEED_FACTOR.get(), scaledWandSpeedFactor(0.124)
-                ).component(
-                    UsefulMagicDataComponentTypes.WAND_MAGIC.get(), ItemStack.EMPTY
                 )
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
@@ -500,8 +483,6 @@ object UsefulMagicItems {
                     UsefulMagicDataComponentTypes.WAND_REDUCTION.get(), scaledWandReduction(0.4)
                 ).component(
                     UsefulMagicDataComponentTypes.WAND_SPEED_FACTOR.get(), scaledWandSpeedFactor(0.125)
-                ).component(
-                    UsefulMagicDataComponentTypes.WAND_MAGIC.get(), ItemStack.EMPTY
                 )
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
@@ -529,8 +510,6 @@ object UsefulMagicItems {
                     UsefulMagicDataComponentTypes.WAND_REDUCTION.get(), scaledWandReduction(0.4)
                 ).component(
                     UsefulMagicDataComponentTypes.WAND_SPEED_FACTOR.get(), scaledWandSpeedFactor(0.125)
-                ).component(
-                    UsefulMagicDataComponentTypes.WAND_MAGIC.get(), ItemStack.EMPTY
                 )
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
@@ -558,8 +537,6 @@ object UsefulMagicItems {
                     UsefulMagicDataComponentTypes.WAND_REDUCTION.get(), scaledWandReduction(0.4)
                 ).component(
                     UsefulMagicDataComponentTypes.WAND_SPEED_FACTOR.get(), scaledWandSpeedFactor(0.125)
-                ).component(
-                    UsefulMagicDataComponentTypes.WAND_MAGIC.get(), ItemStack.EMPTY
                 )
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
@@ -587,8 +564,6 @@ object UsefulMagicItems {
                     UsefulMagicDataComponentTypes.WAND_REDUCTION.get(), scaledWandReduction(0.45)
                 ).component(
                     UsefulMagicDataComponentTypes.WAND_SPEED_FACTOR.get(), scaledWandSpeedFactor(0.122)
-                ).component(
-                    UsefulMagicDataComponentTypes.WAND_MAGIC.get(), ItemStack.EMPTY
                 )
                 .component(
                     UsefulMagicDataComponentTypes.WAND_PREFER.get(),
@@ -705,6 +680,17 @@ object UsefulMagicItems {
     val FRIEND_BOARD = register(
         "friend_board"
     ) { FriendBoardItem() }
+
+    @JvmField
+    val SPELL_BAG = register(
+        "spell_bag"
+    ) {
+        SpellBagItem(
+            Item.Properties()
+                .stacksTo(1)
+                .component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)
+        )
+    }
 
     @JvmField
     val SKY_FALLING_RUNE = register(

@@ -5,6 +5,7 @@ import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
 import cn.coostack.usefulmagic.entity.custom.UnlimitHealthEntity
 import cn.coostack.usefulmagic.entity.custom.dragon.goal.MagicDragonAttackGoal
+import cn.coostack.usefulmagic.entity.custom.dragon.phases.DragonShotPhase
 import cn.coostack.usefulmagic.entity.custom.dragon.phases.DragonSimpleFlightPhase
 import cn.coostack.usefulmagic.entity.custom.dragon.skills.*
 import cn.coostack.usefulmagic.entity.util.phases.PhaseManager
@@ -30,11 +31,7 @@ import net.minecraft.world.BossEvent
 import net.minecraft.world.DifficultyInstance
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.damagesource.DamageTypes
-import net.minecraft.world.entity.EntityType
-import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.entity.MobSpawnType
-import net.minecraft.world.entity.PathfinderMob
-import net.minecraft.world.entity.SpawnGroupData
+import net.minecraft.world.entity.*
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.ai.goal.FloatGoal
@@ -86,6 +83,8 @@ class MagicDragonEntity(
         BossEvent.BossBarColor.WHITE,
         BossEvent.BossBarOverlay.PROGRESS
     )
+
+
     var skillManager: EntitySkillManager = EntityQueueSkillManager(this)
 
     var dragonMaxHealth: Float
@@ -137,6 +136,10 @@ class MagicDragonEntity(
     var dieSkillPlayed: Boolean
         get() = entityData.get(DIE_SKILL_PLAYED)
         set(value) = entityData.set(DIE_SKILL_PLAYED, value)
+
+    var dragonSpawnShot: Boolean
+        get() = entityData.get(DRAGON_SPAWN_SHOT)
+        set(value) = entityData.set(DRAGON_SPAWN_SHOT, value)
 
     private var stunStar: StunStarsRenderEntity? = null
 
@@ -263,6 +266,11 @@ class MagicDragonEntity(
         )
 
         @JvmStatic
+        private val DRAGON_SPAWN_SHOT = SynchedEntityData.defineId(
+            MagicDragonEntity::class.java, EntityDataSerializers.BOOLEAN
+        )
+
+        @JvmStatic
         private val ANIMATE_TICKING = SynchedEntityData.defineId(
             MagicDragonEntity::class.java, EntityDataSerializers.INT
         )
@@ -367,6 +375,7 @@ class MagicDragonEntity(
         builder.define(IMPACT_CD, 0)
         builder.define(ANIMATE_TICKING, 0)
         builder.define(DAMAGE_REDUCTION, 0f)
+        builder.define(DRAGON_SPAWN_SHOT, false)
     }
 
     fun syncPhaseState() {
@@ -389,6 +398,7 @@ class MagicDragonEntity(
         nbt.putInt("impact_cd", impactCD)
         nbt.putInt("animate_ticking", animateTicking)
         nbt.putUUID("cache_uuid", skillManager.cacheUUID)
+        nbt.putBoolean("dragon_spawn_shot", dragonSpawnShot)
         nbt.putBoolean("has_spawn_position", entityData.get(HAS_SPAWN_POSITION))
         if (entityData.get(HAS_SPAWN_POSITION)) {
             nbt.putDouble("spawn_x", spawnPosition.x)
@@ -416,6 +426,7 @@ class MagicDragonEntity(
         impactCD = if (nbt.contains("impact_cd")) nbt.getInt("impact_cd") else 0
         animateTicking = if (nbt.contains("animate_ticking")) nbt.getInt("animate_ticking") else 0
         damageReduction = if (nbt.contains("damage_reduction")) nbt.getFloat("damage_reduction") else 0f
+        dragonSpawnShot = if (nbt.contains("dragon_spawn_shot")) nbt.getBoolean("dragon_spawn_shot") else false
         if (nbt.getBoolean("has_spawn_position")) {
             spawnPosition = Vec3(
                 nbt.getDouble("spawn_x"),
@@ -481,6 +492,8 @@ class MagicDragonEntity(
         clearFire()
         super.tick()
         clearFire()
+
+
         if (dieSkillPlayed) return
         if (impactCD > 0) {
             impactCD--
@@ -534,6 +547,13 @@ class MagicDragonEntity(
             phaseManager.tickPhase()
         }
 
+        if (!dragonSpawnShot) {
+            if (phaseManager.getCurrentPhaseID() != DragonShotPhase.ID) {
+                // 这个phase会设定dragonSpawnShot的值
+                phaseManager.forceSetPhase(DragonShotPhase())
+            }
+            return
+        }
         if (level().isClientSide) {
             return
         }

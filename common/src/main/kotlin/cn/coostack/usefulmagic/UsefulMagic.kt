@@ -1,6 +1,5 @@
 package cn.coostack.usefulmagic
 
-import cn.coostack.cooparticlesapi.key.CooKeyBindingManager
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.usefulmagic.blocks.UsefulMagicBlocks
 import cn.coostack.usefulmagic.data.tracked.TrackerManager
@@ -28,11 +27,13 @@ import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import cn.coostack.usefulmagic.states.ManaServerState
 import cn.coostack.usefulmagic.systems.tick.ControlerTickSystem
 import cn.coostack.usefulmagic.utils.ComboUtil
-import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.server.MinecraftServer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+
+// TODO 龙在死亡后的闪电释放音效修改
+// TODO 优化聚能释放的视觉效果
 object UsefulMagic {
     @JvmField
     val logger: Logger = LoggerFactory.getLogger("UsefulMagic")
@@ -45,7 +46,6 @@ object UsefulMagic {
         loadRegistries()
         loadStyles()
         PhaseRegistries.init()
-
     }
 
     fun setupServer(server: MinecraftServer) {

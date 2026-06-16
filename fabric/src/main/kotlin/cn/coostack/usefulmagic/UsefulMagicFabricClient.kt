@@ -8,6 +8,7 @@ import cn.coostack.usefulmagic.blocks.entity.MagicCoreBlockEntityRenderer
 import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
 import cn.coostack.usefulmagic.blocks.entity.formation.renderer.CrystalEntityRenderer
 import cn.coostack.usefulmagic.client.tooltip.FabricLoadedMagicClientTooltip
+import cn.coostack.usefulmagic.client.tooltip.FabricSpellBagClientTooltip
 import cn.coostack.usefulmagic.entity.MagicBookEntityModel
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityLayers
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
@@ -16,6 +17,8 @@ import cn.coostack.usefulmagic.gui.mana.ManaBarCallback
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes.LARGE_REVIVE_USE_COUNT
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import cn.coostack.usefulmagic.items.consumer.LargeManaRevive
+import cn.coostack.usefulmagic.items.prop.SpellBagItem
+import cn.coostack.usefulmagic.items.prop.SpellBagTooltip
 import cn.coostack.usefulmagic.items.weapon.wands.LoadedMagicTooltip
 import cn.coostack.usefulmagic.packet.listener.client.*
 import cn.coostack.usefulmagic.packet.s2c.*
@@ -161,6 +164,13 @@ object UsefulMagicFabricClient : ClientModInitializer {
                 1f - (count.toFloat() / LargeManaRevive.MAX_USAGE)
             }
         )
+        FabricModelPredicateProviderRegistry.register(
+            UsefulMagicItems.SPELL_BAG.getItem(),
+            ResourceLocation.withDefaultNamespace("open"),
+            { stack, world, entity, seed ->
+                if (SpellBagItem.hasMagicContents(stack)) 0f else 1f
+            }
+        )
         UsefulMagic.logger.debug("模型谓词注册完成")
     }
 
@@ -168,6 +178,8 @@ object UsefulMagicFabricClient : ClientModInitializer {
         TooltipComponentCallback.EVENT.register(TooltipComponentCallback { data ->
             if (data is LoadedMagicTooltip) {
                 FabricLoadedMagicClientTooltip(data.magicStack)
+            } else if (data is SpellBagTooltip) {
+                FabricSpellBagClientTooltip(data)
             } else {
                 null
             }

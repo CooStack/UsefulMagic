@@ -1,5 +1,6 @@
 package cn.coostack.usefulmagic.extend
 
+import cn.coostack.usefulmagic.data.tracked.TrackerManager
 import cn.coostack.usefulmagic.entity.MagicEntityDataInit
 import net.minecraft.world.entity.player.Player
 
@@ -37,6 +38,12 @@ fun Player.markManaDataDirty() {
     tracker.trackedDirties[MagicEntityDataInit.MAX_MANA.id] = true
     tracker.trackedDirties[MagicEntityDataInit.CURRENT_MANA.id] = true
     tracker.trackedDirties[MagicEntityDataInit.MANA_ABSORPTION_RATE.id] = true
+}
+
+fun Player.syncManaDataToClient() {
+    markManaDataDirty()
+    TrackerManager.applyHolder(this)
+    TrackerManager.schedulePlayerManaResync(this)
 }
 
 fun Player.isFullMana(): Boolean = mana >= maxMana

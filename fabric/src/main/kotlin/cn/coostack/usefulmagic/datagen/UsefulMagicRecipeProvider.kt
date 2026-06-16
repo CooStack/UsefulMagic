@@ -11,6 +11,7 @@ import net.minecraft.advancements.critereon.InventoryChangeTrigger
 import net.minecraft.advancements.critereon.ItemPredicate
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger
 import net.minecraft.core.HolderLookup
+import net.minecraft.core.NonNullList
 import net.minecraft.data.recipes.RecipeBuilder
 import net.minecraft.data.recipes.RecipeCategory
 import net.minecraft.data.recipes.RecipeOutput
@@ -22,6 +23,7 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.crafting.Ingredient
 import net.minecraft.world.item.crafting.ShapedRecipe
 import net.minecraft.world.item.crafting.ShapedRecipePattern
+import net.minecraft.world.item.crafting.ShapelessRecipe
 import net.minecraft.world.level.ItemLike
 import java.util.concurrent.CompletableFuture
 
@@ -31,10 +33,22 @@ class UsefulMagicRecipeProvider(
 ) :
     FabricRecipeProvider(output, registriesFuture) {
     override fun buildRecipes(exporter: RecipeOutput) {
+
+        saveShapeless(
+            exporter, RecipeCategory.COMBAT, UsefulMagicItems.SPELL_BAG.getItem(),
+            listOf(item(Items.LEATHER), item(Items.STRING), item(UsefulMagicItems.MANA_STAR.getItem())),
+            conditionsFromItem(Items.LEATHER)
+        )
         saveShaped(
             exporter, RecipeCategory.MISC, UsefulMagicItems.TUTORIAL_BOOK.getItem(),
             listOf(" T ", "YBR", " H "),
-            mapOf('T' to item(Items.SUGAR), 'Y' to item(Items.GLOWSTONE_DUST), 'R' to item(Items.REDSTONE), 'H' to item(Items.GUNPOWDER), 'B' to item(Items.BOOK)),
+            mapOf(
+                'T' to item(Items.SUGAR),
+                'Y' to item(Items.GLOWSTONE_DUST),
+                'R' to item(Items.REDSTONE),
+                'H' to item(Items.GUNPOWDER),
+                'B' to item(Items.BOOK)
+            ),
             conditionsFromItem(Items.BOOK)
         )
         saveShaped(
@@ -46,13 +60,21 @@ class UsefulMagicRecipeProvider(
         saveShaped(
             exporter, RecipeCategory.COMBAT, UsefulMagicItems.STONE_WAND.getItem(),
             listOf(" SS", " WS", "# S"),
-            mapOf('S' to item(Items.COBBLESTONE), '#' to item(Items.STICK), 'W' to item(UsefulMagicItems.WOODEN_WAND.getItem())),
+            mapOf(
+                'S' to item(Items.COBBLESTONE),
+                '#' to item(Items.STICK),
+                'W' to item(UsefulMagicItems.WOODEN_WAND.getItem())
+            ),
             conditionsFromItem(UsefulMagicItems.WOODEN_WAND.getItem())
         )
         saveShaped(
             exporter, RecipeCategory.COMBAT, UsefulMagicItems.COPPER_WAND.getItem(),
             listOf(" CC", " SC", "E C"),
-            mapOf('C' to item(Items.COPPER_INGOT), 'E' to item(Items.ENDER_PEARL), 'S' to item(UsefulMagicItems.STONE_WAND.getItem())),
+            mapOf(
+                'C' to item(Items.COPPER_INGOT),
+                'E' to item(Items.ENDER_PEARL),
+                'S' to item(UsefulMagicItems.STONE_WAND.getItem())
+            ),
             conditionsFromItem(UsefulMagicItems.STONE_WAND.getItem())
         )
         saveShaped(
@@ -100,13 +122,21 @@ class UsefulMagicRecipeProvider(
         saveShaped(
             exporter, RecipeCategory.COMBAT, UsefulMagicItems.LASER_MAGIC.getItem(),
             listOf("BEB", "EME", "BEB"),
-            mapOf('E' to item(Items.ENDER_PEARL), 'B' to item(Items.BLAZE_ROD), 'M' to item(UsefulMagicItems.BARRAGE_MAGIC.getItem())),
+            mapOf(
+                'E' to item(Items.ENDER_PEARL),
+                'B' to item(Items.BLAZE_ROD),
+                'M' to item(UsefulMagicItems.BARRAGE_MAGIC.getItem())
+            ),
             conditionsFromItem(UsefulMagicItems.BARRAGE_MAGIC.getItem())
         )
         saveShaped(
             exporter, RecipeCategory.COMBAT, UsefulMagicItems.SWORD_QI_MAGIC.getItem(),
             listOf("AMA", "MSM", "AMA"),
-            mapOf('S' to item(Items.IRON_SWORD), 'A' to item(Items.AMETHYST_SHARD), 'M' to item(UsefulMagicItems.MANA_STAR.getItem())),
+            mapOf(
+                'S' to item(Items.IRON_SWORD),
+                'A' to item(Items.AMETHYST_SHARD),
+                'M' to item(UsefulMagicItems.MANA_STAR.getItem())
+            ),
             conditionsFromItem(Items.IRON_SWORD)
         )
         saveShaped(
@@ -228,6 +258,35 @@ class UsefulMagicRecipeProvider(
         return Ingredient.of(tag)
     }
 
+    private fun saveShapeless(
+        exporter: RecipeOutput,
+        category: RecipeCategory,
+        result: ItemLike,
+        ingredients: List<Ingredient>,
+        criterion: Criterion<*>
+    ) {
+        val id = RecipeBuilder.getDefaultRecipeId(result)
+        val advancement = exporter.advancement()
+            .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(id))
+            .addCriterion("has_item", criterion)
+            .rewards(AdvancementRewards.Builder.recipe(id))
+            .requirements(AdvancementRequirements.Strategy.OR)
+        val recipeIngredients = NonNullList.create<Ingredient>()
+        recipeIngredients.addAll(ingredients)
+        val recipe = ShapelessRecipe(
+            "",
+            RecipeBuilder.determineBookCategory(category),
+            ItemStack(result.asItem()),
+            recipeIngredients
+        )
+
+        exporter.accept(
+            id,
+            recipe,
+            advancement.build(id.withPrefix("recipes/${category.folderName}/"))
+        )
+    }
+
     private fun saveShaped(
         exporter: RecipeOutput,
         category: RecipeCategory,
@@ -265,7 +324,7 @@ class UsefulMagicRecipeProvider(
         exporter.accept(
             id,
             recipe,
-            advancement.build(id.withPrefix("recipes/${category.getFolderName()}/"))
+            advancement.build(id.withPrefix("recipes/${category.folderName}/"))
         )
     }
 

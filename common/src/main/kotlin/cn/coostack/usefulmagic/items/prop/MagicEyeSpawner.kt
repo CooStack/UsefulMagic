@@ -29,7 +29,7 @@ class MagicEyeSpawner(properties: Properties) : Item(properties) {
 
     override fun use(level: Level, player: Player, usedHand: InteractionHand): InteractionResultHolder<ItemStack> {
         if (level.dimension() != Level.END) {
-            return InteractionResultHolder.pass(ItemStack.EMPTY)
+            return super.use(level, player, usedHand)
         }
 
         player.startUsingItem(usedHand)
@@ -70,6 +70,9 @@ class MagicEyeSpawner(properties: Properties) : Item(properties) {
             if (!livingEntity.hasInfiniteMaterials()) {
                 stack.shrink(1)
             }
+            if (livingEntity is Player) {
+                livingEntity.cooldowns.addCooldown(this, 20)
+            }
         } else {
             ServerSoundManager.instance(
                 SoundEvents.ENDERMAN_TELEPORT,
@@ -79,9 +82,7 @@ class MagicEyeSpawner(properties: Properties) : Item(properties) {
                 .bindToEntity(livingEntity)
                 .spawn()
         }
-        if (livingEntity is Player) {
-            livingEntity.cooldowns.addCooldown(this, 20)
-        }
+
         return stack
     }
 

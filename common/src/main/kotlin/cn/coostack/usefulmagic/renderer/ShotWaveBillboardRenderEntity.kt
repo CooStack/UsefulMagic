@@ -58,6 +58,12 @@ class ShotWaveBillboardRenderEntity(
     var roll: Float = randomRoll()
 
     @CodecField
+    var rollSpeed: Float = DEFAULT_ROLL_SPEED
+
+    @CodecField
+    var useWave2Texture: Boolean = DEFAULT_USE_WAVE_2_TEXTURE
+
+    @CodecField
     var alpha: Double = 1.0
 
     @CodecField
@@ -68,6 +74,9 @@ class ShotWaveBillboardRenderEntity(
 
     @CodecField
     var discardStartTick: Int = 0
+
+    @CodecField
+    var discardStartAlpha: Float = 1.0f
 
     @Deprecated("Use limitScale instead.")
     var maxScale: Float
@@ -130,6 +139,8 @@ class ShotWaveBillboardRenderEntity(
         roll: Float? = null,
         alpha: Double = this.alpha,
         initialScale: Float? = null,
+        useWave2Texture: Boolean = this.useWave2Texture,
+        rollSpeed: Float = this.rollSpeed,
     ): ShotWaveBillboardRenderEntity {
         this.fadeInTick = fadeInTick.coerceAtLeast(0)
         this.fadeOutTick = fadeOutTick.coerceAtLeast(0)
@@ -142,10 +153,13 @@ class ShotWaveBillboardRenderEntity(
             this.scaleSpeed,
         )
         this.roll = roll ?: randomRoll()
+        this.rollSpeed = rollSpeed
+        this.useWave2Texture = useWave2Texture
         this.alpha = alpha.coerceIn(0.0, 1.0)
         this.discardFadeTick = this.fadeOutTick
         this.discarding = false
         this.discardStartTick = 0
+        this.discardStartAlpha = 1.0f
         syncRenderRange()
         markDirty()
         return this
@@ -172,13 +186,13 @@ class ShotWaveBillboardRenderEntity(
         RenderSystem.depthMask(false)
         try {
             shotWaveShader.useOnContext {
-                RenderSystem.setShaderTexture(0, SHOT_WAVE_TEXTURE)
+                RenderSystem.setShaderTexture(0, if (useWave2Texture) SHOT_WAVE_2_TEXTURE else SHOT_WAVE_TEXTURE)
                 setMatrix4("modelMatrix", modelMatrix)
                 setMatrix4("viewMatrix", viewMatrix)
                 setMatrix4("projMatrix", projMatrix)
                 setMatrix3f("inverseViewRotationMatrix", inverseViewRotationMatrix)
                 setFloat2("scale", Vector2f(scale, scale))
-                setFloat("roll", roll)
+                setFloat("roll", roll + time * rollSpeed)
                 setFloat("alpha", visibleAlpha)
                 setFloat("time", time)
                 setInt("shotWaveTexture", 0)
@@ -208,8 +222,15 @@ class ShotWaveBillboardRenderEntity(
     }
 
     private fun syncRenderRange() {
-        renderRange = maxOf(initialScale, limitScale).coerceAtLeast(MIN_SCALE).toDouble() *
+        renderRange = expectedMaxScale().coerceAtLeast(MIN_SCALE).toDouble() *
                 RENDER_RANGE_SCALE + RENDER_RANGE_PADDING
+    }
+
+    private fun expectedMaxScale(): Float {
+        if (scaleSpeed <= 0f) {
+            return maxOf(initialScale, limitScale)
+        }
+        return maxOf(initialScale, limitScale, initialScale + totalDurationTicks().coerceAtLeast(1) * scaleSpeed)
     }
 
     private fun totalDurationTicks(): Int {
@@ -223,7 +244,7 @@ class ShotWaveBillboardRenderEntity(
     private fun currentScale(tickDelta: Float): Float {
         val rawScale = initialScale + currentTimeline(tickDelta) * scaleSpeed
         return if (scaleSpeed >= 0f) {
-            rawScale.coerceAtMost(limitScale)
+            rawScale
         } else {
             rawScale.coerceAtLeast(limitScale)
         }.coerceAtLeast(0f)
@@ -237,9 +258,9 @@ class ShotWaveBillboardRenderEntity(
             val fade = if (discardFadeTick <= 0) {
                 0f
             } else {
-                1f - smoothstep(0f, discardFadeTick.toFloat(), elapsed)
+                1f - (elapsed / discardFadeTick.toFloat()).coerceIn(0f, 1f)
             }
-            return scheduledAlpha * fade
+            return discardStartAlpha * fade
         }
         return scheduledAlpha
     }
@@ -264,6 +285,7 @@ class ShotWaveBillboardRenderEntity(
             return
         }
         discardFadeTick = fadeTicks.coerceAtLeast(0)
+        discardStartAlpha = scheduledAlpha(currentTimeline(0f))
         discardStartTick = age
         discarding = true
         if (discardFadeTick == 0) {
@@ -309,6 +331,8 @@ class ShotWaveBillboardRenderEntity(
         private const val DEFAULT_INITIAL_SCALE = 0.0f
         private const val DEFAULT_TIMEOUT_TICK = 12
         private const val DEFAULT_SCALE_SPEED = 0.34f
+        private const val DEFAULT_ROLL_SPEED = 0.16f
+        private const val DEFAULT_USE_WAVE_2_TEXTURE = true
         private const val MIN_VISIBLE_ALPHA = 0.001f
         private const val MIN_SCALE = 0.001f
         private const val MIN_SCALE_SPEED = 0.0001f
@@ -323,6 +347,10 @@ class ShotWaveBillboardRenderEntity(
         @JvmField
         val SHOT_WAVE_TEXTURE: ResourceLocation =
             ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "textures/effect/shot_wave.png")
+
+        @JvmField
+        val SHOT_WAVE_2_TEXTURE: ResourceLocation =
+            ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "textures/effect/shot_wave_2.png")
 
         @JvmField
         var initialized: Boolean = false
@@ -342,9 +370,22 @@ class ShotWaveBillboardRenderEntity(
             roll: Float? = null,
             alpha: Double = 1.0,
             initialScale: Float? = null,
+            useWave2Texture: Boolean = DEFAULT_USE_WAVE_2_TEXTURE,
+            rollSpeed: Float = DEFAULT_ROLL_SPEED,
         ): ShotWaveBillboardRenderEntity {
             return ShotWaveBillboardRenderEntity(world, pos)
-                .configure(fadeInTick, fadeOutTick, limitScale, timeoutTick, scaleSpeed, roll, alpha, initialScale)
+                .configure(
+                    fadeInTick = fadeInTick,
+                    fadeOutTick = fadeOutTick,
+                    limitScale = limitScale,
+                    timeoutTick = timeoutTick,
+                    scaleSpeed = scaleSpeed,
+                    roll = roll,
+                    alpha = alpha,
+                    initialScale = initialScale,
+                    useWave2Texture = useWave2Texture,
+                    rollSpeed = rollSpeed,
+                )
                 .also(ServerRenderEntityManager::spawn)
         }
 

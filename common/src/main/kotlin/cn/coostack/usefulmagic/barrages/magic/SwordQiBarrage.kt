@@ -4,11 +4,9 @@ import cn.coostack.cooparticlesapi.api.controler.server.ServerControler
 import cn.coostack.cooparticlesapi.barrages.BarrageHitResult
 import cn.coostack.cooparticlesapi.barrages.BarrageOption
 import cn.coostack.cooparticlesapi.barrages.HitBox
-import cn.coostack.cooparticlesapi.extend.asRelative
-import cn.coostack.cooparticlesapi.extend.times
 import cn.coostack.cooparticlesapi.utils.PhysicsUtil
-import cn.coostack.usefulmagic.extend.boxCenterPosition
 import cn.coostack.usefulmagic.barrages.api.EntityMagicDamagedBarrage
+import cn.coostack.usefulmagic.extend.boxCenterPosition
 import cn.coostack.usefulmagic.particles.composition.magic.SwordQiComposition
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import cn.coostack.usefulmagic.utils.FriendFilterHelper
@@ -18,12 +16,13 @@ import net.minecraft.sounds.SoundSource
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
+import cn.coostack.cooparticlesapi.extend.*
 
 /**
  * 剑气弹幕：短时间追踪目标，并在命中时造成魔法伤害。
  */
 class SwordQiBarrage(loc: Vec3, world: ServerLevel, damage: Double, shooter: LivingEntity) :
-    cn.coostack.usefulmagic.barrages.api.EntityMagicDamagedBarrage(
+    EntityMagicDamagedBarrage(
         loc, world, BarrageOption()
             .barrageIgnored(false)
             .acrossEmptyCollectionShape()

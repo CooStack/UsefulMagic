@@ -19,6 +19,7 @@ import cn.coostack.usefulmagic.systems.tick.ControlerStatus
 import cn.coostack.usefulmagic.systems.tick.ControlerTickSystem
 import cn.coostack.usefulmagic.utils.FriendFilterHelper
 import cn.coostack.usefulmagic.utils.MagicHelper
+import cn.coostack.usefulmagic.utils.MathUtil
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.sounds.SoundSource
 import net.minecraft.world.entity.LivingEntity
@@ -230,20 +231,14 @@ class LightBeamMagic(properties: Properties) : MagicItem(properties) {
         }
 
         // 伤害实体
-        val direction = end - start
-        val laserBox = AABB(start, end).inflate(r)
+        val laserBox = AABB(start, end).inflate(r * 2)
         val damageSource = UsefulMagicDamageSources.entityDamage(
             source.level(), source, source
         )
         source.level().getEntitiesOfClass(LivingEntity::class.java, laserBox) {
             it.uuid != source.uuid && it.isAlive && FriendFilterHelper.filterNotFriend(source, it)
         }.forEach { entity ->
-            val entityCenter = entity.boundingBox.center
-            val distanceOnLaser = (entityCenter - start).dot(direction.normalize())
-            if (distanceOnLaser !in 0.0..direction.length()) return@forEach
-
-            val closestPoint = start.add(direction.normalize().scale(distanceOnLaser))
-            if (entityCenter.distanceToSqr(closestPoint) <= r * r) {
+            if (MathUtil.isIntersectsBox(start, end, r, entity.boundingBox)) {
                 if (entity.hurt(damageSource, damage.toFloat())) {
                     entity.invulnerableTime = 5
                 }
