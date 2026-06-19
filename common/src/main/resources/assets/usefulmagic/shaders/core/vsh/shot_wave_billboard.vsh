@@ -1,0 +1,29 @@
+#version 330 core
+
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec2 uv;
+
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 projMatrix;
+uniform mat3 inverseViewRotationMatrix;
+uniform vec2 scale = vec2(1.0);
+uniform float roll = 0.0;
+
+out vec2 vUv;
+out vec2 vLocalUv;
+
+vec2 rotate2d(vec2 value, float angle) {
+    float s = sin(angle);
+    float c = cos(angle);
+    return mat2(c, -s, s, c) * value;
+}
+
+void main() {
+    vec2 rotated = rotate2d(position.xy, roll);
+    vec3 billboardOffset = inverseViewRotationMatrix * vec3(rotated * scale, 0.0);
+    vec4 worldPos = modelMatrix * vec4(billboardOffset, 1.0);
+    vUv = uv;
+    vLocalUv = rotated;
+    gl_Position = projMatrix * viewMatrix * worldPos;
+}

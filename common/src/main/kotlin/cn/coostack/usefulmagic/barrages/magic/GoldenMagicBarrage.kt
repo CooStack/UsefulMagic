@@ -1,30 +1,25 @@
 package cn.coostack.usefulmagic.barrages.magic
 
 import cn.coostack.cooparticlesapi.api.controler.server.ServerControler
-import cn.coostack.cooparticlesapi.barrages.AbstractBarrage
 import cn.coostack.cooparticlesapi.barrages.BarrageHitResult
 import cn.coostack.cooparticlesapi.barrages.BarrageOption
 import cn.coostack.cooparticlesapi.barrages.HitBox
-import cn.coostack.cooparticlesapi.extend.asRelative
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
 import cn.coostack.cooparticlesapi.particles.impl.ControlableFallingDustEffect
+import cn.coostack.cooparticlesapi.supports.TextureSheetsEnum
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
-import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.display.magic.GoldenMagicBarrageDisplay
-import cn.coostack.usefulmagic.barrages.api.EntityMagicDamagedBarrage
 import cn.coostack.usefulmagic.particles.emitters.magic.BarrageTailEmitter
 import cn.coostack.usefulmagic.particles.emitters.magic.BlockFragmentEmitters
 import cn.coostack.usefulmagic.utils.FriendFilterHelper
 import net.minecraft.core.BlockPos
 import net.minecraft.server.level.ServerLevel
-import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.level.block.SoundType
 import net.minecraft.world.phys.Vec3
+import cn.coostack.cooparticlesapi.extend.*
 
 class GoldenMagicBarrage(loc: Vec3, world: ServerLevel, damage: Double, shooter: LivingEntity) :
     cn.coostack.usefulmagic.barrages.api.EntityMagicDamagedBarrage(
@@ -38,7 +33,7 @@ class GoldenMagicBarrage(loc: Vec3, world: ServerLevel, damage: Double, shooter:
     // 弹幕拖尾粒子发射器
     val tailEmitter = BarrageTailEmitter(loc, world).apply {
         template.color = Math3DUtil.colorOf(230, 230, 170)
-        template.setTextureSheet(CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT)
+        template.setTextureSheet(TextureSheetsEnum.ADDITION_BLEND_TRANSLUCENT)
     }
     var gen = false
 

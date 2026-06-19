@@ -19,22 +19,24 @@ import kotlin.random.Random
 
 @CooAutoRegister
 class MagicEyeHurtEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, world) {
-    val explode = ParticleCommandQueue()
-        .add(
-            ParticleNoiseCommand()
-                .strength(0.15)
-                .frequency(0.6)
-                .speed(0.12)
-                .affectY(1.0)
-                .clampSpeed(0.8)
-                .useLifeCurve(true)
-        )
-        .add(
-            ParticleDragCommand()
-                .damping(0.15)
-                .minSpeed(0.0)
-                .linear(0.0)
-        )
+    private fun buildExplodeQueue(): ParticleCommandQueue {
+        return ParticleCommandQueue()
+            .add(
+                ParticleNoiseCommand()
+                    .strength(0.15)
+                    .frequency(0.6)
+                    .speed(0.12)
+                    .affectY(1.0)
+                    .clampSpeed(0.8)
+                    .useLifeCurve(true)
+            )
+            .add(
+                ParticleDragCommand()
+                    .damping(0.15)
+                    .minSpeed(0.0)
+                    .linear(0.0)
+            )
+    }
     val particleOption = SimpleRandomParticleData().apply {
         minAge = 5
         maxAge = 15
@@ -54,6 +56,7 @@ class MagicEyeHurtEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, 
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
+        var explode: ParticleCommandQueue? = null
         controler.addPreTickAction {
             val colorLifeProgress =
                 if (this.lifetime <= 0) 1f else (this.currentAge.toFloat() / this.lifetime.toFloat()).coerceIn(0f, 1f)
@@ -66,7 +69,8 @@ class MagicEyeHurtEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, 
                     )
                 }
             }
-            explode.applyVelocity(data, this)
+            val queue = explode ?: buildExplodeQueue().also { explode = it }
+            queue.applyVelocity(data, this)
         }
     }
 

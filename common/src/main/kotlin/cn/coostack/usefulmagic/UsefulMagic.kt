@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory
 
 // TODO 龙在死亡后的闪电释放音效修改
 // TODO 优化聚能释放的视觉效果
+// TODO UsefulMagic 在服务器上有很多效果无法使用（还有崩服问题）
 object UsefulMagic {
     @JvmField
     val logger: Logger = LoggerFactory.getLogger("UsefulMagic")

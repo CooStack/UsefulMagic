@@ -16,22 +16,24 @@ import kotlin.random.Random
 
 @CooAutoRegister
 class StarryMeteoriteSplitEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, world) {
-    val command1 = ParticleCommandQueue()
-        .add(
-            ParticleNoiseCommand()
-                .strength(0.6)
-                .frequency(0.15)
-                .speed(0.12)
-                .affectY(1.0)
-                .clampSpeed(12.0)
-                .useLifeCurve(true)
-        )
-        .add(
-            ParticleDragCommand()
-                .damping(0.1)
-                .minSpeed(0.05)
-                .linear(0.0)
-        )
+    private fun buildCommandQueue(): ParticleCommandQueue {
+        return ParticleCommandQueue()
+            .add(
+                ParticleNoiseCommand()
+                    .strength(0.6)
+                    .frequency(0.15)
+                    .speed(0.12)
+                    .affectY(1.0)
+                    .clampSpeed(12.0)
+                    .useLifeCurve(true)
+            )
+            .add(
+                ParticleDragCommand()
+                    .damping(0.1)
+                    .minSpeed(0.05)
+                    .linear(0.0)
+            )
+    }
 
     override fun singleParticleAction(
         controler: ParticleControler,
@@ -41,6 +43,7 @@ class StarryMeteoriteSplitEmitter(pos: Vec3, world: Level?) : AutoParticleEmitte
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
+        var command: ParticleCommandQueue? = null
         controler.addPreTickAction {
             val colorLifeProgress = if (this.lifetime <= 0) 1f else (this.currentAge.toFloat() / this.lifetime.toFloat()).coerceIn(0f, 1f)
             when (data.sign) {
@@ -52,7 +55,8 @@ class StarryMeteoriteSplitEmitter(pos: Vec3, world: Level?) : AutoParticleEmitte
                     )
                 }
             }
-            command1.applyVelocity(data, this)
+            val queue = command ?: buildCommandQueue().also { command = it }
+            queue.applyVelocity(data, this)
         }
     }
 

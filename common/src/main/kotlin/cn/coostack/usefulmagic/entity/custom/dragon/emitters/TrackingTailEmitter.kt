@@ -58,26 +58,22 @@ class TrackingTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, 
         emittersInterpolator.setRefiner(2.5)
     }
 
-    /**
-     * 到尾巴就会散开
-     */
-    val command = ParticleCommandQueue()
-        .add(
-            ParticleDragCommand()
-                .damping(0.03)
-                .minSpeed(0.1)
-                .linear(0.0)
-        )
-        .add(
-            ParticleNoiseCommand()
-                .strength(noiseStrength)
-                .clampSpeed(16.20)
-        )
+    private fun buildCommandQueue(): ParticleCommandQueue {
+        return ParticleCommandQueue()
+            .add(
+                ParticleDragCommand()
+                    .damping(0.03)
+                    .minSpeed(0.1)
+                    .linear(0.0)
+            )
+            .add(
+                ParticleNoiseCommand()
+                    .strength(noiseStrength)
+                    .clampSpeed(16.20)
+            )
+    }
 
     override fun doTick() {
-        command.updateWithTypes<ParticleNoiseCommand> {
-            strength(noiseStrength)
-        }
         if (!arrive) {
             val nextV = PhysicsUtil.nextAttractVelocityNullable(
                 pos,
@@ -123,8 +119,13 @@ class TrackingTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, 
         posLerpProgress: Float
     ) {
         // 不断吸附到trackingTarget (设置多种吸附动作）
+        var command: ParticleCommandQueue? = null
         controler.addPreTickAction {
-            command.applyVelocity(data, this)
+            val queue = command ?: buildCommandQueue().also { command = it }
+            queue.updateWithTypes<ParticleNoiseCommand> {
+                strength(noiseStrength)
+            }
+            queue.applyVelocity(data, this)
         }
     }
 }

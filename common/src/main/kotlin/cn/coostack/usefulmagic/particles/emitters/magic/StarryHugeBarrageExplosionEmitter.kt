@@ -10,7 +10,6 @@ import cn.coostack.cooparticlesapi.particles.control.ParticleControler
 import cn.coostack.cooparticlesapi.particles.impl.*
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import net.minecraft.client.particle.ParticleRenderType
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
@@ -20,57 +19,65 @@ import kotlin.random.Random
 
 @CooAutoRegister
 class StarryHugeBarrageExplosionEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, world) {
-    val cloud = ParticleCommandQueue()
-        .add(
-            ParticleToroidalCirculationCommand()
-                .center{this.pos.add(0.0,15.0,0.0)}
-                .axis(Vec3(0.0, 1.0, 0.0))
-                .ringRadius(10.0)
-                .radialThickness(8.0)
-                .axialThickness(4.0)
-                .circulationStrength(-3.0)
-                .outwardStrength(2.0)
-                .upwardStrength(0.5)
-                .followStrength(1.5)
-                .maxStep(2.0)
-                .useLifeCurve(true)
-        )
-        .add(
-            ParticleNoiseCommand()
-                .strength(0.4)
-                .frequency(3.0)
-                .speed(5.0)
-                .affectY(1.0)
-                .clampSpeed(15.0)
-                .useLifeCurve(true)
-        )
-        .add(
-            ParticleDragCommand()
-                .damping(0.15)
-                .minSpeed(0.0)
-                .linear(0.0)
-        ) { data, particle ->
-            (run { val age = particle.currentAge; val maxAge = particle.lifetime; ((age >= 10)) })
-        }
+    private fun buildCloudQueue(): ParticleCommandQueue {
+        return ParticleCommandQueue()
+            .add(
+                ParticleToroidalCirculationCommand()
+                    .center { this.pos.add(0.0, 15.0, 0.0) }
+                    .axis(Vec3(0.0, 1.0, 0.0))
+                    .ringRadius(10.0)
+                    .radialThickness(8.0)
+                    .axialThickness(4.0)
+                    .circulationStrength(-3.0)
+                    .outwardStrength(2.0)
+                    .upwardStrength(0.5)
+                    .followStrength(1.5)
+                    .maxStep(2.0)
+                    .useLifeCurve(true)
+            )
+            .add(
+                ParticleNoiseCommand()
+                    .strength(0.4)
+                    .frequency(3.0)
+                    .speed(5.0)
+                    .affectY(1.0)
+                    .clampSpeed(15.0)
+                    .useLifeCurve(true)
+            )
+    }
 
-    val wave = ParticleCommandQueue()
-        .add(
-            ParticleNoiseCommand()
-                .strength(0.03)
-                .frequency(0.15)
-                .speed(0.12)
-                .affectY(1.0)
-                .clampSpeed(0.8)
-                .useLifeCurve(true)
-        )
-        .add(
-            ParticleDragCommand()
-                .damping(0.05)
-                .minSpeed(0.0)
-                .linear(0.0)
-        ) { data, particle ->
-            (run { val age = particle.currentAge; val maxAge = particle.lifetime; ((age >= 10)) })
-        }
+    private fun buildCloudDragQueue(): ParticleCommandQueue {
+        return ParticleCommandQueue()
+            .add(
+                ParticleDragCommand()
+                    .damping(0.15)
+                    .minSpeed(0.0)
+                    .linear(0.0)
+            )
+    }
+
+    private fun buildWaveQueue(): ParticleCommandQueue {
+        return ParticleCommandQueue()
+            .add(
+                ParticleNoiseCommand()
+                    .strength(0.03)
+                    .frequency(0.15)
+                    .speed(0.12)
+                    .affectY(1.0)
+                    .clampSpeed(0.8)
+                    .useLifeCurve(true)
+            )
+    }
+
+    private fun buildWaveDragQueue(): ParticleCommandQueue {
+        return ParticleCommandQueue()
+            .add(
+                ParticleDragCommand()
+                    .damping(0.05)
+                    .minSpeed(0.0)
+                    .linear(0.0)
+            )
+    }
 
     override fun singleParticleAction(
         controler: ParticleControler,
@@ -80,6 +87,10 @@ class StarryHugeBarrageExplosionEmitter(pos: Vec3, world: Level?) : AutoParticle
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
+        var cloud: ParticleCommandQueue? = null
+        var cloudDrag: ParticleCommandQueue? = null
+        var wave: ParticleCommandQueue? = null
+        var waveDrag: ParticleCommandQueue? = null
         controler.addPreTickAction {
             val colorLifeProgress = if (this.lifetime <= 0) 1f else (this.currentAge.toFloat() / this.lifetime.toFloat()).coerceIn(0f, 1f)
             when (data.sign) {
@@ -99,10 +110,20 @@ class StarryHugeBarrageExplosionEmitter(pos: Vec3, world: Level?) : AutoParticle
                 }
             }
             if (data.sign == 0) {
-                cloud.applyVelocity(data, this)
+                val queue = cloud ?: buildCloudQueue().also { cloud = it }
+                queue.applyVelocity(data, this)
+                if (currentAge >= 10) {
+                    val dragQueue = cloudDrag ?: buildCloudDragQueue().also { cloudDrag = it }
+                    dragQueue.applyVelocity(data, this)
+                }
             }
             if (data.sign == 1) {
-                wave.applyVelocity(data, this)
+                val queue = wave ?: buildWaveQueue().also { wave = it }
+                queue.applyVelocity(data, this)
+                if (currentAge >= 10) {
+                    val dragQueue = waveDrag ?: buildWaveDragQueue().also { waveDrag = it }
+                    dragQueue.applyVelocity(data, this)
+                }
             }
         }
     }

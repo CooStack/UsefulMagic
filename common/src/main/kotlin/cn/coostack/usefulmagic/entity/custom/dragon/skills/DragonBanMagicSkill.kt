@@ -87,7 +87,7 @@ class DragonBanMagicSkill : DragonSkill() {
             1f,
             256.0,
         )
-
+        source.addEffect(MobEffectInstance(UsefulMagicEffects.MAGIC_SEALED.asHolder(), 20 * 60))
         world.getEntitiesOfClass(LivingEntity::class.java, source.boundingBox.inflate(256.0), EntityUtil.filterDragon).forEach {
             it.hurt(UsefulMagicDamageSources.entityDamage(it.level(), source, source), 10f)
             it.addEffect(MobEffectInstance(UsefulMagicEffects.MAGIC_SEALED.asHolder(), 20 * 60))

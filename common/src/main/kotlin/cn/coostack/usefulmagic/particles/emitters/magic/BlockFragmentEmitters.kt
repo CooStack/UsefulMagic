@@ -26,16 +26,18 @@ import kotlin.math.sin
 
 @CooAutoRegister
 class BlockFragmentEmitters(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, world) {
-    val command = ParticleCommandQueue()
-        .add(
-            ParticleNoiseCommand()
-                .strength(0.1)
-                .frequency(1.3)
-                .speed(2.0)
-                .affectY(1.0)
-                .clampSpeed(15.0)
-                .useLifeCurve(true)
-        )
+    private fun buildCommandQueue(): ParticleCommandQueue {
+        return ParticleCommandQueue()
+            .add(
+                ParticleNoiseCommand()
+                    .strength(0.1)
+                    .frequency(1.3)
+                    .speed(2.0)
+                    .affectY(1.0)
+                    .clampSpeed(15.0)
+                    .useLifeCurve(true)
+            )
+    }
 
     @CodecField
     var template = ControlableParticleData().apply {
@@ -126,9 +128,11 @@ class BlockFragmentEmitters(pos: Vec3, world: Level?) : AutoParticleEmitters(pos
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
+        var command: ParticleCommandQueue? = null
         controler.addPreTickAction {
             updatePhysics(this.loc, data, this)
-            command.applyVelocity(data, this)
+            val queue = command ?: buildCommandQueue().also { command = it }
+            queue.applyVelocity(data, this)
         }
     }
 

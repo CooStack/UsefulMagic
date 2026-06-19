@@ -27,27 +27,28 @@ class BarrageTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, w
         enableInterpolator = true
     }
 
-    val command = ParticleCommandQueue()
-        .add(
-            ParticleNoiseCommand()
-                .strength(0.25)
-                .frequency(1.3)
-                .speed(2.0)
-                .affectY(1.0)
-                .clampSpeed(15.0)
-                .useLifeCurve(true)
-        ) { data, particle ->
-            (run {
-                val age = particle.currentAge;
-                val maxAge = particle.lifetime; ((age > 10))
-            })
-        }
-        .add(
-            ParticleDragCommand()
-                .damping(0.15)
-                .linear(0.0)
-                .minSpeed(0.01)
-        )
+    private fun buildNoiseCommand(): ParticleCommandQueue {
+        return ParticleCommandQueue()
+            .add(
+                ParticleNoiseCommand()
+                    .strength(0.25)
+                    .frequency(1.3)
+                    .speed(2.0)
+                    .affectY(1.0)
+                    .clampSpeed(15.0)
+                    .useLifeCurve(true)
+            )
+    }
+
+    private fun buildDragCommand(): ParticleCommandQueue {
+        return ParticleCommandQueue()
+            .add(
+                ParticleDragCommand()
+                    .damping(0.15)
+                    .linear(0.0)
+                    .minSpeed(0.01)
+            )
+    }
 
     @CodecField
     var template = ControlableParticleData().apply {
@@ -112,8 +113,15 @@ class BarrageTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, w
     ) {
         val maxAge = data.maxAge
         val left = data.color
+        var noiseCommand: ParticleCommandQueue? = null
+        var dragCommand: ParticleCommandQueue? = null
         controler.addPreTickAction {
-            command.applyVelocity(data, this)
+            if (currentAge > 10) {
+                val queue = noiseCommand ?: buildNoiseCommand().also { noiseCommand = it }
+                queue.applyVelocity(data, this)
+            }
+            val dragQueue = dragCommand ?: buildDragCommand().also { dragCommand = it }
+            dragQueue.applyVelocity(data, this)
             val progress = (currentAge.toDouble() / maxAge)
             color = GraphMathHelper.lerp(progress, left, right)
         }

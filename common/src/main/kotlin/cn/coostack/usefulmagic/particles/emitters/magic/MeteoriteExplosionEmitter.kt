@@ -10,7 +10,6 @@ import cn.coostack.cooparticlesapi.particles.control.ParticleControler
 import cn.coostack.cooparticlesapi.particles.impl.*
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import net.minecraft.client.particle.ParticleRenderType
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
@@ -23,10 +22,6 @@ class MeteoriteExplosionEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters
     @CodecField
     var effectScale = 1.0
 
-    private var sp1 = buildSp1Queue()
-    private var sp2 = buildSp2Queue()
-    private var wave = buildWaveQueue()
-
     override fun singleParticleAction(
         controler: ParticleControler,
         data: ControlableParticleData,
@@ -35,6 +30,10 @@ class MeteoriteExplosionEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
+        var sp1: ParticleCommandQueue? = null
+        var sp2: ParticleCommandQueue? = null
+        var sp2Drag: ParticleCommandQueue? = null
+        var wave: ParticleCommandQueue? = null
         controler.addPreTickAction {
             val colorLifeProgress =
                 if (this.lifetime <= 0) 1f else (this.currentAge.toFloat() / this.lifetime.toFloat()).coerceIn(0f, 1f)
@@ -64,13 +63,20 @@ class MeteoriteExplosionEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters
                 }
             }
             if (data.sign == 0) {
-                sp1.applyVelocity(data, this)
+                val queue = sp1 ?: buildSp1Queue().also { sp1 = it }
+                queue.applyVelocity(data, this)
             }
             if (data.sign == 1) {
-                sp2.applyVelocity(data, this)
+                if (currentAge >= 10) {
+                    val dragQueue = sp2Drag ?: buildSp2DragQueue().also { sp2Drag = it }
+                    dragQueue.applyVelocity(data, this)
+                }
+                val queue = sp2 ?: buildSp2Queue().also { sp2 = it }
+                queue.applyVelocity(data, this)
             }
             if (data.sign == 2) {
-                wave.applyVelocity(data, this)
+                val queue = wave ?: buildWaveQueue().also { wave = it }
+                queue.applyVelocity(data, this)
             }
         }
     }
@@ -107,17 +113,6 @@ class MeteoriteExplosionEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters
     private fun buildSp2Queue(): ParticleCommandQueue {
         return ParticleCommandQueue()
             .add(
-                ParticleDragCommand()
-                    .damping(0.15)
-                    .minSpeed(0.0)
-                    .linear(0.0)
-            ) { data, particle ->
-                (run {
-                    val age = particle.currentAge;
-                    val maxAge = particle.lifetime; ((age >= 10))
-                })
-            }
-            .add(
                 ParticleToroidalCirculationCommand()
                     .center { this.pos.add(0.0, 0.0, 0.0) }
                     .axis(Vec3(0.0, 1.0, 0.0))
@@ -133,6 +128,16 @@ class MeteoriteExplosionEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters
             )
     }
 
+    private fun buildSp2DragQueue(): ParticleCommandQueue {
+        return ParticleCommandQueue()
+            .add(
+                ParticleDragCommand()
+                    .damping(0.15)
+                    .minSpeed(0.0)
+                    .linear(0.0)
+            )
+    }
+
     private fun buildWaveQueue(): ParticleCommandQueue {
         return ParticleCommandQueue()
             .add(
@@ -144,9 +149,6 @@ class MeteoriteExplosionEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters
     }
 
     override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
-        sp1 = buildSp1Queue()
-        sp2 = buildSp2Queue()
-        wave = buildWaveQueue()
         val res = mutableListOf<Pair<ControlableParticleData, RelativeLocation>>()
 
         // 发射器 #1: Emitter 1

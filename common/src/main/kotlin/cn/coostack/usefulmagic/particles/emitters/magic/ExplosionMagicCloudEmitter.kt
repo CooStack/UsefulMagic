@@ -19,30 +19,33 @@ import kotlin.random.Random
 class ExplosionMagicCloudEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, world) {
     @CodecField
     var r = 10.0
-    val command1 = ParticleCommandQueue()
-        .add(
-            ParticleNoiseCommand()
-                .strength(0.03)
-                .frequency(0.15)
-                .speed(0.12)
-                .affectY(1.0)
-                .clampSpeed(4.0)
-                .useLifeCurve(true)
-        )
-        .add(
-            ParticleToroidalCirculationCommand()
-                .center { this.pos.add(0.0, 15.0, 0.0) }
-                .axis(Vec3(0.0, 1.0, 0.0))
-                .ringRadius(r)
-                .radialThickness(13.0)
-                .axialThickness(8.0)
-                .circulationStrength(-1.0)
-                .outwardStrength(2.0)
-                .upwardStrength(1.0)
-                .followStrength(1.5)
-                .maxStep(1.5)
-                .useLifeCurve(true)
-        )
+
+    private fun buildCommandQueue(): ParticleCommandQueue {
+        return ParticleCommandQueue()
+            .add(
+                ParticleNoiseCommand()
+                    .strength(0.03)
+                    .frequency(0.15)
+                    .speed(0.12)
+                    .affectY(1.0)
+                    .clampSpeed(4.0)
+                    .useLifeCurve(true)
+            )
+            .add(
+                ParticleToroidalCirculationCommand()
+                    .center { this.pos.add(0.0, 15.0, 0.0) }
+                    .axis(Vec3(0.0, 1.0, 0.0))
+                    .ringRadius(r)
+                    .radialThickness(13.0)
+                    .axialThickness(8.0)
+                    .circulationStrength(-1.0)
+                    .outwardStrength(2.0)
+                    .upwardStrength(1.0)
+                    .followStrength(1.5)
+                    .maxStep(1.5)
+                    .useLifeCurve(true)
+            )
+    }
 
     override fun singleParticleAction(
         controler: ParticleControler,
@@ -52,6 +55,7 @@ class ExplosionMagicCloudEmitter(pos: Vec3, world: Level?) : AutoParticleEmitter
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
+        var command: ParticleCommandQueue? = null
         controler.addPreTickAction {
             val colorLifeProgress =
                 if (this.lifetime <= 0) 1f else (this.currentAge.toFloat() / this.lifetime.toFloat()).coerceIn(0f, 1f)
@@ -64,7 +68,8 @@ class ExplosionMagicCloudEmitter(pos: Vec3, world: Level?) : AutoParticleEmitter
                     )
                 }
             }
-            command1.applyVelocity(data, this)
+            val queue = command ?: buildCommandQueue().also { command = it }
+            queue.applyVelocity(data, this)
         }
     }
 

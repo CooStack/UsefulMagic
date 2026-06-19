@@ -29,9 +29,21 @@ versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "BOTH"
 [[dependencies.${ mod_id }]]
+modId = "kotlinforforge"
+type = "required" #mandatory (Can be one of "required", "optional", "incompatible" or "discouraged")
+versionRange = "[${kotlin_for_forge_version},)"
+ordering = "NONE"
+side = "BOTH"
+[[dependencies.${ mod_id }]]
 modId = "cooparticlesapi"
 type = "required" #mandatory (Can be one of "required", "optional", "incompatible" or "discouraged")
-versionRange = "[2.3.4,)"
+versionRange = "[${coo_particles_api_version},)"
+ordering = "NONE"
+side = "BOTH"
+[[dependencies.${ mod_id }]]
+modId = "geckolib"
+type = "required" #mandatory (Can be one of "required", "optional", "incompatible" or "discouraged")
+versionRange = "[4.8.0,)"
 ordering = "NONE"
 side = "BOTH"
 

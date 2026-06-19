@@ -19,14 +19,14 @@ object UsefulMagicEntityTypes {
 
     val MAGIC_BOOK_ENTITY_TYPE: CommonDeferredEntityType<MagicBookEntity> = register("magic_book_entity") {
         EntityType.Builder.of(::MagicBookEntity, MobCategory.MONSTER)
-            .sized(4f, 2f).build("magic_book_entity")
+            .sized(4f, 2f).build(null)
     }
 
     val MAGIC_DRAGON_ENTITY_TYPE: CommonDeferredEntityType<MagicDragonEntity> = register("magic_dragon_entity") {
         EntityType.Builder.of(::MagicDragonEntity, MobCategory.CREATURE)
             .sized(MagicDragonEntity.COLLISION_WIDTH, MagicDragonEntity.COLLISION_HEIGHT)
             .clientTrackingRange(128)
-            .build("magic_dragon_entity")
+            .build(null)
     }
 
 
@@ -34,21 +34,21 @@ object UsefulMagicEntityTypes {
         EntityType.Builder.of(::MagicEyeEntity, MobCategory.CREATURE)
             .sized(1.8f, 1.8f)
             .clientTrackingRange(128)
-            .build("magic_eye_entity")
+            .build(null)
     }
 
     val MAGIC_SUB_EYE_ENTITY_TYPE: CommonDeferredEntityType<MagicSubEyeEntity> = register("magic_sub_eye_entity") {
         EntityType.Builder.of(::MagicSubEyeEntity, MobCategory.CREATURE)
             .sized(0.81f, 0.81f)
             .clientTrackingRange(128)
-            .build("magic_sub_eye_entity")
+            .build(null)
     }
 
     val MAGIC_HEART_ENTITY_TYPE: CommonDeferredEntityType<MagicHeartEntity> = register("magic_heart_entity") {
         EntityType.Builder.of(::MagicHeartEntity, MobCategory.CREATURE)
             .sized(2.43f, 2.43f)
             .clientTrackingRange(128)
-            .build("magic_heart_entity")
+            .build(null)
     }
 
     fun <T : Entity> register(id: String, type: Supplier<EntityType<T>>): CommonDeferredEntityType<T> {

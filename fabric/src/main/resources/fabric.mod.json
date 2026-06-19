@@ -41,11 +41,12 @@
   ],
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",
+    "fabric-language-kotlin": ">=${fabric_kotlin_version}",
     "fabric-api": "*",
     "minecraft": "${minecraft_version}",
     "java": ">=${java_version}",
-    "geckolib": ">=${geckolib_version}",
-    "cooparticlesapi": ">=2.3.4"
+    "geckolib": ">=4.8.0",
+    "cooparticlesapi": ">=${coo_particles_api_version}"
   },
   "suggests": {
     "another-mod": "*"

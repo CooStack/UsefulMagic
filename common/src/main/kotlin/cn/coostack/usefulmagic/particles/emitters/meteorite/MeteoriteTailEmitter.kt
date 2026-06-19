@@ -45,22 +45,24 @@ class MeteoriteTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos,
         emittersInterpolator.setRefiner(1.25)
     }
 
-    val fireCommand = ParticleCommandQueue()
-        .add(
-            ParticleNoiseCommand()
-                .strength(0.03)
-                .frequency(0.15)
-                .speed(0.12)
-                .affectY(1.0)
-                .clampSpeed(0.8)
-                .useLifeCurve(true)
-        )
-        .add(
-            ParticleDragCommand()
-                .damping(0.01)
-                .minSpeed(0.0)
-                .linear(0.0)
-        )
+    private fun buildFireCommand(): ParticleCommandQueue {
+        return ParticleCommandQueue()
+            .add(
+                ParticleNoiseCommand()
+                    .strength(0.03)
+                    .frequency(0.15)
+                    .speed(0.12)
+                    .affectY(1.0)
+                    .clampSpeed(0.8)
+                    .useLifeCurve(true)
+            )
+            .add(
+                ParticleDragCommand()
+                    .damping(0.01)
+                    .minSpeed(0.0)
+                    .linear(0.0)
+            )
+    }
 
 
     override fun singleParticleAction(
@@ -71,8 +73,10 @@ class MeteoriteTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos,
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
+        var fireCommand: ParticleCommandQueue? = null
         controler.addPreTickAction {
-            fireCommand.applyVelocity(data, this)
+            val queue = fireCommand ?: buildFireCommand().also { fireCommand = it }
+            queue.applyVelocity(data, this)
             if (data.sign == 1) {
                 val progress = currentAge / lifetime.toDouble()
                 color = GraphMathHelper.lerp(progress, Vector3f(1f, 1f, 1f), Vector3f(1F, 79 / 255F, 66 / 255F))

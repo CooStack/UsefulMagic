@@ -53,6 +53,7 @@ loom {
             setConfigName('Fabric Client')
             ideConfigGenerated(true)
             runDir('runs/client')
+            programArgs "--username", "CooStack"
             vmArgs "-XX:+AllowEnhancedClassRedefinition"
         }
         server {

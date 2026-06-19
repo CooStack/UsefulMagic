@@ -1,8 +1,8 @@
 package cn.coostack.usefulmagic.items.weapon.magic
 
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
 import cn.coostack.cooparticlesapi.sound.ServerSoundManager
+import cn.coostack.cooparticlesapi.supports.TextureSheetsEnum
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.usefulmagic.damagetypes.UsefulMagicDamageSources
 import cn.coostack.usefulmagic.extend.boxCenterPosition
@@ -140,7 +140,7 @@ class LightningMagic(properties: Properties) : MagicItem(properties) {
             targetPos = dir
             maxTick = 1
             templateData.apply {
-                setTextureSheet(CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT)
+                setTextureSheet(TextureSheetsEnum.ADDITION_BLEND_TRANSLUCENT)
                 color = Math3DUtil.colorOf(
                     121, 211, 249
                 )

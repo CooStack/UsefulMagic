@@ -611,9 +611,14 @@ class MagicDragonEntity(
         }
 
         if (dizzinessTick <= 0) {
+
+            var chance = Random.nextFloat() > 0.5
+            if (skillManager.active is DragonBanMagicSkill) {
+                chance = false
+            }
+
             // 概率增加一点点的眩晕值
             // 如果是暴击（随机） 则增加1.25倍
-            val chance = Random.nextFloat() > 0.5
             if (amount > 1 && chance) {
                 stunProcess += 0.03f * Random.nextFloat()
             }

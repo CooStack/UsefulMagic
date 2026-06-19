@@ -24,22 +24,24 @@ import org.joml.Vector3f
 
 @CooAutoRegister
 class DragonBreathEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, world) {
-    val command1 = ParticleCommandQueue()
-        .add(
-            ParticleNoiseCommand()
-                .strength(0.04)
-                .frequency(0.3)
-                .speed(0.2)
-                .affectY(1.0)
-                .clampSpeed(16.0)
-                .useLifeCurve(true)
-        )
-        .add(
-            ParticleDragCommand()
-                .damping(0.06)
-                .minSpeed(0.0)
-                .linear(0.0)
-        )
+    private fun buildCommandQueue(): ParticleCommandQueue {
+        return ParticleCommandQueue()
+            .add(
+                ParticleNoiseCommand()
+                    .strength(0.04)
+                    .frequency(0.3)
+                    .speed(0.2)
+                    .affectY(1.0)
+                    .clampSpeed(16.0)
+                    .useLifeCurve(true)
+            )
+            .add(
+                ParticleDragCommand()
+                    .damping(0.06)
+                    .minSpeed(0.0)
+                    .linear(0.0)
+            )
+    }
 
     override fun singleParticleAction(
         controler: ParticleControler,
@@ -49,6 +51,7 @@ class DragonBreathEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, 
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
+        var command: ParticleCommandQueue? = null
         controler.addPreTickAction {
             val colorLifeProgress =
                 if (this.lifetime <= 0) 1f else (this.currentAge.toFloat() / this.lifetime.toFloat()).coerceIn(0f, 1f)
@@ -61,7 +64,8 @@ class DragonBreathEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, 
                     )
                 }
             }
-            command1.applyVelocity(data, this)
+            val queue = command ?: buildCommandQueue().also { command = it }
+            queue.applyVelocity(data, this)
             this.particleAlpha = GraphMathHelper.lerp(colorLifeProgress * 3, 0f, 1f)
         }
     }

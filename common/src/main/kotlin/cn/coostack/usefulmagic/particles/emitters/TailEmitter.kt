@@ -37,18 +37,20 @@ class TailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, world) {
     var rightColor = Vector3f(1f)
 
 
-    val command = ParticleCommandQueue()
-        .add(
-            ParticleNoiseCommand()
-                .strength(0.02)
-                .clampSpeed(0.2)
-                .speed(1.0)
-        ).add(
-            ParticleDragCommand()
-                .damping(0.15)
-                .linear(0.0)
-                .minSpeed(0.01)
-        )
+    private fun buildCommandQueue(): ParticleCommandQueue {
+        return ParticleCommandQueue()
+            .add(
+                ParticleNoiseCommand()
+                    .strength(0.02)
+                    .clampSpeed(0.2)
+                    .speed(1.0)
+            ).add(
+                ParticleDragCommand()
+                    .damping(0.15)
+                    .linear(0.0)
+                    .minSpeed(0.01)
+            )
+    }
 
     override fun doTick() {
 
@@ -73,11 +75,13 @@ class TailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, world) {
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
+        var command: ParticleCommandQueue? = null
         controler.addPreTickAction {
             val progress = this.currentAge.toFloat() / this.lifetime
             val color = GraphMathHelper.lerp(progress, leftColor, rightColor)
             this.color = color
-            command.applyVelocity(data, this)
+            val queue = command ?: buildCommandQueue().also { command = it }
+            queue.applyVelocity(data, this)
         }
     }
 }
