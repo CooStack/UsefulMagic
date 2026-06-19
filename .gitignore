@@ -1,0 +1,48 @@
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea/*
+!.idea/scopes
+
+# gradle
+build
+.gradle
+
+# other
+eclipse
+run
+runs
+builds
+fabric/runs
+fabric/.gradle
+fabric/src/main/generated
+
+# IDE / AI agent configs
+.agent/
+.ai/
+.claude/
+.cursor/
+.deepagents/
+.gemini/
+.kiro/
+.kotlin/
+.nexus-map/
+.tmp-decompiled-api/
+.windsurf/
+.xcodemap/
+
+# sounds
+_sound_previews/
+
+# ae presets
+ae-presets/
