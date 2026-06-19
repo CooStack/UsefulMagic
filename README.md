@@ -3,6 +3,8 @@
 # 编译须知
 - 本人使用gradle 9.4.1 所以使用了较高版本的fabric-loom
 - 如果你用的是比较低版本的gradle 自行降低loom版本
+- clone项目后， 你需要先使用fabric的runDatagen 才能正常识别数据 不用跑neoforge 
+如果你是neoforge运行， 也是先跑fabric的runDatagen， 他们共用一个数据生成结果集
 # 与V1的区别？
 最大的区别就是支持给法杖切换魔法，然后不同的魔法对法杖有不同的支持
 
