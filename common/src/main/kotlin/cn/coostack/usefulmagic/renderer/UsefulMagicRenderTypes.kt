@@ -3,8 +3,6 @@ package cn.coostack.usefulmagic.renderer
 import cn.coostack.cooparticlesapi.compat.IrisCompat
 import cn.coostack.cooparticlesapi.compat.iris.RenderTypeIrisSupposerRegistry
 import com.mojang.blaze3d.vertex.DefaultVertexFormat
-import com.mojang.blaze3d.vertex.VertexFormat
-import net.minecraft.client.renderer.RenderStateShard
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.client.renderer.ShaderInstance
 import net.minecraft.resources.ResourceLocation
@@ -43,29 +41,13 @@ object UsefulMagicRenderTypes {
         }
         return eyeBorderCache.getOrPut(texture) {
             RenderTypeIrisSupposerRegistry.register(EYE_BORDER_RENDER_TYPE, EYE_BORDER_SHADER)
-            val state = RenderType.CompositeState.builder()
-                .setShaderState(
-                    RenderStateShard.ShaderStateShard {
-                        eyeBorderShader.also(IrisCompat::markUnskippable)
-                    }
-                )
-                .setTextureState(RenderStateShard.TextureStateShard(texture, false, false))
-                .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
-                .setCullState(RenderStateShard.NO_CULL)
-                .setWriteMaskState(RenderStateShard.COLOR_DEPTH_WRITE)
-                .setOverlayState(RenderStateShard.OVERLAY)
-                .createCompositeState(true)
-
             IrisCompat.wrapEntityRenderType(
-                RenderType.create(
+                UsefulMagicRenderTypeFactory.dragonCircleEyeBorder(
                     EYE_BORDER_RENDER_TYPE,
-                    DefaultVertexFormat.NEW_ENTITY,
-                    VertexFormat.Mode.QUADS,
-                    1536,
-                    true,
-                    true,
-                    state
-                )
+                    texture
+                ) {
+                    eyeBorderShader.also(IrisCompat::markUnskippable)
+                }
             )
         }
     }

@@ -17,43 +17,43 @@ object UsefulMagicEntityTypes {
 
     val entityTypes = mutableListOf<CommonDeferredEntityType<*>>()
 
-    val MAGIC_BOOK_ENTITY_TYPE: CommonDeferredEntityType<MagicBookEntity> = register("magic_book_entity") {
+    val MAGIC_BOOK_ENTITY_TYPE: CommonDeferredEntityType<MagicBookEntity> = register("magic_book_entity") { id ->
         EntityType.Builder.of(::MagicBookEntity, MobCategory.MONSTER)
-            .sized(4f, 2f).build(null)
+            .sized(4f, 2f).build(id)
     }
 
-    val MAGIC_DRAGON_ENTITY_TYPE: CommonDeferredEntityType<MagicDragonEntity> = register("magic_dragon_entity") {
+    val MAGIC_DRAGON_ENTITY_TYPE: CommonDeferredEntityType<MagicDragonEntity> = register("magic_dragon_entity") { id ->
         EntityType.Builder.of(::MagicDragonEntity, MobCategory.CREATURE)
             .sized(MagicDragonEntity.COLLISION_WIDTH, MagicDragonEntity.COLLISION_HEIGHT)
             .clientTrackingRange(128)
-            .build(null)
+            .build(id)
     }
 
 
-    val MAGIC_EYE_ENTITY_TYPE: CommonDeferredEntityType<MagicEyeEntity> = register("magic_eye_entity") {
+    val MAGIC_EYE_ENTITY_TYPE: CommonDeferredEntityType<MagicEyeEntity> = register("magic_eye_entity") { id ->
         EntityType.Builder.of(::MagicEyeEntity, MobCategory.CREATURE)
             .sized(1.8f, 1.8f)
             .clientTrackingRange(128)
-            .build(null)
+            .build(id)
     }
 
-    val MAGIC_SUB_EYE_ENTITY_TYPE: CommonDeferredEntityType<MagicSubEyeEntity> = register("magic_sub_eye_entity") {
+    val MAGIC_SUB_EYE_ENTITY_TYPE: CommonDeferredEntityType<MagicSubEyeEntity> = register("magic_sub_eye_entity") { id ->
         EntityType.Builder.of(::MagicSubEyeEntity, MobCategory.CREATURE)
             .sized(0.81f, 0.81f)
             .clientTrackingRange(128)
-            .build(null)
+            .build(id)
     }
 
-    val MAGIC_HEART_ENTITY_TYPE: CommonDeferredEntityType<MagicHeartEntity> = register("magic_heart_entity") {
+    val MAGIC_HEART_ENTITY_TYPE: CommonDeferredEntityType<MagicHeartEntity> = register("magic_heart_entity") { id ->
         EntityType.Builder.of(::MagicHeartEntity, MobCategory.CREATURE)
             .sized(2.43f, 2.43f)
             .clientTrackingRange(128)
-            .build(null)
+            .build(id)
     }
 
-    fun <T : Entity> register(id: String, type: Supplier<EntityType<T>>): CommonDeferredEntityType<T> {
+    fun <T : Entity> register(id: String, type: (String) -> EntityType<T>): CommonDeferredEntityType<T> {
         val location = ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, id)
-        val common = CommonDeferredEntityType(location, type)
+        val common = CommonDeferredEntityType(location, Supplier { type(location.toString()) })
         entityTypes.add(common)
         return common
     }
