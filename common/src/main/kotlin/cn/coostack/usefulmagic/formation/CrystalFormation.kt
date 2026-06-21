@@ -3,10 +3,10 @@
 import cn.coostack.cooparticlesapi.barrages.BarrageManager
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
-import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.platform.CooParticlesServices
 import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
+import cn.coostack.cooparticlesapi.supports.TextureSheetsEnum
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.barrages.api.DamagedBarrage
@@ -531,7 +531,7 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
                     targetPos = end - start
                     maxTick = 1
                     templateData.apply {
-                        setTextureSheet(CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT)
+                        setTextureSheet(TextureSheetsEnum.ADDITION_BLEND_TRANSLUCENT)
                         color = Math3DUtil.colorOf(230, 130, 255)
                     }
                     simpleData.apply {

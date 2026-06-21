@@ -5,8 +5,8 @@ import cn.coostack.cooparticlesapi.barrages.HitBox
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.network.particle.emitters.PhysicConstant
 import cn.coostack.cooparticlesapi.network.particle.emitters.type.EmittersShootTypes
-import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
+import cn.coostack.cooparticlesapi.supports.TextureSheetsEnum
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
 import cn.coostack.usefulmagic.barrages.entity.EntityMagicWoodenBarrage
@@ -451,7 +451,7 @@ class MagicBookEntity(entityType: EntityType<out PathfinderMob>, world: Level) :
                     targetPos = Vec3.ZERO.random() * Random.nextDouble(endRandomRange / 4, endRandomRange)
                     maxTick = 1
                     templateData.apply {
-                        setTextureSheet(CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT)
+                        setTextureSheet(TextureSheetsEnum.ADDITION_BLEND_TRANSLUCENT)
                         color = Math3DUtil.colorOf(
                             121, 211, 249
                         )

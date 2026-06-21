@@ -32,7 +32,7 @@ class SmallFormationStyle(uuid: UUID = UUID.randomUUID()) : FormationStyle(uuid)
 
     override fun displayParticleAnimate() {
         if (statusHelper.displayStatus == StatusHelper.Status.DISABLE.id) {
-            scaleHelper.doScaleReversed()
+            reverseScaleOrRemove(scaleHelper)
         } else {
             scaleHelper.doScale()
         }

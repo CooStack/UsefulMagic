@@ -1,14 +1,12 @@
 package cn.coostack.usefulmagic.items.weapon.magic
 
-import cn.coostack.cooparticlesapi.extend.minus
 import cn.coostack.cooparticlesapi.network.particle.composition.manager.ParticleCompositionManager
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
+import cn.coostack.cooparticlesapi.supports.TextureSheetsEnum
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.usefulmagic.extend.boxCenterPosition
 import cn.coostack.usefulmagic.extend.charging
 import cn.coostack.usefulmagic.particles.composition.magic.HealthMagicComposition
-import cn.coostack.usefulmagic.particles.composition.magic.SwordFormationMagicChargingComposition
 import cn.coostack.usefulmagic.particles.emitters.LightningParticleEmitters
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import cn.coostack.usefulmagic.systems.tick.ControlerStatus
@@ -21,6 +19,7 @@ import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.AABB
+import cn.coostack.cooparticlesapi.extend.*
 
 /**
  * 对标原先的生命恢复法杖
@@ -68,7 +67,7 @@ class HealthMagic(properties: Properties) : ChargingMagic<HealthMagicComposition
                     targetPos = it.boxCenterPosition() - pos
                     maxTick = 1
                     templateData.apply {
-                        setTextureSheet(CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT)
+                        setTextureSheet(TextureSheetsEnum.ADDITION_BLEND_TRANSLUCENT)
                         color = Math3DUtil.colorOf(
                             191, 239, 192
                         )

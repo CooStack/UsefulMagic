@@ -4,6 +4,7 @@ import cn.coostack.cooparticlesapi.network.buffer.ParticleControlerDataBuffer
 import cn.coostack.cooparticlesapi.network.buffer.ParticleControlerDataBuffers
 import cn.coostack.cooparticlesapi.network.particle.style.ParticleGroupStyle
 import cn.coostack.cooparticlesapi.utils.helper.HelperUtil
+import cn.coostack.cooparticlesapi.utils.helper.ScaleHelper
 import cn.coostack.cooparticlesapi.utils.helper.StatusHelper
 import cn.coostack.cooparticlesapi.utils.helper.buffer.ControlableBuffer
 import cn.coostack.cooparticlesapi.utils.helper.buffer.ControlableBufferHelper
@@ -91,6 +92,17 @@ abstract class FormationStyle(uuid: UUID) : ParticleGroupStyle(128.0, uuid) {
      * 推荐将动画和时间参数结合, 在客户端-服务器同步中有更好的效果
      */
     abstract fun displayParticleAnimate()
+
+    protected fun reverseScaleOrRemove(scaleHelper: ScaleHelper) {
+        if (scaleHelper.isZero() || scale <= scaleHelper.minScale) {
+            remove()
+            return
+        }
+        scaleHelper.doScaleReversed()
+        if (scaleHelper.isZero() || scale <= scaleHelper.minScale) {
+            remove()
+        }
+    }
 
     fun changeStatus(status: FormationStatus) {
         if (world!!.isClientSide) {
