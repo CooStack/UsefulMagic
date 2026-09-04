@@ -8,7 +8,7 @@ import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersMan
 import cn.coostack.cooparticlesapi.particles.impl.ControlableFallingDustEffect
 import cn.coostack.cooparticlesapi.supports.TextureSheetsEnum
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
-import cn.coostack.usefulmagic.display.magic.GoldenMagicBarrageDisplay
+import cn.coostack.usefulmagic.display.magic.attack.GoldenMagicBarrageDisplay
 import cn.coostack.usefulmagic.particles.emitters.magic.BarrageTailEmitter
 import cn.coostack.usefulmagic.particles.emitters.magic.BlockFragmentEmitters
 import cn.coostack.usefulmagic.utils.FriendFilterHelper
@@ -32,7 +32,7 @@ class GoldenMagicBarrage(loc: Vec3, world: ServerLevel, damage: Double, shooter:
     ) {
     // 弹幕拖尾粒子发射器
     val tailEmitter = BarrageTailEmitter(loc, world).apply {
-        template.color = Math3DUtil.colorOf(230, 230, 170)
+        left = Math3DUtil.colorOf(230, 230, 170)
         template.setTextureSheet(TextureSheetsEnum.ADDITION_BLEND_TRANSLUCENT)
     }
     var gen = false

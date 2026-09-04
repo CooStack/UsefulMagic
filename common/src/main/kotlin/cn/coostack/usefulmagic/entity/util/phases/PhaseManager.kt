@@ -236,7 +236,14 @@ class PhaseManager<T : LivingEntity>(
         }
 
         if (shouldRestart) {
-            beginOnRuntime()
+            val savedPhaseAge = runtime.phaseAge
+            val savedIsEnd = runtime.isEnd
+            currentPhase.begin(instance, runtime)
+            runtime.phaseAge = savedPhaseAge
+            runtime.isBegin = true
+            runtime.isEnd = savedIsEnd
+            runtime.onStarted(runtime)
+            syncPhaseState()
         }
     }
 

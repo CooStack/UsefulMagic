@@ -5,19 +5,19 @@ import cn.coostack.cooparticlesapi.animation.timeline.Eases
 import cn.coostack.cooparticlesapi.animation.timeline.Timeline
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
+import cn.coostack.cooparticlesapi.cparticle.CParticleCurve
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComposition
 import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
 import cn.coostack.cooparticlesapi.network.particle.composition.ParticleShapeComposition
-import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.FourierSeriesBuilder
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionAlphaHelper
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
+import java.util.UUID
 import kotlin.math.PI
 
 @CooAutoRegister
@@ -25,11 +25,8 @@ class MagicDragonSpawningFloorComposition(position: Vec3, world: Level? = null) 
     @CodecField
     var color: Vector3f = Vector3f(0.964706F, 0.545098F, 0.992157F)
 
-    private val alphaHelper = CompositionAlphaHelper(0.0, 1.0, 10)
     init {
         axis = RelativeLocation.yAxis()
-        alphaHelper.loadControler(this)
-        alphaHelper.resetAlphaMax()
         setDisabledInterval(20)
     }
     override fun getParticles(): Map<CompositionData, RelativeLocation> {
@@ -146,12 +143,12 @@ class MagicDragonSpawningFloorComposition(position: Vec3, world: Level? = null) 
                             ) { shapeRel1 ->
                                 CompositionData()
                                     .setDisplayerSupplier {
-                                        ParticleDisplayer.withSingle(ControlableEndRodEffect(it))
+                                        ParticleDisplayer.withCParticle(it)
                                     }
-                                    .addParticleInstanceInit {
+                                    .addCParticleInstanceInit {
+                                        effect = ControlableEndRodEffect(UUID.randomUUID())
                                         size = 0.4F
                                         color = this@MagicDragonSpawningFloorComposition.color
-                                        textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
                                     }
                             }
                             loadScaleHelperBezierValue(0.01, 1.0, 10, RelativeLocation(1.738149, 1.218534, 0.0), RelativeLocation(-8.408578, 0.159251, 0.0))
@@ -189,12 +186,12 @@ class MagicDragonSpawningFloorComposition(position: Vec3, world: Level? = null) 
                                 ) { shapeRel1 ->
                                     CompositionData()
                                         .setDisplayerSupplier {
-                                            ParticleDisplayer.withSingle(ControlableEndRodEffect(it))
+                                            ParticleDisplayer.withCParticle(it)
                                         }
-                                        .addParticleInstanceInit {
+                                        .addCParticleInstanceInit {
+                                            effect = ControlableEndRodEffect(UUID.randomUUID())
                                             size = 0.4F
                                             color = this@MagicDragonSpawningFloorComposition.color
-                                            textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
                                         }
                                 }
                                 applyDisplayAction {
@@ -237,12 +234,12 @@ class MagicDragonSpawningFloorComposition(position: Vec3, world: Level? = null) 
                             ) { shapeRel1 ->
                                 CompositionData()
                                     .setDisplayerSupplier {
-                                        ParticleDisplayer.withSingle(ControlableEndRodEffect(it))
+                                        ParticleDisplayer.withCParticle(it)
                                     }
-                                    .addParticleInstanceInit {
+                                    .addCParticleInstanceInit {
+                                        effect = ControlableEndRodEffect(UUID.randomUUID())
                                         size = 0.4F
                                         color = this@MagicDragonSpawningFloorComposition.color
-                                        textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
                                     }
                             }
                             loadScaleHelperBezierValue(0.01, 1.0, 10, RelativeLocation(1.738149, 1.218534, 0.0), RelativeLocation(-8.408578, 0.159251, 0.0))
@@ -268,9 +265,7 @@ class MagicDragonSpawningFloorComposition(position: Vec3, world: Level? = null) 
     override fun onDisplay() {
         addPreTickAction {
             if (status.isDisable()) {
-                alphaHelper.decreaseAlpha()
-            } else {
-                alphaHelper.increaseAlpha()
+                playCParticleAlphaTransition(10f, CParticleCurve.linear(1f, 0f))
             }
         }
     }

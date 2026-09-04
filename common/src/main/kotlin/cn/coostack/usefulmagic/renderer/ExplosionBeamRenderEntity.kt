@@ -1,47 +1,27 @@
 package cn.coostack.usefulmagic.renderer
 
+import cn.coostack.cooparticlesapi.extend.ofID
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.renderer.AutoRenderEntity
-import cn.coostack.cooparticlesapi.renderer.client.RenderUtil
-import cn.coostack.cooparticlesapi.renderer.effects.builtin.BuiltinRenderEffectDescriptors
-import cn.coostack.cooparticlesapi.renderer.effects.builtin.MaskBloomConfig
-import cn.coostack.cooparticlesapi.renderer.runtime.FramePostRenderEntityRenderer
-import cn.coostack.cooparticlesapi.renderer.runtime.LocalRenderInput
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderContributionCollector
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderContributionInput
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderEntityInstance
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderEntityReleaseHook
-import cn.coostack.cooparticlesapi.renderer.runtime.WorldPassRenderEntityRenderer
-import cn.coostack.cooparticlesapi.renderer.shader.ShaderProgramBuilder
-import cn.coostack.cooparticlesapi.renderer.shader.api.CooShaderProgram
-import cn.coostack.cooparticlesapi.renderer.shader.api.glsl.GlShaderType
-import cn.coostack.cooparticlesapi.renderer.shader.data.CooVertexFormat
-import cn.coostack.cooparticlesapi.renderer.shader.data.VertexData
-import cn.coostack.cooparticlesapi.renderer.shader.glsl.IdentifierShader
-import cn.coostack.cooparticlesapi.renderer.shader.vertex.SimpleVertexBuffer
 import cn.coostack.usefulmagic.UsefulMagic
-import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
-import org.joml.Matrix4f
-import org.joml.Matrix4fStack
-import org.joml.Vector2f
 import org.joml.Vector3f
-import org.joml.Vector4f
-import kotlin.math.cos
-import kotlin.math.max
-import kotlin.math.sin
 
-private enum class ExplosionBeamStage {
-    EXPAND,
-    HOLD,
-    SHRINK,
-}
-
-private data class ExplosionBeamState(
-    val phase: ExplosionBeamStage,
+/**
+ * 爆炸光柱在一个渲染帧中的派生状态。
+ *
+ * @property phaseProgress 当前阶段进度。
+ * @property radius 当前半径。
+ * @property height 当前高度。
+ * @property offsetY 光柱底部的纵向偏移。
+ * @property opacity 当前透明度。
+ * @property brightness 当前亮度倍率。
+ * @property collapse 收束阶段进度。
+ */
+internal data class ExplosionBeamState(
     val phaseProgress: Float,
     val radius: Float,
     val height: Float,
@@ -51,61 +31,41 @@ private data class ExplosionBeamState(
     val collapse: Float,
 )
 
-private enum class ExplosionBeamBlendMode {
-    ALPHA,
-    ADDITIVE,
-}
-
-private data class ExplosionBeamPass(
-    val blendMode: ExplosionBeamBlendMode,
-    val color: Vector3f,
-    val alpha: Float,
-    val brightness: Float,
-    val rimPower: Float,
-    val coreBias: Float,
-    val highlightStrength: Float,
-    val impactStrength: Float,
-    val textureScale: Float,
-    val textureSpeed: Float,
-)
-
+/** 保存爆炸光柱的同步状态和阶段生命周期。 */
 @CooAutoRegister
 class ExplosionBeamRenderEntity(
     world: Level? = null,
     pos: Vec3 = Vec3.ZERO,
-) : AutoRenderEntity(world, pos),
-    WorldPassRenderEntityRenderer<ExplosionBeamRenderEntity>,
-    FramePostRenderEntityRenderer<ExplosionBeamRenderEntity>,
-    RenderEntityReleaseHook<ExplosionBeamRenderEntity> {
+) : AutoRenderEntity(world, pos) {
+    /** 光柱主体和高亮层使用的 RGB 颜色。 */
     @CodecField
-    var color: Vector3f = Vector3f(1.0f, 0.20f, 0.06f)
+    var color: Vector3f = Vector3f(1.0F, 0.20F, 0.06F)
 
+    /** 光柱整体透明度，渲染时限制到有效范围。 */
     @CodecField
     var alpha: Double = 1.0
 
+    /** 光柱完全展开后的世界高度。 */
     @CodecField
-    var beamHeight: Float = DEFAULT_BEAM_HEIGHT
+    var beamHeight: Float = 150F
 
+    /** 光柱完全展开后的世界半径。 */
     @CodecField
-    var maxRadius: Float = DEFAULT_MAX_RADIUS
+    var maxRadius: Float = 2F
 
+    /** 光柱扩张阶段持续的 tick 数。 */
     @CodecField
-    var expandTicks: Int = DEFAULT_EXPAND_TICKS
+    var expandTicks: Int = 5
 
+    /** 光柱完全展开后保持的 tick 数。 */
     @CodecField
-    var holdTicks: Int = DEFAULT_HOLD_TICKS
+    var holdTicks: Int = 10
 
+    /** 光柱收束阶段持续的 tick 数。 */
     @CodecField
-    var shrinkTicks: Int = DEFAULT_SHRINK_TICKS
-
-    override fun initialize(instance: RenderEntityInstance<ExplosionBeamRenderEntity>) {
-        initStatic()
-    }
+    var shrinkTicks: Int = 5
 
     override fun getRenderID(): ResourceLocation = ID
-
-    override fun release(instance: RenderEntityInstance<ExplosionBeamRenderEntity>) {
-    }
 
     override fun clientTick() {
         updateLifecycle()
@@ -115,356 +75,133 @@ class ExplosionBeamRenderEntity(
         updateLifecycle()
     }
 
-    override fun renderLocal(input: LocalRenderInput<ExplosionBeamRenderEntity>) {
-        initStatic()
-        val timeline = currentTimeline(input.tickDelta)
-        val state = buildState(timeline)
-        if (state.opacity <= MIN_VISIBLE_ALPHA) {
-            return
-        }
-        val modelMatrix = input.modelMatrix
-        renderPasses(
-            modelMatrix = modelMatrix,
-            viewMatrix = input.viewMatrix,
-            projMatrix = input.projMatrix,
-            state = state,
-            time = timeline,
-        )
-    }
-
-    override fun collectRenderContributions(
-        input: RenderContributionInput<ExplosionBeamRenderEntity>,
-        collector: RenderContributionCollector,
-    ) {
-        val timeline = currentTimeline(input.frameContext.tickDelta)
-        val state = buildState(timeline)
-        if (state.opacity <= MIN_VISIBLE_ALPHA) {
-            return
-        }
-        collector.submit(
-            BuiltinRenderEffectDescriptors.maskBloom(
-                effectId = EXPLOSION_BEAM_BLOOM_EFFECT_ID,
-                sourceInstanceId = uuid.toString(),
-                frameContext = input.frameContext,
-                sourceEntity = this,
-                config = buildBloomConfig(state),
-                priority = EXPLOSION_BEAM_BLOOM_PRIORITY,
-                requiredCapabilities = UsefulMagicShaderPipelines.DEPTH_AWARE_MASK_BLOOM_CAPABILITIES,
-            ) {
-                renderBloomMask(
-                    tickDelta = input.frameContext.tickDelta,
-                    viewMatrix = input.frameContext.viewMatrix,
-                    projMatrix = input.frameContext.projMatrix,
-                )
-            },
-        )
-    }
-
-    private fun renderBloomMask(
-        tickDelta: Float,
-        viewMatrix: Matrix4f,
-        projMatrix: Matrix4f,
-    ) {
-        initStatic()
-        val timeline = currentTimeline(tickDelta)
-        val state = buildState(timeline)
-        if (state.opacity <= MIN_VISIBLE_ALPHA) {
-            return
-        }
-        val modelMatrix = Matrix4fStack(16)
-        RenderUtil.setRenderStackWithEntity(modelMatrix, this, tickDelta)
-        renderPasses(
-            modelMatrix = modelMatrix,
-            viewMatrix = viewMatrix,
-            projMatrix = projMatrix,
-            state = state,
-            time = timeline,
-        )
-    }
-
-    private fun buildBloomConfig(state: ExplosionBeamState): MaskBloomConfig {
-        return EXPLOSION_BEAM_BLOOM_CONFIG.copy(
-            intensity = EXPLOSION_BEAM_BLOOM_CONFIG.intensity * state.opacity.coerceIn(0.25f, 1.0f),
-            tint = Vector3f(color).lerp(Vector3f(1.0f, 0.62f, 0.28f), 0.34f),
-        )
-    }
-
+    /** 在完整动画结束后终止实体。 */
     private fun updateLifecycle() {
         if (age > totalDurationTicks() + 1) {
             canceled = true
         }
     }
 
+    /**
+     * 计算展开、停留和收束阶段的总时长。
+     *
+     * @return 至少包含一个展开 tick 和一个收束 tick 的总时长
+     */
     private fun totalDurationTicks(): Int {
         return expandTicks.coerceAtLeast(1) + holdTicks.coerceAtLeast(0) + shrinkTicks.coerceAtLeast(1)
     }
 
-    private fun currentTimeline(tickDelta: Float): Float {
-        return (age - 1f + tickDelta).coerceAtLeast(0f)
+    /**
+     * 返回包含帧插值的生命周期时间。
+     *
+     * @return 从动画起点开始计算的非负 tick 时间
+     */
+    internal fun currentTimeline(tickDelta: Float): Float {
+        return (age - 1F + tickDelta).coerceAtLeast(0F)
     }
 
-    private fun buildState(time: Float): ExplosionBeamState {
+    /**
+     * 根据生命周期时间构建 renderer 使用的派生状态。
+     *
+     * @return 当前生命周期阶段对应的光柱派生状态
+     */
+    internal fun buildState(time: Float): ExplosionBeamState {
         val expandDuration = expandTicks.coerceAtLeast(1).toFloat()
         val holdDuration = holdTicks.coerceAtLeast(0).toFloat()
         val shrinkDuration = shrinkTicks.coerceAtLeast(1).toFloat()
         val holdEnd = expandDuration + holdDuration
         val totalDuration = holdEnd + shrinkDuration
-        val clampedTime = time.coerceIn(0f, totalDuration)
-        val clampedAlpha = alpha.toFloat().coerceIn(0f, 1f)
+        val clampedTime = time.coerceIn(0F, totalDuration)
+        val clampedAlpha = alpha.toFloat().coerceIn(0F, 1F)
+        // 展开阶段从底部向上生长，停留阶段保持峰值，收束阶段同时缩半径并平方淡出。
         return when {
             clampedTime < expandDuration -> {
-                val phase = smoothstep(0f, expandDuration, clampedTime)
+                val phase = smoothstep(0F, expandDuration, clampedTime)
                 val eased = easeOutCubic(phase)
                 val currentHeight = mix(MIN_HEIGHT, beamHeight, eased)
                 ExplosionBeamState(
-                    phase = ExplosionBeamStage.EXPAND,
                     phaseProgress = phase,
                     radius = maxRadius.coerceAtLeast(MIN_RADIUS),
                     height = currentHeight,
-                    offsetY = (beamHeight - currentHeight).coerceAtLeast(0f),
-                    opacity = mix(0.18f, 1.0f, eased) * clampedAlpha,
-                    brightness = mix(1.6f, 2.9f, eased),
-                    collapse = 0f,
+                    offsetY = (beamHeight - currentHeight).coerceAtLeast(0F),
+                    opacity = mix(0.18F, 1.0F, eased) * clampedAlpha,
+                    brightness = mix(1.6F, 2.9F, eased),
+                    collapse = 0F,
                 )
             }
 
             clampedTime < holdEnd -> ExplosionBeamState(
-                phase = ExplosionBeamStage.HOLD,
-                phaseProgress = 1f,
+                phaseProgress = 1F,
                 radius = maxRadius.coerceAtLeast(MIN_RADIUS),
                 height = beamHeight,
-                offsetY = 0f,
+                offsetY = 0F,
                 opacity = clampedAlpha,
-                brightness = 2.9f,
-                collapse = 0f,
+                brightness = 2.9F,
+                collapse = 0F,
             )
 
             else -> {
-                val phase = ((clampedTime - holdEnd) / shrinkDuration).coerceIn(0f, 1f)
-                val collapse = smoothstep(0f, 1f, phase)
-                val fade = 1f - collapse
+                val phase = ((clampedTime - holdEnd) / shrinkDuration).coerceIn(0F, 1F)
+                val collapse = smoothstep(0F, 1F, phase)
+                val fade = 1F - collapse
                 ExplosionBeamState(
-                    phase = ExplosionBeamStage.SHRINK,
                     phaseProgress = phase,
                     radius = mix(maxRadius.coerceAtLeast(MIN_RADIUS), MIN_RADIUS, collapse),
-                    height = mix(beamHeight, beamHeight * 0.82f, collapse),
-                    offsetY = mix(0f, beamHeight * 0.09f, collapse),
+                    height = mix(beamHeight, beamHeight * 0.82F, collapse),
+                    offsetY = mix(0F, beamHeight * 0.09F, collapse),
                     opacity = fade * fade * clampedAlpha,
-                    brightness = mix(2.9f, 1.0f, collapse),
+                    brightness = mix(2.9F, 1.0F, collapse),
                     collapse = collapse,
                 )
             }
         }
     }
 
-    private fun renderPasses(
-        modelMatrix: Matrix4f,
-        viewMatrix: Matrix4f,
-        projMatrix: Matrix4f,
-        state: ExplosionBeamState,
-        time: Float,
-    ) {
-        val outerPass = ExplosionBeamPass(
-            blendMode = ExplosionBeamBlendMode.ALPHA,
-            color = color,
-            alpha = (state.opacity * 0.42f).coerceAtMost(0.82f),
-            brightness = state.brightness,
-            rimPower = 1.12f,
-            coreBias = 0.32f,
-            highlightStrength = 0.72f,
-            impactStrength = 0.84f,
-            textureScale = 1.0f,
-            textureSpeed = 1.08f,
-        )
-        val corePass = ExplosionBeamPass(
-            blendMode = ExplosionBeamBlendMode.ADDITIVE,
-            color = Vector3f(1.0f, 0.72f, 0.36f),
-            alpha = (state.opacity * 0.24f).coerceAtMost(0.56f),
-            brightness = state.brightness * 1.35f,
-            rimPower = 0.86f,
-            coreBias = 0.88f,
-            highlightStrength = 0.96f,
-            impactStrength = 0.92f,
-            textureScale = 1.14f,
-            textureSpeed = 1.24f,
-        )
-        RenderSystem.disableCull()
-        RenderSystem.enableDepthTest()
-        RenderSystem.enableBlend()
-        RenderSystem.depthMask(false)
-        try {
-            listOf(outerPass, corePass).forEach { pass ->
-                if (pass.alpha <= MIN_VISIBLE_ALPHA) {
-                    return@forEach
-                }
-                when (pass.blendMode) {
-                    ExplosionBeamBlendMode.ALPHA -> RenderSystem.blendFunc(770, 771)
-                    ExplosionBeamBlendMode.ADDITIVE -> RenderSystem.blendFunc(770, 1)
-                }
-                drawPass(modelMatrix, viewMatrix, projMatrix, state, time, pass)
-            }
-        } finally {
-            RenderSystem.depthMask(true)
-            RenderSystem.defaultBlendFunc()
-            RenderSystem.disableBlend()
-            RenderSystem.enableCull()
-        }
-    }
-
-    private fun drawPass(
-        modelMatrix: Matrix4f,
-        viewMatrix: Matrix4f,
-        projMatrix: Matrix4f,
-        state: ExplosionBeamState,
-        time: Float,
-        pass: ExplosionBeamPass,
-    ) {
-        val radius = state.radius.coerceAtLeast(MIN_RADIUS)
-        beamShader.useOnContext {
-            setMatrix4("modelMatrix", modelMatrix)
-            setMatrix4("viewMatrix", viewMatrix)
-            setMatrix4("projMatrix", projMatrix)
-            setFloat3("scale", Vector3f(radius, state.height.coerceAtLeast(MIN_HEIGHT), radius))
-            setFloat("offsetY", state.offsetY)
-            setFloat3("color", pass.color)
-            setFloat("alpha", pass.alpha)
-            setFloat("brightness", pass.brightness)
-            setFloat("rimPower", pass.rimPower)
-            setFloat("coreBias", pass.coreBias)
-            setFloat("highlightStrength", pass.highlightStrength)
-            setFloat("impactStrength", pass.impactStrength)
-            setFloat("textureScale", pass.textureScale)
-            setFloat("textureSpeed", pass.textureSpeed)
-            setFloat("phaseProgress", state.phaseProgress)
-            setFloat("collapse", state.collapse)
-            setFloat("time", time)
-            beamVertexBuffer.draw()
-        }
-    }
-
     companion object {
-        private const val DEFAULT_BEAM_HEIGHT = 150f
-        private const val DEFAULT_MAX_RADIUS = 2f
-        private const val DEFAULT_EXPAND_TICKS = 5
-        private const val DEFAULT_HOLD_TICKS = 10
-        private const val DEFAULT_SHRINK_TICKS = 5
-        private const val MIN_RADIUS = 0.02f
-        private const val MIN_HEIGHT = 0.05f
-        private const val MIN_VISIBLE_ALPHA = 0.001f
-        private const val EXPLOSION_BEAM_BLOOM_EFFECT_ID = "usefulmagic:explosion_beam_bloom"
-        private const val EXPLOSION_BEAM_BLOOM_PRIORITY = 250
+        /** 爆炸光柱实体的稳定注册路径。 */
+        private const val RENDER_ENTITY_ID = "explosion_beam_render_entity"
 
+        /** 实体状态和 renderer 共用的最小有效半径。 */
+        internal const val MIN_RADIUS = 0.02F
+        /** 实体状态和 renderer 共用的最小有效高度。 */
+        internal const val MIN_HEIGHT = 0.05F
+
+        /** 爆炸光柱的稳定 RenderEntity 注册 ID。 */
         @JvmField
         val ID: ResourceLocation =
-            ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "explosion_beam_render_entity")
+            ofID(UsefulMagic.MOD_ID, RENDER_ENTITY_ID)
 
-        @JvmField
-        var initialized: Boolean = false
-
-        private val EXPLOSION_BEAM_BLOOM_CONFIG = MaskBloomConfig(
-            blurSigma = 7.2f,
-            blurRange = 5.8f,
-            intensity = 2.2f,
-            baseMaskIntensity = 0.0f,
-            threshold = 0.015f,
-            thresholdSoftness = 0.02f,
-            tint = Vector3f(1.0f, 0.46f, 0.20f),
-        )
-
-        private lateinit var beamVertexBuffer: SimpleVertexBuffer
-        private lateinit var beamShader: CooShaderProgram
-
-        @JvmStatic
-        fun initStatic() {
-            if (initialized) {
-                return
-            }
-            beamVertexBuffer = SimpleVertexBuffer().apply {
-                init()
-                setVertexes(buildCylinderVertices(), CooVertexFormat.POINT_FORMAT)
-            }
-            beamShader = ShaderProgramBuilder()
-                .vertex(
-                    IdentifierShader(
-                        ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "core/vsh/sky_falling_beam.vsh"),
-                        GlShaderType.VERTEX,
-                    )
-                )
-                .fragment(
-                    IdentifierShader(
-                        ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "core/fsh/explosion_beam.fsh"),
-                        GlShaderType.FRAGMENT,
-                    )
-                )
-                .build()
-            beamShader.init()
-            initialized = true
-        }
-
-        private fun buildCylinderVertices(): List<VertexData> {
-            val segments = 48
-            val vertices = ArrayList<VertexData>(segments * 12)
-            val bottomCenter = Vector3f(0f, 0f, 0f)
-            val topCenter = Vector3f(0f, 1f, 0f)
-
-            for (segment in 0 until segments) {
-                val angle0 = (Math.PI.toFloat() * 2f * segment) / segments.toFloat()
-                val angle1 = (Math.PI.toFloat() * 2f * (segment + 1)) / segments.toFloat()
-                val x0 = cos(angle0)
-                val z0 = sin(angle0)
-                val x1 = cos(angle1)
-                val z1 = sin(angle1)
-
-                val a = Vector3f(x0, 0f, z0)
-                val b = Vector3f(x1, 0f, z1)
-                val c = Vector3f(x1, 1f, z1)
-                val d = Vector3f(x0, 1f, z0)
-
-                appendQuad(vertices, a, b, c, d)
-                appendTriangle(vertices, topCenter, d, c)
-                appendTriangle(vertices, bottomCenter, b, a)
-            }
-            return vertices
-        }
-
-        private fun appendQuad(
-            output: MutableList<VertexData>,
-            a: Vector3f,
-            b: Vector3f,
-            c: Vector3f,
-            d: Vector3f,
-        ) {
-            appendTriangle(output, a, b, c)
-            appendTriangle(output, a, c, d)
-        }
-
-        private fun appendTriangle(
-            output: MutableList<VertexData>,
-            a: Vector3f,
-            b: Vector3f,
-            c: Vector3f,
-        ) {
-            output += VertexData(a, Vector4f(), Vector2f())
-            output += VertexData(b, Vector4f(), Vector2f())
-            output += VertexData(c, Vector4f(), Vector2f())
-        }
-
+        /**
+         * 返回区间内平滑过渡的插值值。
+         *
+         * @return 位于 `0F..1F` 的平滑插值进度
+         */
         private fun smoothstep(edge0: Float, edge1: Float, value: Float): Float {
             if (edge0 == edge1) {
-                return if (value >= edge1) 1f else 0f
+                return if (value >= edge1) 1F else 0F
             }
-            val x = ((value - edge0) / (edge1 - edge0)).coerceIn(0f, 1f)
-            return x * x * (3f - 2f * x)
+            val x = ((value - edge0) / (edge1 - edge0)).coerceIn(0F, 1F)
+            return x * x * (3F - 2F * x)
         }
 
+        /**
+         * 对插值进度应用三次缓出。
+         *
+         * @return 位于 `0F..1F` 的三次缓出结果
+         */
         private fun easeOutCubic(value: Float): Float {
-            val x = value.coerceIn(0f, 1f)
-            val inverse = 1f - x
-            return 1f - inverse * inverse * inverse
+            val x = value.coerceIn(0F, 1F)
+            val inverse = 1F - x
+            return 1F - inverse * inverse * inverse
         }
 
+        /**
+         * 在线性区间插值两个标量。
+         *
+         * @return 按限制后的插值权重计算的标量
+         */
         private fun mix(from: Float, to: Float, alpha: Float): Float {
-            return from + (to - from) * alpha.coerceIn(0f, 1f)
+            return from + (to - from) * alpha.coerceIn(0F, 1F)
         }
     }
 }

@@ -8,12 +8,11 @@ import cn.coostack.cooparticlesapi.display.DisplayEntityManager
 import cn.coostack.cooparticlesapi.network.particle.composition.manager.ParticleCompositionManager
 import cn.coostack.cooparticlesapi.network.particle.data.minRangeTo
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.renderer.post.CooPostEffects
 import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
-import cn.coostack.cooparticlesapi.sound.ServerManagedSoundInstance
-import cn.coostack.cooparticlesapi.sound.ServerSoundManager
-import cn.coostack.cooparticlesapi.sound.SoundVolumeFalloff
 import cn.coostack.cooparticlesapi.supports.TextureSheetsEnum
+import cn.coostack.cooparticlesapi.supports.sound.ServerManagedSoundInstance
+import cn.coostack.cooparticlesapi.supports.sound.ServerSoundManager
+import cn.coostack.cooparticlesapi.supports.sound.SoundVolumeFalloff
 import cn.coostack.cooparticlesapi.utils.GraphMathHelper
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
@@ -25,8 +24,8 @@ import cn.coostack.usefulmagic.entity.custom.dragon.MagicDragonEntity
 import cn.coostack.usefulmagic.entity.custom.dragon.display.DragonCircleEyeDisplay
 import cn.coostack.usefulmagic.entity.custom.dragon.emitters.TrackingTailEmitter
 import cn.coostack.usefulmagic.entity.custom.dragon.playDragonSoundOnce
-import cn.coostack.usefulmagic.entity.custom.dragon.skills.emitter.MagicRuneRingComposition
-import cn.coostack.usefulmagic.entity.custom.dragon.skills.emitter.MagicRuneRingEffects
+import cn.coostack.usefulmagic.entity.custom.dragon.skills.composition.MagicRuneRingComposition
+import cn.coostack.usefulmagic.entity.custom.dragon.skills.composition.MagicRuneRingEffects
 import cn.coostack.usefulmagic.entity.custom.dragon.spawn.composition.MagicDragonSpawnLaserComposition
 import cn.coostack.usefulmagic.entity.custom.dragon.spawn.composition.MagicDragonSpawnRuneComposition
 import cn.coostack.usefulmagic.entity.custom.dragon.spawn.composition.MagicDragonSpawningFloorComposition
@@ -42,9 +41,9 @@ import net.minecraft.sounds.SoundSource
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import cn.coostack.cooparticlesapi.extend.*
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import java.util.function.Consumer
+import kotlin.collections.ArrayDeque
 import kotlin.math.PI
 import kotlin.math.roundToInt
 import kotlin.random.Random
@@ -118,10 +117,10 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                         DragonCircleEyeDisplay(runtime.conjurePosition, runtime.spawnLevel).apply {
                             r = 32.0
                             rotateSpeed = PI / 32 // 速度要从 1/32 -> 1/4
-                            borderSize = 0.8f
+                            borderSize = 0.8F
                             borderColor = Math3DUtil.colorOf(255, 150, 200)
                             count = 6
-                            eyeScaled = 3f
+                            eyeScaled = 3F
                             DisplayEntityManager.spawn(this)
                         }
                 }
@@ -138,8 +137,8 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                         runtime.conjurePosition,
                         UsefulMagicSoundEvents.DRAGON_SPAWN_MAGIC_LASER.get(),
                         SoundSource.HOSTILE,
-                        2f,
-                        1f,
+                        2F,
+                        1F,
                         256.0,
                     )
                 }
@@ -149,8 +148,8 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                         runtime.conjurePosition,
                         SoundEvents.ENDER_DRAGON_GROWL,
                         SoundSource.HOSTILE,
-                        18f,
-                        0.4f,
+                        18F,
+                        0.4F,
                         256.0,
                     )
                     runtime.state = PrepareMagic()
@@ -183,30 +182,30 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                     .layer("spawning")
                     .uniqueKey(UUID.randomUUID().toString())
                     .visibleRange(128.0)
-                    .volume(0.5f)
-                    .pitch(1.4f)
+                    .volume(0.5F)
+                    .pitch(1.4F)
                     .relative()
                     .volumeFalloff(SoundVolumeFalloff.QUADRATIC)
                     .looping()
                     .syncEveryTick(true)
                     .spawn()
                     .apply {
-                        fadeTo(0.5f, 20, stopWhenFinished = false)
+                        fadeTo(0.5F, 20, stopWhenFinished = false)
                     }
 
                 runtime["spawn_laser"] = StraightLaserRenderEntity(runtime.spawnLevel, runtime.conjurePosition).apply {
                     lifetime = 30
-                    maxRadius = 5f
+                    maxRadius = 5F
                     this.phaseTicks = 20
                     this.setColor(
                         Math3DUtil.colorOf(255, 120, 240)
                     )
                     this.renderRange = 512.0
                     this.alpha = 1.0
-                    this.brightness = 0.8f
+                    this.brightness = 1.5F
                     updateBeam(
-                        runtime.conjurePosition.add(0.0, 256.0, 0.0),
-                        runtime.conjurePosition.add(0.0, -128.0, 0.0)
+                        runtime.conjurePosition + Vec3(0.0, 256.0, 0.0),
+                        runtime.conjurePosition + Vec3(0.0, -128.0, 0.0)
                     )
 
                     ServerRenderEntityManager.spawn(this)
@@ -218,10 +217,13 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                 )
 
                 // 发送发光， RGB分离
-                CooPostEffects.server.spawn(runtime.spawnLevel, UsefulMagicPostEffects.rgbDashBlur(20, 2f, 2f, 2f))
-                CooPostEffects.server.spawn(
+                UsefulMagicPostEffects.playRgbDashBlur(runtime.spawnLevel, 20, 2F, 2F, 2F)
+                UsefulMagicPostEffects.playFlameExplodeFlash(
                     runtime.spawnLevel,
-                    UsefulMagicPostEffects.flameExplodeFlash(10, 2f, 2f, Vec3(1.0, 1.0, 1.0))
+                    10,
+                    2F,
+                    2F,
+                    Vec3(1.0, 1.0, 1.0),
                 )
                 runtime["collect_emitter_animate"] = Animate()
                     .addNode(
@@ -239,7 +241,7 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                                     repeat(randomCount) {
                                         val randomColor =
                                             GraphMathHelper.lerp(Random.nextFloat(), colorLeft, colorRight)
-                                        val targetPos = runtime.conjurePosition.add(0.0, 64.0, 0.0)
+                                        val targetPos = runtime.conjurePosition + Vec3(0.0, 64.0, 0.0)
                                         val randomPos = targetPos.offsetRandomly(Random.nextDouble(32.0, 72.0))
                                             .withY { y - 32.0 }
                                         val emitter = TrackingTailEmitter(randomPos, runtime.spawnLevel).apply {
@@ -247,7 +249,7 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                                             this.arriveCanceled = true
                                             particleConfig.apply {
                                                 this.color = randomColor
-                                                this.visibleRange = 256f
+                                                this.visibleRange = 256F
                                                 this.setTextureSheet(TextureSheetsEnum.ADDITION_BLEND_TRANSLUCENT)
                                             }
                                             this.simpleConfig.apply {
@@ -308,8 +310,8 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                         runtime.conjurePosition,
                         SoundEvents.ENDER_DRAGON_GROWL,
                         SoundSource.HOSTILE,
-                        18f,
-                        0.7f + Random.nextFloat() * 0.2f,
+                        18F,
+                        0.7F + Random.nextFloat() * 0.2F,
                         256.0,
                     )
                     if (count == 0) {
@@ -318,10 +320,7 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                             256.0, 0.5, 80, 8.0
                         )
                         // 发送发光， RGB分离
-                        CooPostEffects.server.spawn(
-                            runtime.spawnLevel,
-                            UsefulMagicPostEffects.rgbDashBlur(20, 2f, 2f, 2f)
-                        )
+                        UsefulMagicPostEffects.playRgbDashBlur(runtime.spawnLevel, 20, 2F, 2F, 2F)
                     }
                     count++
                 }
@@ -371,21 +370,21 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                 }
 
                 val spawnPos = runtime.conjurePosition
-                val dragonPos = spawnPos.add(0.0, 64.0, 0.0)
+                val dragonPos = spawnPos + Vec3(0.0, 64.0, 0.0)
                 val world = runtime.spawnLevel
 
 
                 val animates = runtime.getAsIsInstance<MutableList<Animate>>("animates") ?: ArrayList()
                 // 先定义一下animate
-                val offsetPos = offsets.removeFirst().add(dragonPos).add(0.0, -32.0, 0.0)
+                val offsetPos = offsets.removeFirst() + dragonPos + Vec3(0.0, -32.0, 0.0)
                 // 这里应该播放类似低音 传送的效果
                 playDragonSoundOnce(
                     world,
                     offsetPos,
                     UsefulMagicSoundEvents.DRAGON_MAGIC_APPEAR.get(),
                     SoundSource.HOSTILE,
-                    3f,
-                    0.9f + Random.nextFloat() * 0.3f,
+                    3F,
+                    0.9F + Random.nextFloat() * 0.3F,
                     256.0,
                 )
                 val animate = Animate()
@@ -401,14 +400,14 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                             .addAction(
                                 RenderAction(StraightLaserRenderEntity(world, offsetPos).apply {
                                     lifetime = 11451419
-                                    maxRadius = 1.5f
+                                    maxRadius = 1.2F
                                     this.phaseTicks = 10
                                     this.setColor(
                                         Math3DUtil.colorOf(255, 120, 240)
                                     )
                                     this.renderRange = 512.0
                                     this.alpha = 0.9
-                                    this.brightness = 0.6f
+                                    this.brightness = 1.3F
                                     updateBeam(offsetPos - (dragonPos - offsetPos).normalize() * 2, dragonPos)
                                 })
                                     .cancelMethod {
@@ -443,12 +442,12 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                         runtime.conjurePosition,
                         SoundEvents.ENDER_DRAGON_GROWL,
                         SoundSource.HOSTILE,
-                        18f,
-                        0.6f + Random.nextFloat() * 0.2f,
+                        18F,
+                        0.6F + Random.nextFloat() * 0.2F,
                         256.0,
                     )
                 }
-                val dragonPos = runtime.conjurePosition.add(0.0, 64.0, 0.0)
+                val dragonPos = runtime.conjurePosition + Vec3(0.0, 64.0, 0.0)
                 val steppedProgress = tick.toDouble() / remainingCount
                 // 计算速度
                 val steppedTick = steppedProgress.lerpAsProgress(15, 3).roundToInt()
@@ -456,10 +455,10 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                     lastSpawnTick = steppedTick
                     ShotWaveBillboardRenderEntity.spawn(
                         runtime.spawnLevel, dragonPos, 5, 5,
-                        limitScale = 1f,
+                        limitScale = 1F,
                         timeoutTick = 60,
-                        scaleSpeed = -24f,
-                        roll = 0.8f,
+                        scaleSpeed = -24F,
+                        roll = 0.8F,
                         alpha = 0.1,
                         initialScale = 240F
                     )
@@ -519,10 +518,10 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
             override fun start(runtime: DragonSpawner) {
                 // 生成龙
                 val dragon = MagicDragonEntity(runtime.spawnLevel)
-                dragon.setPos(runtime.conjurePosition.add(0.0, 64.0, 0.0))
+                dragon.setPos(runtime.conjurePosition + Vec3(0.0, 64.0, 0.0))
                 // 他的锚点位置不能是他的首次生成位置
                 // 但是他需要在64.0 这里进行首个技能的释放
-                dragon.spawnPosition = runtime.conjurePosition.add(0.0, 32.0, 0.0)
+                dragon.spawnPosition = runtime.conjurePosition + Vec3(0.0, 32.0, 0.0)
                 dragon.resetDefaultHealth()
                 runtime.spawnLevel.addFreshEntity(dragon)
 
@@ -535,11 +534,11 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                 val entity = DragonMagicBallRenderEntity(runtime.spawnLevel, dragon.position())
                     .apply {
                         this.color = Math3DUtil.colorOf(255, 120, 240)
-                        this.brightness = 1f
+                        this.brightness = 1F
                         this.surfaceBrightness = 1.3
                         this.bloomEnabled = true
                         this.renderRange = 512.0
-                        this.size = 256f // 覆盖整个岛屿
+                        this.size = 256F // 覆盖整个岛屿
                         this.discardTick = 10
                         this.growingTick = 5
                         ServerRenderEntityManager.spawn(this)
@@ -554,12 +553,16 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                     dragon,
                     UsefulMagicSoundEvents.MAGIC_EXPLODE.get(),
                     SoundSource.HOSTILE,
-                    1f,
-                    1f,
+                    1F,
+                    1F,
                     256.0,
                 )
-                CooPostEffects.server.spawn(
-                    runtime.spawnLevel, UsefulMagicPostEffects.flameExplodeFlash(20, 2f, 1f, Vec3(1.0, 1.0, 0.8))
+                UsefulMagicPostEffects.playFlameExplodeFlash(
+                    runtime.spawnLevel,
+                    20,
+                    2F,
+                    1F,
+                    Vec3(1.0, 1.0, 0.8),
                 )
             }
 
@@ -576,7 +579,7 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
                     it.cancel()
                 }
                 runtime.invokeAsIfPrecent<ServerManagedSoundInstance>("looping_ball") {
-                    it.fadeTo(0f, 20)
+                    it.fadeTo(0F, 20)
                 }
                 runtime.invokeAsIfPrecent<MagicDragonSpawnRuneComposition>("rune") {
                     it.remove()
@@ -619,10 +622,18 @@ class DragonSpawner(val conjurePosition: Vec3, val spawnLevel: ServerLevel) {
         }
     }
 
-    inline fun <reified T> invokeAsIfPrecent(key: String, consumer: Consumer<T>) {
+    /**
+     * 获取指定键的值，并在类型匹配时执行回调。
+     *
+     * 键不存在或值类型不匹配时不会执行回调。
+     *
+     * @param key 参数表中的键
+     * @param consumer 接收匹配值的回调
+     */
+    inline fun <reified T> invokeAsIfPrecent(key: String, consumer: (T) -> Unit) {
         val entry = params[key] ?: return
         entry.runAsIfType<T> {
-            consumer.accept(this)
+            consumer(this)
         }
     }
 

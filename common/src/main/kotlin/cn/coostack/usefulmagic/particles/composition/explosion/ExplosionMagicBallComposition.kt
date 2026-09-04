@@ -1,4 +1,4 @@
-﻿package cn.coostack.usefulmagic.particles.composition.explosion
+package cn.coostack.usefulmagic.particles.composition.explosion
 
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComposition
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
@@ -7,6 +7,7 @@ import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.cooparticlesapi.utils.helper.HelperUtil
+import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.usefulmagic.extend.multiply
 import cn.coostack.usefulmagic.utils.ParticleOption
 import java.util.Random
@@ -18,7 +19,6 @@ import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoSequencedParticleComposition
-import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
 
 @CooAutoRegister
 class ExplosionMagicBallComposition(
@@ -40,12 +40,10 @@ class ExplosionMagicBallComposition(
             .addBall(0.5, 5 * option)
             .createWithCompositionData {
                 CompositionData().setDisplayerSupplier {
-                    ParticleDisplayer.withSingle(
-                        ControlableCloudEffect(it)
-                    )
-                }.addParticleInstanceInit {
-                    colorOfRGB(160, 120, 255)
-                    textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
+                    ParticleDisplayer.withCParticle(it)
+                }.addCParticleInstanceInit {
+                    effect = ControlableCloudEffect(UUID.randomUUID())
+                    color = Math3DUtil.colorOf(160, 120, 255)
                 }
             }
     }

@@ -49,7 +49,7 @@ repositories {
     }
 }
 tasks.withType(JavaExec).configureEach {
-    jvmArgs = ["-XX:+AllowEnhancedClassRedefinition"]
+    jvmArgs("-XX:+AllowEnhancedClassRedefinition")
 }
 tasks.named('jar', Jar) {
 //    from("../fabric/src/main/generated") {

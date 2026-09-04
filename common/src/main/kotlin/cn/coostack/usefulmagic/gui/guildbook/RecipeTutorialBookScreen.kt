@@ -11,8 +11,10 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.item.crafting.RecipeHolder
 
-class RecipeTutorialBookScreen(val recipe: RecipeHolder<AltarRecipeType>, parent: TutorialBookScreen) :
-    RecipeTutorialBookMainScreen(parent) {
+class RecipeTutorialBookScreen(
+    val recipe: RecipeHolder<AltarRecipeType>,
+    private val recipeListScreen: RecipeTutorialBookMainScreen
+) : RecipeTutorialBookMainScreen(recipeListScreen.parent) {
 
     companion object {
         val ALTAR_RECIPE_TABLE_TEXTURE =
@@ -37,6 +39,10 @@ class RecipeTutorialBookScreen(val recipe: RecipeHolder<AltarRecipeType>, parent
     override fun getTypePanelHint(): Component = tb("recipe_detail.type_panel_hint")
 
     override fun getContentPanelHint(): Component = tb("recipe_detail.content_panel_hint")
+
+    override fun getCloseTargetScreen() = recipeListScreen
+
+    override fun getRecipeListScreen(): RecipeTutorialBookMainScreen = recipeListScreen
 
     override fun initContentIcons() {
         val value = recipe.value

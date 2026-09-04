@@ -6,6 +6,7 @@ import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.usefulmagic.formation.CrystalFormation
 import cn.coostack.usefulmagic.formation.api.DefendCrystal
 import cn.coostack.usefulmagic.formation.target.LivingEntityTargetOption
+import cn.coostack.usefulmagic.gamerules.UsefulMagicGameRules
 import cn.coostack.usefulmagic.managers.server.ServerFormationManager
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.server.level.ServerLevel
@@ -29,6 +30,12 @@ object ExplosionUtil {
         count: Int,
         sourceType: Level.ExplosionInteraction
     ) {
+        // 关闭魔法地形破坏时, 把会破坏方块的交互类型降级为 NONE(等价于 BlockInteraction.KEEP), 保留实体伤害。
+        val effectiveSourceType = if (UsefulMagicGameRules.canDestroyTerrain(world)) {
+            sourceType
+        } else {
+            Level.ExplosionInteraction.NONE
+        }
         Math3DUtil.getPolygonInCircleVertices(count, radius)
             .forEach {
                 it.add(RelativeLocation.of(center))
@@ -38,7 +45,7 @@ object ExplosionUtil {
                     formation.attack(8f * power, LivingEntityTargetOption(entity, false), pos)
                 }
                 if (world.hasChunk(it.x.toInt() shr 4, it.z.toInt() shr 4)) {
-                    world.explode(entity, it.x, it.y, it.z, power, sourceType)
+                    world.explode(entity, it.x, it.y, it.z, power, effectiveSourceType)
                 }
             }
     }
@@ -52,6 +59,7 @@ object ExplosionUtil {
         drop: Boolean = false,
         displayBrokenParticles: Boolean = false
     ) {
+        if (!UsefulMagicGameRules.canDestroyTerrain(world)) return
         val solidBall = MathUtil.getSolidBall(maxRadius).map {
             ofFloored((it + RelativeLocation.of(center)).toVector())
         }.toSet()
@@ -95,6 +103,7 @@ object ExplosionUtil {
         drop: Boolean = false,
         displayBrokenParticles: Boolean = false
     ) {
+        if (!UsefulMagicGameRules.canDestroyTerrain(world)) return
         val hollowSphere = MathUtil.getSolidBall(currentRadius).map {
             ofFloored((it + RelativeLocation.of(center)).toVector())
         }.toSet()
@@ -135,6 +144,7 @@ object ExplosionUtil {
         drop: Boolean = false,
         displayBrokenParticles: Boolean = false,
     ) {
+        if (!UsefulMagicGameRules.canDestroyTerrain(world)) return
         val hollowSphere = MathUtil.getSolidBall(currentRadius).map {
             ofFloored((it + RelativeLocation.of(center)).toVector())
         }.toSet()

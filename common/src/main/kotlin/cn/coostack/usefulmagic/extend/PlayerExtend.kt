@@ -1,7 +1,9 @@
 package cn.coostack.usefulmagic.extend
 
+import cn.coostack.usefulmagic.data.magic.DiggingState
 import cn.coostack.usefulmagic.data.tracked.TrackerManager
 import cn.coostack.usefulmagic.entity.MagicEntityDataInit
+import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
 
 var Player.mana: Int
@@ -21,6 +23,18 @@ fun Player.copyManaDataFrom(other: Player) {
     manaAbsorptionRate = other.manaAbsorptionRate
     mana = other.mana.coerceAtMost(maxMana)
 }
+
+
+var Entity.diggingBlockState: DiggingState?
+    get() = this.asHolder().getCooTracker().getOrNull(MagicEntityDataInit.DIGGING_STATE)
+    set(value) {
+        val tracker = this.asHolder().getCooTracker()
+        if (value == null) {
+            tracker.remove(MagicEntityDataInit.DIGGING_STATE)
+            return
+        }
+        this.asHolder().getCooTracker().set(MagicEntityDataInit.DIGGING_STATE, value)
+    }
 
 fun Player.markManaDataDirty() {
     val currentMaxMana = maxMana

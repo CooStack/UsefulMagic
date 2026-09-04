@@ -7,13 +7,13 @@ import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
 import cn.coostack.cooparticlesapi.network.particle.composition.ParticleShapeComposition
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
+import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.utils.ParticleOption
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
-import java.util.SortedMap
-import java.util.TreeMap
+import java.util.*
 import kotlin.math.PI
 
 @CooAutoRegister
@@ -48,8 +48,13 @@ class MagicBookSpawnComposition(position: Vec3, world: Level? = null) :
     }
 
     override fun onDisplay() {
+        var syncedAnimationIndex = animate.animationIndex
         addPreTickAction {
             age++
+            if (!client && syncedAnimationIndex != animate.animationIndex) {
+                syncedAnimationIndex = animate.animationIndex
+                markDirty()
+            }
         }
     }
 
@@ -58,7 +63,9 @@ class MagicBookSpawnComposition(position: Vec3, world: Level? = null) :
         var order = 0
         fun single(): CompositionData {
             return CompositionData().setDisplayerSupplier {
-                ParticleDisplayer.withSingle(ControlableEndRodEffect(it))
+                ParticleDisplayer.withCParticle(it)
+            }.addCParticleInstanceInit {
+                effect = ControlableEndRodEffect(UUID.randomUUID())
             }
         }
         // 第一层 小圆+ 六芒星
@@ -73,8 +80,8 @@ class MagicBookSpawnComposition(position: Vec3, world: Level? = null) :
                                 .rotateAsAxis(PI / 3)
                                 .addCycloidGraphic(1.0, 2.0, 2, -1, 120 * options, 2 / 3.0)
                         ) {
-                            single().addParticleInstanceInit {
-                                colorOfRGB(255, 100, 230)
+                            single().addCParticleInstanceInit {
+                                color = Math3DUtil.colorOf(255, 100, 230)
                             }
                         }.loadScaleHelper(0.01, 1.0, 20)
                         .applyDisplayAction {
@@ -114,8 +121,8 @@ class MagicBookSpawnComposition(position: Vec3, world: Level? = null) :
                                     res
                                 }
                         ) {
-                            single().addParticleInstanceInit {
-                                colorOfRGB(255, 100, 230)
+                            single().addCParticleInstanceInit {
+                                color = Math3DUtil.colorOf(255, 100, 230)
                             }
                         }.loadScaleHelper(0.01, 1.0, 20).applyDisplayAction {
                             addPreTickAction {
@@ -160,8 +167,8 @@ class MagicBookSpawnComposition(position: Vec3, world: Level? = null) :
                                     res
                                 }
                         ) {
-                            single().addParticleInstanceInit {
-                                colorOfRGB(255, 100, 230)
+                            single().addCParticleInstanceInit {
+                                color = Math3DUtil.colorOf(255, 100, 230)
                             }
                         }.loadScaleHelper(0.01, 1.0, 20).applyDisplayAction {
                             addPreTickAction {

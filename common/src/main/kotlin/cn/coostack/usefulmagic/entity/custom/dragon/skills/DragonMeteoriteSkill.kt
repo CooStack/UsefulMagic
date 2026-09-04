@@ -6,15 +6,13 @@ import cn.coostack.cooparticlesapi.network.particle.composition.manager.Particle
 import cn.coostack.cooparticlesapi.network.particle.data.IntRangeData
 import cn.coostack.cooparticlesapi.network.particle.data.minRangeTo
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.renderer.post.CooPostEffects
-import cn.coostack.cooparticlesapi.sound.ServerManagedSoundInstance
-import cn.coostack.cooparticlesapi.sound.ServerSoundManager
-import cn.coostack.cooparticlesapi.sound.SoundVolumeFalloff
 import cn.coostack.cooparticlesapi.supports.TextureSheetsEnum
+import cn.coostack.cooparticlesapi.supports.sound.ServerManagedSoundInstance
+import cn.coostack.cooparticlesapi.supports.sound.ServerSoundManager
+import cn.coostack.cooparticlesapi.supports.sound.SoundVolumeFalloff
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.PhysicsUtil
 import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
-import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.damagetypes.UsefulMagicDamageSources
 import cn.coostack.usefulmagic.entity.custom.dragon.MagicDragonEntity
 import cn.coostack.usefulmagic.entity.custom.dragon.emitters.TrackingTailEmitter
@@ -29,7 +27,7 @@ import cn.coostack.usefulmagic.extend.searchLivingEntities
 import cn.coostack.usefulmagic.extend.serverLevel
 import cn.coostack.usefulmagic.meteorite.MeteoriteBarrage
 import cn.coostack.usefulmagic.meteorite.MeteoriteDisplay
-import cn.coostack.usefulmagic.particles.composition.magic.MeteoriteChargingComposition
+import cn.coostack.usefulmagic.particles.composition.magic.attack.MeteoriteChargingComposition
 import cn.coostack.usefulmagic.particles.emitters.magic.MeteoriteExplosionEmitter
 import cn.coostack.usefulmagic.particles.emitters.magic.MeteoriteShockwaveEmitter
 import cn.coostack.usefulmagic.particles.emitters.meteorite.MeteoriteTailEmitter
@@ -39,7 +37,6 @@ import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import cn.coostack.usefulmagic.utils.EntityUtil
 import cn.coostack.usefulmagic.utils.FriendFilterHelper
 import net.minecraft.network.protocol.game.ClientboundStopSoundPacket
-import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvents
@@ -63,7 +60,7 @@ import kotlin.random.Random
  *
  * 然后用来展现出陨石特效的
  *
- * @constructor Create empty Dragon meteorite skill
+ * @constructor 创建陨石技能。
  */
 class DragonMeteoriteSkill : DragonSkill() {
     companion object {
@@ -73,10 +70,6 @@ class DragonMeteoriteSkill : DragonSkill() {
         private const val RELEASE_WAIT_TICKS = 80
         private const val TARGET_SIZE = 16.0
         private const val SUB_METEORITES_PER_WAVE = 2
-        private const val SPELL_DAMAGE = 32.0f
-        private const val METEOR_SOUND_RANGE = 512.0
-        private const val METEOR_NEAR_DISTANCE = 12.0
-        private val SUB_METEORITE_FIRE_COLOR = Vector3f(1.0f, 0.16f, 0.58f)
     }
 
     override var chance: Double = 100.0
@@ -101,7 +94,7 @@ class DragonMeteoriteSkill : DragonSkill() {
         source.phaseManager.forceSetPhase(
             DragonHoverFlightPhase()
         ) {
-            setCurrentTarget(source.spawnPosition.add(0.0, 15.0, 0.0))
+            setCurrentTarget(source.spawnPosition + Vec3(0.0, 15.0, 0.0))
             listenContinue {
                 if (!arrive && isArriveCurrentTarget(source, 2.0)) {
                     arrive = true
@@ -162,7 +155,7 @@ class DragonMeteoriteSkill : DragonSkill() {
                 this.arriveCanceled = true
                 particleConfig.apply {
                     this.color = color
-                    this.visibleRange = 256f
+                    this.visibleRange = 256F
                     this.setTextureSheet(TextureSheetsEnum.ADDITION_BLEND_TRANSLUCENT)
                 }
                 this.simpleConfig.apply {
@@ -195,8 +188,8 @@ class DragonMeteoriteSkill : DragonSkill() {
 
     private fun spawnMainBarrage(source: MagicDragonEntity) {
         val world = source.serverLevel ?: return
-        val loc = source.position().add(0.0, 24.0, 0.0)
-        //  播放loops音效
+        val loc = source.position() + Vec3(0.0, 24.0, 0.0)
+        // 播放循环音效。
         submitTaskServer(20) {
             loopSound = ServerSoundManager.instance(
                 UsefulMagicSoundEvents.ROCK_LOOP.get(),
@@ -204,15 +197,16 @@ class DragonMeteoriteSkill : DragonSkill() {
             )
                 .entity(source)
                 .layer("meteorite_rock")
-                .volume(0f)
-                .pitch(1f)
+                .volume(0F)
+                .pitch(1F)
                 .visibleRange(256.0)
                 .volumeFalloff(SoundVolumeFalloff.LINEAR)
                 .syncEveryTick(true)
                 .relative()
+                .lifetime(-1)
                 .looping()
                 .spawn().apply {
-                    fadeTo(1f, 20)
+                    fadeTo(1F, 20)
                 }
         }
         mainMeteoriteWorld = world
@@ -221,8 +215,8 @@ class DragonMeteoriteSkill : DragonSkill() {
             world,
             MeteoriteDisplay(loc, world).apply {
                 state = Blocks.MAGMA_BLOCK.defaultBlockState()
-                scale = 0f
-                prevScale = 0f
+                scale = 0F
+                prevScale = 0F
             },
             BarrageOption()
                 .noneHitBoxTick(5)
@@ -246,21 +240,20 @@ class DragonMeteoriteSkill : DragonSkill() {
     private fun spawnSubMeteorite(source: MagicDragonEntity) {
         val mainBarrage = mainMeteorite ?: return
         val world = source.serverLevel ?: return
-        val spawnOffset = Vec3.ZERO.random().scale(
+        val spawnOffset = Vec3.ZERO.random() *
             Random.nextDouble(
                 TARGET_SIZE + 24.0,
                 TARGET_SIZE + 48.0
             )
-        )
-        val spawnPos = mainBarrage.loc.add(spawnOffset)
+        val spawnPos = mainBarrage.loc + spawnOffset
         val mergeIncrease = TARGET_SIZE / (MERGE_TICKS * SUB_METEORITES_PER_WAVE)
         val subMeteorite = MeteoriteBarrage(
             spawnPos,
             world,
             MeteoriteDisplay(spawnPos, world).apply {
                 state = Blocks.NETHERRACK.defaultBlockState()
-                scale = 0f
-                prevScale = 0f
+                scale = 0F
+                prevScale = 0F
             },
             BarrageOption()
                 .acrossBlock(true)
@@ -272,7 +265,7 @@ class DragonMeteoriteSkill : DragonSkill() {
             addPreTickAction {
                 val next = PhysicsUtil.nextAttractVelocityNullable(
                     loc,
-                    direction.normalize().scale(options.speed),
+                    direction.normalize() * options.speed,
                     mainBarrage.loc,
                     falloffPow = 1,
                     strength = 5.0,
@@ -321,7 +314,7 @@ class DragonMeteoriteSkill : DragonSkill() {
         farFlySoundStarted = true
         mainBarrage.addHitOnServer {
             val fallDir = if (direction.lengthSqr() <= 1e-6) dir else direction.normalize()
-            val explosionCenter = loc.add(fallDir.scale(mainBarrage.targetSize.targetNum.toDouble() * 1.25))
+            val explosionCenter = loc + fallDir * (mainBarrage.targetSize.targetNum.toDouble() * 1.25)
             tailEmitter.canceled = true
             mainMeteoriteRenderer?.discard(12)
             mainMeteoriteRenderer = null
@@ -333,7 +326,7 @@ class DragonMeteoriteSkill : DragonSkill() {
                 center = explosionCenter,
                 radius = (TARGET_SIZE * 2.0).coerceAtLeast(1.0),
                 fullDamageRadius = TARGET_SIZE,
-                spellDamage = SPELL_DAMAGE
+                spellDamage = 32F
             )
             mainMeteoriteRenderer?.discard()
             remove()
@@ -342,7 +335,7 @@ class DragonMeteoriteSkill : DragonSkill() {
         }
         mainBarrage.addPreTickAction {
             if (nearFlySoundPlayed) return@addPreTickAction
-            if (loc.distanceTo(target) > METEOR_NEAR_DISTANCE) return@addPreTickAction
+            if (loc.distanceTo(target) > 12.0) return@addPreTickAction
             stopFarFlySound(loc)
             playMeteorNearFlySound(world, loc)
             nearFlySoundPlayed = true
@@ -370,6 +363,7 @@ class DragonMeteoriteSkill : DragonSkill() {
             tailEmitter.teleportTo(loc)
             tailEmitter.radius = targetSize.targetNum.toDouble().coerceAtLeast(1.0)
             tailEmitter.direction = -fallDir
+            tailEmitter.markDirty()
             ServerCameraUtil.sendShake(world, loc, 256.0, 4.0, 10, 100.0, true)
         }
         return tailEmitter
@@ -382,9 +376,11 @@ class DragonMeteoriteSkill : DragonSkill() {
 
     private fun explosion(source: MagicDragonEntity, meteorite: MeteoriteBarrage) {
         source.level().getEntitiesOfClass(Player::class.java, source.boundingBox.inflate(256.0)).forEach {
-            CooPostEffects.server.send(
+            UsefulMagicPostEffects.playFlameExplodeFlash(
                 it as ServerPlayer,
-                UsefulMagicPostEffects.flameExplodeFlash(30, 1f, 1f)
+                30,
+                1F,
+                1F,
             )
         }
         // 召唤多个小陨石 + 粒子
@@ -395,7 +391,7 @@ class DragonMeteoriteSkill : DragonSkill() {
             val smallMeteorite = MeteoriteBarrage(
                 meteorite.loc, meteorite.world,
                 MeteoriteDisplay(Vec3.ZERO, null).apply {
-                    this.scale = 4f
+                    this.scale = 4F
                 },
                 BarrageOption().enableSpeedWithOptions(3.5)
             ).apply {
@@ -407,16 +403,16 @@ class DragonMeteoriteSkill : DragonSkill() {
                 meteorite.world,
                 smallMeteorite.loc,
                 smallMeteorite.direction,
-                4f,
-                color = Vector3f(SUB_METEORITE_FIRE_COLOR),
+                4F,
+                color = Vector3f(1.0F, 0.16F, 0.58F),
                 lifetime = 20 * 100,
                 fadeInTicks = 3,
                 fadeOutTicks = 8,
                 alpha = 0.56,
             )
             smallMeteorite.addPreTickAction {
-                // gravity
-                direction = (direction.normalize() * options.speed).add(0.0, -0.1, 0.0)
+                // 重力
+                direction = direction.normalize() * options.speed + Vec3(0.0, -0.1, 0.0)
                 options.speed = direction.length()
                 renderer.moveTo(loc, direction)
             }.addHitOnServer {
@@ -429,15 +425,15 @@ class DragonMeteoriteSkill : DragonSkill() {
                 )
                 val ds = UsefulMagicDamageSources.entityDamage(world, source, source)
                 world.searchEntities(loc, 32.0, EntityUtil.filterDragon).forEach {
-                    it.hurt(ds, 12f)
+                    it.hurt(ds, 12F)
                 }
                 playDragonSoundOnce(
                     world,
                     loc,
                     SoundEvents.GENERIC_EXPLODE.value(),
                     SoundSource.HOSTILE,
-                    10f,
-                    1f,
+                    10F,
+                    1F,
                     256.0,
                 )
                 splitChildBarrage(world, loc, source, 8 minRangeTo 12, 5.0)
@@ -463,11 +459,14 @@ class DragonMeteoriteSkill : DragonSkill() {
     private fun sendWeakSubMeteoriteFlash(world: ServerLevel, loc: Vec3) {
         world.players().filter {
             it.position().distanceTo(loc) <= 96.0
-                    && it.canSee(loc)
+                    && it canSee loc
         }.forEach {
-            CooPostEffects.server.send(
+            UsefulMagicPostEffects.playFlameExplodeFlash(
                 it,
-                UsefulMagicPostEffects.flameExplodeFlash(8, 0.28f, 0.45f, Vec3(1.0, 0.16, 0.58))
+                8,
+                0.28F,
+                0.45F,
+                Vec3(1.0, 0.16, 0.58),
             )
         }
     }
@@ -483,7 +482,7 @@ class DragonMeteoriteSkill : DragonSkill() {
         val targets = source.searchLivingEntities(256.0, EntityUtil.filterDragon)
         repeat(Random.nextInt(count.random())) {
             val target = targets.randomOrNull() ?: source.target ?: return
-            // 这里要搜索 tracked entity
+            // 这里要搜索被跟踪的实体。
             DragonTrackedBarrage(target, loc, world, damage, source)
                 .apply {
                     // 向上炸开的感觉
@@ -514,14 +513,14 @@ class DragonMeteoriteSkill : DragonSkill() {
             val distance = target.boundingBox.center.distanceTo(center)
             if (distance > radius) return@forEach
             val damageFactor = if (distance <= fullDamageRadius) {
-                1.0f
+                1.0F
             } else {
                 (1.0 - (distance - fullDamageRadius) / (radius - fullDamageRadius))
                     .coerceIn(0.0, 1.0)
                     .toFloat()
             }
             val finalDamage = spellDamage * damageFactor
-            if (finalDamage > 0.05f) {
+            if (finalDamage > 0.05F) {
                 target.hurt(damageSource, finalDamage)
             }
         }
@@ -535,8 +534,8 @@ class DragonMeteoriteSkill : DragonSkill() {
             soundPos.z,
             UsefulMagicSoundEvents.METEOR_FALL_FAR.get(),
             SoundSource.HOSTILE,
-            16f,
-            1f
+            16F,
+            1F
         )
     }
 
@@ -548,8 +547,8 @@ class DragonMeteoriteSkill : DragonSkill() {
             soundPos.z,
             UsefulMagicSoundEvents.METEOR_FALL_NEAR.get(),
             SoundSource.HOSTILE,
-            18f,
-            1.1f
+            18F,
+            1.1F
         )
     }
 
@@ -561,17 +560,17 @@ class DragonMeteoriteSkill : DragonSkill() {
             soundPos.z,
             UsefulMagicSoundEvents.METEOR_IMPACT.get(),
             SoundSource.HOSTILE,
-            32f,
-            1f
+            32F,
+            1F
         )
     }
 
     private fun stopMeteorFarFlySound(world: ServerLevel, soundPos: Vec3) {
         val stopPacket = ClientboundStopSoundPacket(
-            ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "meteor_fall_far"),
+            UsefulMagicSoundEvents.METEOR_FALL_FAR.id,
             SoundSource.HOSTILE
         )
-        nearbyPlayers(world, soundPos, METEOR_SOUND_RANGE).forEach {
+        nearbyPlayers(world, soundPos, 512.0).forEach {
             it.connection.send(stopPacket)
         }
     }

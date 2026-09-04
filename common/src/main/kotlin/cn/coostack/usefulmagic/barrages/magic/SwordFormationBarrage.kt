@@ -5,8 +5,7 @@ import cn.coostack.cooparticlesapi.barrages.BarrageHitResult
 import cn.coostack.cooparticlesapi.barrages.BarrageOption
 import cn.coostack.cooparticlesapi.barrages.HitBox
 import cn.coostack.cooparticlesapi.extend.asRelative
-import cn.coostack.usefulmagic.barrages.api.EntityMagicDamagedBarrage
-import cn.coostack.usefulmagic.particles.composition.magic.SwordQiComposition
+import cn.coostack.usefulmagic.particles.composition.magic.attack.SwordQiComposition
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import cn.coostack.usefulmagic.utils.FriendFilterHelper
 import net.minecraft.core.BlockPos
@@ -42,6 +41,7 @@ class SwordFormationBarrage(
     override fun tick() {
         val composition = bindControl.get() as SwordQiComposition
         composition.movement = direction.asRelative()
+        composition.markDirty()
         if (!noclip() && options.speed <= 1e-6) {
             options.speed(5.0)
         }

@@ -20,14 +20,21 @@ uniform float filamentWidth = 0.032;
 uniform float edgeWidth = 0.11;
 uniform float cameraInside = 0.0;
 uniform int passMode = 0;
+uniform int renderTarget = 2;
 
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out vec4 MaskColor;
 
 const float PI = 3.14159265359;
 const float TAU = 6.28318530718;
 
 float saturate(float value) {
     return clamp(value, 0.0, 1.0);
+}
+
+void outputColor(vec4 value) {
+    FragColor = renderTarget != 1 ? value : vec4(0.0);
+    MaskColor = renderTarget != 0 ? value : vec4(0.0);
 }
 
 float hash21(vec2 p) {
@@ -126,5 +133,5 @@ void main() {
     if (finalAlpha <= 0.002) {
         discard;
     }
-    FragColor = vec4(color, saturate(finalAlpha));
+    outputColor(vec4(color, saturate(finalAlpha)));
 }

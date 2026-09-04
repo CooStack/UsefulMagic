@@ -1,4 +1,4 @@
-﻿package cn.coostack.usefulmagic.barrages
+package cn.coostack.usefulmagic.barrages
 
 import cn.coostack.cooparticlesapi.api.controler.server.ServerControler
 import cn.coostack.cooparticlesapi.barrages.BarrageHitResult
@@ -7,6 +7,7 @@ import cn.coostack.cooparticlesapi.barrages.HitBox
 import cn.coostack.cooparticlesapi.network.particle.util.ServerParticleUtil
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.UsefulMagic
+import cn.coostack.usefulmagic.barrages.api.DamagedBarrage
 import cn.coostack.usefulmagic.formation.api.FormationTargetOption
 import cn.coostack.usefulmagic.particles.composition.EndRodSwordComposition
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
@@ -20,7 +21,7 @@ import cn.coostack.cooparticlesapi.extend.*
 
 class SwordAttackFormationBarrage(
     loc: Vec3, world: ServerLevel, damage: Double, var targetOption: FormationTargetOption
-) : cn.coostack.usefulmagic.barrages.api.DamagedBarrage(
+) : DamagedBarrage(
     loc, world,
     BarrageOption()
         .apply {
@@ -46,6 +47,7 @@ class SwordAttackFormationBarrage(
         }
         bindControl.get().runAsIfType<EndRodSwordComposition> {
             this.direction = this@SwordAttackFormationBarrage.direction.asRelative()
+            markDirty()
         }
         super.tick()
     }
@@ -71,7 +73,6 @@ class SwordAttackFormationBarrage(
         return EndRodSwordComposition(loc, world).apply {
             this.enableAlpha = true
             this.alphaTick = 10
-            this.enableScale = true
         }
     }
 

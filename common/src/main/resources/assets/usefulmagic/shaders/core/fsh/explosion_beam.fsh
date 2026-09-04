@@ -1,6 +1,7 @@
 #version 330 core
 
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out vec4 MaskColor;
 
 in vec3 localPos;
 
@@ -16,9 +17,16 @@ uniform float textureSpeed = 1.0;
 uniform float phaseProgress = 1.0;
 uniform float collapse = 0.0;
 uniform float time = 0.0;
+uniform float maskIntensityScale = 1.0;
+uniform int renderTarget = 2;
 
 float saturate(float value) {
     return clamp(value, 0.0, 1.0);
+}
+
+void outputColor(vec4 value) {
+    FragColor = renderTarget != 1 ? value : vec4(0.0);
+    MaskColor = renderTarget != 0 ? vec4(value.rgb * max(maskIntensityScale, 0.0), value.a) : vec4(0.0);
 }
 
 float pulse(float value) {
@@ -78,5 +86,5 @@ void main() {
     beamColor = mix(beamColor, whiteHot, whiteLift);
     beamColor *= brightness * (1.0 + streaks * 0.30 + capHighlight * 0.22 + capRing * impactStrength * 0.12);
 
-    FragColor = vec4(beamColor, finalAlpha);
+    outputColor(vec4(beamColor, finalAlpha));
 }

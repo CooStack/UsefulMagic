@@ -73,6 +73,9 @@ class UsefulMagicItemTagProvider(
             .add(UsefulMagicItems.LASER_MAGIC)
             .add(UsefulMagicItems.SWORD_FORMATION_MAGIC)
             .add(UsefulMagicItems.SWORD_QI_MAGIC)
+            .add(UsefulMagicItems.BLOOM_MAGIC)
+            .add(UsefulMagicItems.PUSH_MAGIC)
+            .add(UsefulMagicItems.DIGGING_MAGIC)
 
         getOrCreateTagBuilder(UsefulMagicItemTags.CRYSTAL)
             .add(UsefulMagicItems.MANA_CRYSTAL, PURPLE_MANA_CRYSTAL, RED_MANA_CRYSTAL)

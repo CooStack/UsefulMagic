@@ -82,6 +82,9 @@ class UsefulMagicENLangProvider(
             add(UsefulMagicItems.STARRY_MAGIC, "Starry Meteorite Spell");
             add(UsefulMagicItems.ANTI_ENTITY_DOMAIN_MAGIC, "Anti Entity Domain Spell");
             add(UsefulMagicItems.EXPLOSION_MAGIC, "§c§lExplosion Magic");
+            add(UsefulMagicItems.BLOOM_MAGIC, "Bloom Spell")
+            add(UsefulMagicItems.PUSH_MAGIC, "Gust Spell")
+            add(UsefulMagicItems.DIGGING_MAGIC, "Excavation Spell")
 
             // entity
             add(UsefulMagicEntityTypes.MAGIC_BOOK_ENTITY_TYPE, "Forbidden Grimoire");
@@ -248,6 +251,11 @@ class UsefulMagicENLangProvider(
             add("item.usefulmagic.magic.base_usage", "§7Base Charge Time: %s")
 
             add("item.usefulmagic.magic.barrage_magic", "§7Charge and release a magic orb")
+            add("item.usefulmagic.items.push_magic", "§7Push away entities in front of you\n§7It might hurt a little")
+            add(
+                "item.usefulmagic.items.bloom_magic",
+                "§aLet spring awaken all things. After release, it ripens nearby crops\n§a§nCreate your own flower field!"
+            )
             add("item.usefulmagic.spell_bag.fullness", "§7Spells: %s/%s")
             add("item.usefulmagic.spell_bag.empty", "Empty")
             // sounds
@@ -397,6 +405,9 @@ class UsefulMagicENLangProvider(
             add("item.usefulmagic.prefer.level3",  "§aClearly Preferred");
             add("item.usefulmagic.prefer.level4",  "§aStrongly Preferred");
             add("item.usefulmagic.prefer.level5",  "§aHighly Preferred");
+
+            // game rules
+            add("gamerule.magicTerrainDestruction", "Magic Terrain Destruction")
 
         }
     }

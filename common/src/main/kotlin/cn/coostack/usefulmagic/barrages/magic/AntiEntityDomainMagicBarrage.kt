@@ -5,7 +5,6 @@ import cn.coostack.cooparticlesapi.barrages.BarrageHitResult
 import cn.coostack.cooparticlesapi.barrages.BarrageOption
 import cn.coostack.cooparticlesapi.barrages.HitBox
 import cn.coostack.cooparticlesapi.supports.TextureSheetsEnum
-import cn.coostack.usefulmagic.barrages.api.EntityMagicDamagedBarrage
 import cn.coostack.usefulmagic.particles.emitters.magic.BarrageTailEmitter
 import cn.coostack.usefulmagic.utils.FriendFilterHelper
 import net.minecraft.server.level.ServerLevel
@@ -38,7 +37,7 @@ class AntiEntityDomainMagicBarrage(
 
     override fun createControler(): ServerControler<*> {
         return BarrageTailEmitter(loc, world).apply {
-            template.color = Vector3f(0.662745F, 0.541176F, 1F)
+            left = Vector3f(0.662745F, 0.541176F, 1F)
             template.setTextureSheet(TextureSheetsEnum.ADDITION_BLEND_TRANSLUCENT)
             emittersInterpolator.setRefiner(3.5)
         }

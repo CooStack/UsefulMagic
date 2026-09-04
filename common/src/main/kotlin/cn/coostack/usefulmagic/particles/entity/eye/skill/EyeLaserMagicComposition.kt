@@ -2,18 +2,19 @@ package cn.coostack.usefulmagic.particles.entity.eye.skill
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
+import cn.coostack.cooparticlesapi.cparticle.CParticleCurve
+import cn.coostack.cooparticlesapi.cparticle.CParticleRenderLayer
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComposition
 import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
-import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEnchantmentEffect
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionAlphaHelper
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
+import java.util.*
 import kotlin.math.PI
 import kotlin.random.Random
 
@@ -26,17 +27,12 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
     var direction: RelativeLocation =
         RelativeLocation(0.0, 0.0, 1.0)
 
-    private val alphaHelper =
-        CompositionAlphaHelper(
-            0.0,
-            1.0,
-            30
-        )
+
     init {
-        axis = RelativeLocation.Companion.yAxis()
-        alphaHelper.loadControler(this)
+        axis = RelativeLocation.yAxis()
         setDisabledInterval(30)
     }
+
     override fun getParticles(): Map<CompositionData, RelativeLocation> {
         val result = LinkedHashMap<CompositionData, RelativeLocation>()
 
@@ -54,79 +50,92 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                         -7.794229,
                         0.0,
                         -4.5
-                    ), 1.0, -1.0)
+                    ), 1.0, -1.0
+                )
                 .clearAsRoundXZMask(
                     RelativeLocation(
                         -4.5,
                         0.0,
                         -7.794229
-                    ), 1.0, -1.0)
+                    ), 1.0, -1.0
+                )
                 .clearAsRoundXZMask(
                     RelativeLocation(
                         0.0,
                         0.0,
                         -9.0
-                    ), 1.0, -1.0)
+                    ), 1.0, -1.0
+                )
                 .clearAsRoundXZMask(
                     RelativeLocation(
                         4.5,
                         0.0,
                         -7.794229
-                    ), 1.0, -1.0)
+                    ), 1.0, -1.0
+                )
                 .clearAsRoundXZMask(
                     RelativeLocation(
                         7.794229,
                         0.0,
                         -4.5
-                    ), 1.0, -1.0)
+                    ), 1.0, -1.0
+                )
                 .clearAsRoundXZMask(
                     RelativeLocation(
                         9.0,
                         0.0,
                         0.0
-                    ), 1.0, -1.0)
+                    ), 1.0, -1.0
+                )
                 .clearAsRoundXZMask(
                     RelativeLocation(
                         7.794229,
                         0.0,
                         4.5
-                    ), 1.0, -1.0)
+                    ), 1.0, -1.0
+                )
                 .clearAsRoundXZMask(
                     RelativeLocation(
                         4.5,
                         0.0,
                         7.794229
-                    ), 1.0, -1.0)
+                    ), 1.0, -1.0
+                )
                 .clearAsRoundXZMask(
                     RelativeLocation(
                         0.0,
                         0.0,
                         9.0
-                    ), 1.0, -1.0)
+                    ), 1.0, -1.0
+                )
                 .clearAsRoundXZMask(
                     RelativeLocation(
                         -4.5,
                         0.0,
                         7.794229
-                    ), 1.0, -1.0)
+                    ), 1.0, -1.0
+                )
                 .clearAsRoundXZMask(
                     RelativeLocation(
                         -7.794229,
                         0.0,
                         4.5
-                    ), 1.0, -1.0)
+                    ), 1.0, -1.0
+                )
                 .clearAsRoundXZMask(
                     RelativeLocation(
                         -9.0,
                         0.0,
                         0.0
-                    ), 1.0, -1.0)
+                    ), 1.0, -1.0
+                )
                 .clearAsRoundXZMask(
                     RelativeLocation(
                         -9.0,
                         0.0,
                         0.0
-                    ), 1.0, -1.0)
+                    ), 1.0, -1.0
+                )
                 .addBuilder(
                     RelativeLocation(0.0, 0.0, 0.0),
                     PointsBuilder()
@@ -149,7 +158,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                     ),
                                     RelativeLocation(9.0, 0.0, 0.0)
                                 )
-                                .rotateAsAxis(0.0,
+                                .rotateAsAxis(
+                                    0.0,
                                     RelativeLocation(9.0, 0.0, 0.0)
                                 )
                         )
@@ -176,7 +186,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                         4.5
                                     )
                                 )
-                                .rotateAsAxis(0.0,
+                                .rotateAsAxis(
+                                    0.0,
                                     RelativeLocation(
                                         7.794229,
                                         0.0,
@@ -207,7 +218,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                         7.794229
                                     )
                                 )
-                                .rotateAsAxis(0.0,
+                                .rotateAsAxis(
+                                    0.0,
                                     RelativeLocation(
                                         4.5,
                                         0.0,
@@ -234,7 +246,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                     ),
                                     RelativeLocation(0.0, 0.0, 9.0)
                                 )
-                                .rotateAsAxis(0.0,
+                                .rotateAsAxis(
+                                    0.0,
                                     RelativeLocation(0.0, 0.0, 9.0)
                                 )
                         )
@@ -261,7 +274,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                         7.794229
                                     )
                                 )
-                                .rotateAsAxis(0.0,
+                                .rotateAsAxis(
+                                    0.0,
                                     RelativeLocation(
                                         -4.5,
                                         0.0,
@@ -292,7 +306,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                         4.5
                                     )
                                 )
-                                .rotateAsAxis(0.0,
+                                .rotateAsAxis(
+                                    0.0,
                                     RelativeLocation(
                                         -7.794229,
                                         0.0,
@@ -323,7 +338,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                         0.0
                                     )
                                 )
-                                .rotateAsAxis(0.0,
+                                .rotateAsAxis(
+                                    0.0,
                                     RelativeLocation(
                                         -9.0,
                                         0.0,
@@ -354,7 +370,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                         -4.5
                                     )
                                 )
-                                .rotateAsAxis(0.0,
+                                .rotateAsAxis(
+                                    0.0,
                                     RelativeLocation(
                                         -7.794229,
                                         0.0,
@@ -385,7 +402,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                         -7.794229
                                     )
                                 )
-                                .rotateAsAxis(0.0,
+                                .rotateAsAxis(
+                                    0.0,
                                     RelativeLocation(
                                         -4.5,
                                         0.0,
@@ -416,7 +434,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                         -9.0
                                     )
                                 )
-                                .rotateAsAxis(0.0,
+                                .rotateAsAxis(
+                                    0.0,
                                     RelativeLocation(
                                         0.0,
                                         0.0,
@@ -447,7 +466,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                         -7.794229
                                     )
                                 )
-                                .rotateAsAxis(0.0,
+                                .rotateAsAxis(
+                                    0.0,
                                     RelativeLocation(
                                         4.5,
                                         0.0,
@@ -478,7 +498,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                         -4.5
                                     )
                                 )
-                                .rotateAsAxis(0.0,
+                                .rotateAsAxis(
+                                    0.0,
                                     RelativeLocation(
                                         7.794229,
                                         0.0,
@@ -509,7 +530,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 0.916667
-                                            ), 0.5, 30)
+                                            ), 0.5, 30
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.0,
@@ -520,7 +542,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 -0.75
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.375,
@@ -531,13 +554,14 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.375,
                                                 0.0,
                                                 -0.125
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addRadian(
                                             RelativeLocation(
                                                 0.004853,
                                                 0.0,
                                                 1.944586
-                                            ), 0.5, 10, 0.0, 1.0* PI, 1.0* PI
+                                            ), 0.5, 10, 0.0, 1.0 * PI, 1.0 * PI
                                         )
                                         .scale(0.6)
                                 )
@@ -581,7 +605,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 0.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 -0.5,
@@ -592,7 +617,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 0.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.5,
@@ -603,7 +629,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 0.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 -0.5,
@@ -614,7 +641,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 0.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.5,
@@ -625,7 +653,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.5,
                                                 0.0,
                                                 -1.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 -0.5,
@@ -636,7 +665,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.5,
                                                 0.0,
                                                 -1.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .scale(0.6)
                                 )
                                 .pointsOnEach { it.add(0.0, 0.0, 0.0) }
@@ -697,7 +727,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.75,
                                                 0.0,
                                                 0.125
-                                            ), 20)
+                                            ), 20
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.125,
@@ -708,7 +739,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.5,
                                                 0.0,
                                                 0.375
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .scale(0.6)
                                 )
                                 .pointsOnEach { it.add(0.0, 0.0, 0.0) }
@@ -751,7 +783,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 -1.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.0,
@@ -762,7 +795,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.75,
                                                 0.0,
                                                 0.5
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 -0.75,
@@ -773,7 +807,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 0.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.0,
@@ -784,7 +819,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.75,
                                                 0.0,
                                                 -0.625
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 -0.75,
@@ -795,7 +831,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 -1.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .scale(0.6)
                                 )
                                 .pointsOnEach { it.add(0.0, 0.0, 0.0) }
@@ -848,7 +885,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.125,
                                                 0.0,
                                                 -0.25
-                                            ), 20)
+                                            ), 20
+                                        )
                                         .addBezierCurve(
                                             RelativeLocation(
                                                 -0.375,
@@ -869,7 +907,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.75,
                                                 0.0,
                                                 0.375
-                                            ), 20)
+                                            ), 20
+                                        )
                                         .addBezierCurve(
                                             RelativeLocation(
                                                 0.875,
@@ -890,7 +929,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.5,
                                                 0.0,
                                                 1.375
-                                            ), 20)
+                                            ), 20
+                                        )
                                         .scale(0.6)
                                 )
                                 .pointsOnEach { it.add(0.0, 0.0, 0.0) }
@@ -943,7 +983,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.125,
                                                 0.0,
                                                 1.0
-                                            ), 20)
+                                            ), 20
+                                        )
                                         .addBezierCurve(
                                             RelativeLocation(
                                                 -0.75,
@@ -964,7 +1005,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 1.25,
                                                 0.0,
                                                 -0.875
-                                            ), 20)
+                                            ), 20
+                                        )
                                         .scale(0.5)
                                 )
                                 .pointsOnEach { it.add(0.0, 0.0, 0.625) }
@@ -1007,7 +1049,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.25,
                                                 0.0,
                                                 0.5625
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.625,
@@ -1018,7 +1061,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.625,
                                                 0.0,
                                                 0.0625
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.0,
@@ -1029,7 +1073,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 -1.0625
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.5,
@@ -1040,7 +1085,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.5,
                                                 0.0,
                                                 -0.8125
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .scale(0.6)
                                 )
                                 .pointsOnEach { it.add(0.0, 0.0, 0.0) }
@@ -1100,7 +1146,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.25,
                                                         0.0,
                                                         -1.875
-                                                    ), 30)
+                                                    ), 30
+                                                )
                                         )
                                         .addBezierCurve(
                                             RelativeLocation(
@@ -1122,13 +1169,14 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.125,
                                                 0.0,
                                                 -2.375
-                                            ), 30)
+                                            ), 30
+                                        )
                                         .addRadian(
                                             RelativeLocation(
                                                 0.011446,
                                                 0.0,
                                                 1.556568
-                                            ), 0.5, 20, 1.0* PI, 0.0, 0.013563* PI
+                                            ), 0.5, 20, 1.0 * PI, 0.0, 0.013563 * PI
                                         )
                                         .scale(0.5)
                                 )
@@ -1172,7 +1220,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.375,
                                                 0.0,
                                                 0.75
-                                            ), 20)
+                                            ), 20
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.0,
@@ -1183,7 +1232,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 -0.625
-                                            ), 20)
+                                            ), 20
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.375,
@@ -1194,7 +1244,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 -0.625
-                                            ), 20)
+                                            ), 20
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 -0.375,
@@ -1205,7 +1256,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 -0.625
-                                            ), 20)
+                                            ), 20
+                                        )
                                         .scale(0.6)
                                 )
                                 .pointsOnEach { it.add(0.0, 0.0, -0.375) }
@@ -1258,7 +1310,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.75,
                                                 0.0,
                                                 0.125
-                                            ), 20)
+                                            ), 20
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.125,
@@ -1269,7 +1322,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.5,
                                                 0.0,
                                                 0.375
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .scale(0.6)
                                 )
                                 .pointsOnEach { it.add(0.0, 0.0, 0.0) }
@@ -1312,7 +1366,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 0.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 -0.5,
@@ -1323,7 +1378,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 0.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.5,
@@ -1334,7 +1390,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 0.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 -0.5,
@@ -1345,7 +1402,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 0.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.5,
@@ -1356,7 +1414,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.5,
                                                 0.0,
                                                 -1.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 -0.5,
@@ -1367,7 +1426,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.5,
                                                 0.0,
                                                 -1.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .scale(0.6)
                                 )
                                 .pointsOnEach { it.add(0.0, 0.0, 0.0) }
@@ -1410,7 +1470,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.75,
                                                 0.0,
                                                 -0.25
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.0,
@@ -1421,7 +1482,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.75,
                                                 0.0,
                                                 -0.25
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.0,
@@ -1432,7 +1494,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.625,
                                                 0.0,
                                                 2.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.0,
@@ -1443,7 +1506,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -0.625,
                                                 0.0,
                                                 2.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 0.625,
@@ -1454,7 +1518,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 1.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .addLine(
                                             RelativeLocation(
                                                 -0.625,
@@ -1465,7 +1530,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0,
                                                 0.0,
                                                 1.0
-                                            ), 10)
+                                            ), 10
+                                        )
                                         .scale(0.4)
                                 )
                                 .pointsOnEach { it.add(0.0, 0.0, -1.0) }
@@ -1488,14 +1554,14 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                 .createWithCompositionData { rel ->
                     CompositionData()
                         .setDisplayerSupplier {
-                            ParticleDisplayer.Companion.withSingle(
-                                ControlableEndRodEffect(it)
+                            ParticleDisplayer.withCParticle(
+                                it, CParticleRenderLayer.ADDITION_BLEND_NOT_HDR
                             )
                         }
-                        .addParticleInstanceInit {
+                        .addCParticleInstanceInit {
                             size = 0.3F
                             color = this@EyeLaserMagicComposition.color
-                            textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
+                            effect = ControlableEndRodEffect(UUID.randomUUID())
                         }
                 }
         )
@@ -1517,79 +1583,92 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                 -7.794229,
                                 0.0,
                                 -4.5
-                            ), 1.0, -1.0)
+                            ), 1.0, -1.0
+                        )
                         .clearAsRoundXZMask(
                             RelativeLocation(
                                 -4.5,
                                 0.0,
                                 -7.794229
-                            ), 1.0, -1.0)
+                            ), 1.0, -1.0
+                        )
                         .clearAsRoundXZMask(
                             RelativeLocation(
                                 0.0,
                                 0.0,
                                 -9.0
-                            ), 1.0, -1.0)
+                            ), 1.0, -1.0
+                        )
                         .clearAsRoundXZMask(
                             RelativeLocation(
                                 4.5,
                                 0.0,
                                 -7.794229
-                            ), 1.0, -1.0)
+                            ), 1.0, -1.0
+                        )
                         .clearAsRoundXZMask(
                             RelativeLocation(
                                 7.794229,
                                 0.0,
                                 -4.5
-                            ), 1.0, -1.0)
+                            ), 1.0, -1.0
+                        )
                         .clearAsRoundXZMask(
                             RelativeLocation(
                                 9.0,
                                 0.0,
                                 0.0
-                            ), 1.0, -1.0)
+                            ), 1.0, -1.0
+                        )
                         .clearAsRoundXZMask(
                             RelativeLocation(
                                 7.794229,
                                 0.0,
                                 4.5
-                            ), 1.0, -1.0)
+                            ), 1.0, -1.0
+                        )
                         .clearAsRoundXZMask(
                             RelativeLocation(
                                 4.5,
                                 0.0,
                                 7.794229
-                            ), 1.0, -1.0)
+                            ), 1.0, -1.0
+                        )
                         .clearAsRoundXZMask(
                             RelativeLocation(
                                 0.0,
                                 0.0,
                                 9.0
-                            ), 1.0, -1.0)
+                            ), 1.0, -1.0
+                        )
                         .clearAsRoundXZMask(
                             RelativeLocation(
                                 -4.5,
                                 0.0,
                                 7.794229
-                            ), 1.0, -1.0)
+                            ), 1.0, -1.0
+                        )
                         .clearAsRoundXZMask(
                             RelativeLocation(
                                 -7.794229,
                                 0.0,
                                 4.5
-                            ), 1.0, -1.0)
+                            ), 1.0, -1.0
+                        )
                         .clearAsRoundXZMask(
                             RelativeLocation(
                                 -9.0,
                                 0.0,
                                 0.0
-                            ), 1.0, -1.0)
+                            ), 1.0, -1.0
+                        )
                         .clearAsRoundXZMask(
                             RelativeLocation(
                                 -9.0,
                                 0.0,
                                 0.0
-                            ), 1.0, -1.0)
+                            ), 1.0, -1.0
+                        )
                         .addBuilder(
                             RelativeLocation(0.0, 0.0, 0.0),
                             PointsBuilder()
@@ -1620,7 +1699,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0
                                             )
                                         )
-                                        .rotateAsAxis(0.0,
+                                        .rotateAsAxis(
+                                            0.0,
                                             RelativeLocation(
                                                 9.0,
                                                 0.0,
@@ -1655,7 +1735,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 4.5
                                             )
                                         )
-                                        .rotateAsAxis(0.0,
+                                        .rotateAsAxis(
+                                            0.0,
                                             RelativeLocation(
                                                 7.794229,
                                                 0.0,
@@ -1690,7 +1771,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 7.794229
                                             )
                                         )
-                                        .rotateAsAxis(0.0,
+                                        .rotateAsAxis(
+                                            0.0,
                                             RelativeLocation(
                                                 4.5,
                                                 0.0,
@@ -1725,7 +1807,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 9.0
                                             )
                                         )
-                                        .rotateAsAxis(0.0,
+                                        .rotateAsAxis(
+                                            0.0,
                                             RelativeLocation(
                                                 0.0,
                                                 0.0,
@@ -1760,7 +1843,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 7.794229
                                             )
                                         )
-                                        .rotateAsAxis(0.0,
+                                        .rotateAsAxis(
+                                            0.0,
                                             RelativeLocation(
                                                 -4.5,
                                                 0.0,
@@ -1795,7 +1879,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 4.5
                                             )
                                         )
-                                        .rotateAsAxis(0.0,
+                                        .rotateAsAxis(
+                                            0.0,
                                             RelativeLocation(
                                                 -7.794229,
                                                 0.0,
@@ -1830,7 +1915,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 0.0
                                             )
                                         )
-                                        .rotateAsAxis(0.0,
+                                        .rotateAsAxis(
+                                            0.0,
                                             RelativeLocation(
                                                 -9.0,
                                                 0.0,
@@ -1865,7 +1951,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -4.5
                                             )
                                         )
-                                        .rotateAsAxis(0.0,
+                                        .rotateAsAxis(
+                                            0.0,
                                             RelativeLocation(
                                                 -7.794229,
                                                 0.0,
@@ -1900,7 +1987,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -7.794229
                                             )
                                         )
-                                        .rotateAsAxis(0.0,
+                                        .rotateAsAxis(
+                                            0.0,
                                             RelativeLocation(
                                                 -4.5,
                                                 0.0,
@@ -1935,7 +2023,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -9.0
                                             )
                                         )
-                                        .rotateAsAxis(0.0,
+                                        .rotateAsAxis(
+                                            0.0,
                                             RelativeLocation(
                                                 0.0,
                                                 0.0,
@@ -1970,7 +2059,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -7.794229
                                             )
                                         )
-                                        .rotateAsAxis(0.0,
+                                        .rotateAsAxis(
+                                            0.0,
                                             RelativeLocation(
                                                 4.5,
                                                 0.0,
@@ -2005,7 +2095,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                 -4.5
                                             )
                                         )
-                                        .rotateAsAxis(0.0,
+                                        .rotateAsAxis(
+                                            0.0,
                                             RelativeLocation(
                                                 7.794229,
                                                 0.0,
@@ -2040,7 +2131,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         0.916667
-                                                    ), 0.5, 30)
+                                                    ), 0.5, 30
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.0,
@@ -2051,7 +2143,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         -0.75
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.375,
@@ -2062,13 +2155,14 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.375,
                                                         0.0,
                                                         -0.125
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addRadian(
                                                     RelativeLocation(
                                                         0.004853,
                                                         0.0,
                                                         1.944586
-                                                    ), 0.5, 10, 0.0, 1.0* PI, 1.0* PI
+                                                    ), 0.5, 10, 0.0, 1.0 * PI, 1.0 * PI
                                                 )
                                                 .scale(0.6)
                                         )
@@ -2112,7 +2206,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         0.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         -0.5,
@@ -2123,7 +2218,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         0.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.5,
@@ -2134,7 +2230,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         0.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         -0.5,
@@ -2145,7 +2242,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         0.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.5,
@@ -2156,7 +2254,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.5,
                                                         0.0,
                                                         -1.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         -0.5,
@@ -2167,7 +2266,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.5,
                                                         0.0,
                                                         -1.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .scale(0.6)
                                         )
                                         .pointsOnEach { it.add(0.0, 0.0, 0.0) }
@@ -2228,7 +2328,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.75,
                                                         0.0,
                                                         0.125
-                                                    ), 20)
+                                                    ), 20
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.125,
@@ -2239,7 +2340,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.5,
                                                         0.0,
                                                         0.375
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .scale(0.6)
                                         )
                                         .pointsOnEach { it.add(0.0, 0.0, 0.0) }
@@ -2282,7 +2384,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         -1.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.0,
@@ -2293,7 +2396,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.75,
                                                         0.0,
                                                         0.5
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         -0.75,
@@ -2304,7 +2408,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         0.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.0,
@@ -2315,7 +2420,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.75,
                                                         0.0,
                                                         -0.625
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         -0.75,
@@ -2326,7 +2432,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         -1.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .scale(0.6)
                                         )
                                         .pointsOnEach { it.add(0.0, 0.0, 0.0) }
@@ -2379,7 +2486,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.125,
                                                         0.0,
                                                         -0.25
-                                                    ), 20)
+                                                    ), 20
+                                                )
                                                 .addBezierCurve(
                                                     RelativeLocation(
                                                         -0.375,
@@ -2400,7 +2508,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.75,
                                                         0.0,
                                                         0.375
-                                                    ), 20)
+                                                    ), 20
+                                                )
                                                 .addBezierCurve(
                                                     RelativeLocation(
                                                         0.875,
@@ -2421,7 +2530,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.5,
                                                         0.0,
                                                         1.375
-                                                    ), 20)
+                                                    ), 20
+                                                )
                                                 .scale(0.6)
                                         )
                                         .pointsOnEach { it.add(0.0, 0.0, 0.0) }
@@ -2474,7 +2584,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.125,
                                                         0.0,
                                                         1.0
-                                                    ), 20)
+                                                    ), 20
+                                                )
                                                 .addBezierCurve(
                                                     RelativeLocation(
                                                         -0.75,
@@ -2495,7 +2606,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         1.25,
                                                         0.0,
                                                         -0.875
-                                                    ), 20)
+                                                    ), 20
+                                                )
                                                 .scale(0.5)
                                         )
                                         .pointsOnEach { it.add(0.0, 0.0, 0.625) }
@@ -2538,7 +2650,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.25,
                                                         0.0,
                                                         0.5625
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.625,
@@ -2549,7 +2662,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.625,
                                                         0.0,
                                                         0.0625
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.0,
@@ -2560,7 +2674,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         -1.0625
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.5,
@@ -2571,7 +2686,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.5,
                                                         0.0,
                                                         -0.8125
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .scale(0.6)
                                         )
                                         .pointsOnEach { it.add(0.0, 0.0, 0.0) }
@@ -2631,7 +2747,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                                 0.25,
                                                                 0.0,
                                                                 -1.875
-                                                            ), 30)
+                                                            ), 30
+                                                        )
                                                 )
                                                 .addBezierCurve(
                                                     RelativeLocation(
@@ -2653,13 +2770,14 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.125,
                                                         0.0,
                                                         -2.375
-                                                    ), 30)
+                                                    ), 30
+                                                )
                                                 .addRadian(
                                                     RelativeLocation(
                                                         0.011446,
                                                         0.0,
                                                         1.556568
-                                                    ), 0.5, 20, 1.0* PI, 0.0, 0.013563* PI
+                                                    ), 0.5, 20, 1.0 * PI, 0.0, 0.013563 * PI
                                                 )
                                                 .scale(0.5)
                                         )
@@ -2703,7 +2821,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.375,
                                                         0.0,
                                                         0.75
-                                                    ), 20)
+                                                    ), 20
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.0,
@@ -2714,7 +2833,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         -0.625
-                                                    ), 20)
+                                                    ), 20
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.375,
@@ -2725,7 +2845,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         -0.625
-                                                    ), 20)
+                                                    ), 20
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         -0.375,
@@ -2736,7 +2857,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         -0.625
-                                                    ), 20)
+                                                    ), 20
+                                                )
                                                 .scale(0.6)
                                         )
                                         .pointsOnEach { it.add(0.0, 0.0, -0.375) }
@@ -2789,7 +2911,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.75,
                                                         0.0,
                                                         0.125
-                                                    ), 20)
+                                                    ), 20
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.125,
@@ -2800,7 +2923,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.5,
                                                         0.0,
                                                         0.375
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .scale(0.6)
                                         )
                                         .pointsOnEach { it.add(0.0, 0.0, 0.0) }
@@ -2843,7 +2967,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         0.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         -0.5,
@@ -2854,7 +2979,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         0.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.5,
@@ -2865,7 +2991,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         0.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         -0.5,
@@ -2876,7 +3003,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         0.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.5,
@@ -2887,7 +3015,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.5,
                                                         0.0,
                                                         -1.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         -0.5,
@@ -2898,7 +3027,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.5,
                                                         0.0,
                                                         -1.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .scale(0.6)
                                         )
                                         .pointsOnEach { it.add(0.0, 0.0, 0.0) }
@@ -2941,7 +3071,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.75,
                                                         0.0,
                                                         -0.25
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.0,
@@ -2952,7 +3083,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.75,
                                                         0.0,
                                                         -0.25
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.0,
@@ -2963,7 +3095,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.625,
                                                         0.0,
                                                         2.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.0,
@@ -2974,7 +3107,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         -0.625,
                                                         0.0,
                                                         2.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         0.625,
@@ -2985,7 +3119,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         1.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .addLine(
                                                     RelativeLocation(
                                                         -0.625,
@@ -2996,7 +3131,8 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                                                         0.0,
                                                         0.0,
                                                         1.0
-                                                    ), 10)
+                                                    ), 10
+                                                )
                                                 .scale(0.4)
                                         )
                                         .pointsOnEach { it.add(0.0, 0.0, -1.0) }
@@ -3020,12 +3156,12 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                 .createWithCompositionData { rel ->
                     CompositionData()
                         .setDisplayerSupplier {
-                            ParticleDisplayer.withSingle(ControlableEndRodEffect(it))
+                            ParticleDisplayer.withCParticle(it, CParticleRenderLayer.ADDITION_BLEND_TRANSLUCENT_NOT_HDR)
                         }
-                        .addParticleInstanceInit {
+                        .addCParticleInstanceInit {
                             size = 0.3F
                             color = this@EyeLaserMagicComposition.color
-                            textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
+                            effect = ControlableEndRodEffect(UUID.randomUUID())
                         }
                 }
         )
@@ -3038,18 +3174,20 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
                 .createWithCompositionData { rel ->
                     CompositionData()
                         .setDisplayerSupplier {
-                            ParticleDisplayer.withSingle(ControlableEnchantmentEffect(it))
+                            ParticleDisplayer.withCParticle(it, CParticleRenderLayer.ADDITION_BLEND_TRANSLUCENT_NOT_HDR)
                         }
-                        .addParticleInstanceInit {
+                        .addCParticleInstanceInit {
                             color = this@EyeLaserMagicComposition.color
                             size = 0.8F
-                            currentAge = Random.nextInt(lifetime)
+                            age = Random.nextInt(maxAge)
+                            effect = ControlableEnchantmentEffect(UUID.randomUUID())
                         }
                 }
         )
 
         return result
     }
+
     override fun remove() {
         if (status.isDisable()) {
             super.remove()
@@ -3057,14 +3195,15 @@ class EyeLaserMagicComposition(position: Vec3, world: Level? = null) : AutoParti
             status.disable()
         }
     }
+
     override fun onDisplay() {
         addPreTickAction {
             if (status.isDisable()) {
-                alphaHelper.decreaseAlpha()
+                playCParticleAlphaTransition(30f, CParticleCurve.linear(1f, 0f))
             } else {
-                alphaHelper.increaseAlpha()
+                playCParticleAlphaTransition(30f, CParticleCurve.linear(0f, 1f))
             }
-            rotateToWithAngle(direction, PI/16)
+            rotateToWithAngle(direction, PI / 16)
         }
     }
 }

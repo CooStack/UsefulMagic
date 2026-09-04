@@ -5,7 +5,7 @@ import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComp
 import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
 import cn.coostack.cooparticlesapi.network.particle.composition.ParticleShapeComposition
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
-import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
+import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.MathPresets
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
@@ -21,11 +21,11 @@ class BookEntityDeathComposition(position: Vec3, world: Level? = null) : AutoPar
         val option = UsefulMagicClient.option
         fun single(scaleSize: Float = 0.2f): CompositionData {
             return CompositionData().setDisplayerSupplier {
-                ParticleDisplayer.withSingle(
-                    ControlableEndRodEffect(it)
+                ParticleDisplayer.withCParticle(
+                    it
                 )
-            }.addParticleInstanceInit {
-                colorOfRGB(255, 100, 100)
+            }.addCParticleInstanceInit {
+                color = Math3DUtil.colorOf(255, 100, 100)
                 size = scaleSize
             }
         }

@@ -1,81 +1,68 @@
 package cn.coostack.usefulmagic.renderer
 
+import cn.coostack.cooparticlesapi.extend.ofID
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.renderer.AutoRenderEntity
-import cn.coostack.cooparticlesapi.renderer.client.RenderUtil
-import cn.coostack.cooparticlesapi.renderer.effects.builtin.BuiltinRenderEffectDescriptors
-import cn.coostack.cooparticlesapi.renderer.effects.builtin.MaskBloomConfig
-import cn.coostack.cooparticlesapi.renderer.runtime.FramePostRenderEntityRenderer
-import cn.coostack.cooparticlesapi.renderer.runtime.LocalRenderInput
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderContributionCollector
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderContributionInput
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderEntityInstance
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderEntityReleaseHook
-import cn.coostack.cooparticlesapi.renderer.runtime.WorldPassRenderEntityRenderer
 import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
-import cn.coostack.cooparticlesapi.renderer.shader.ShaderProgramBuilder
-import cn.coostack.cooparticlesapi.renderer.shader.api.CooShaderProgram
-import cn.coostack.cooparticlesapi.renderer.shader.api.glsl.GlShaderType
-import cn.coostack.cooparticlesapi.renderer.shader.data.CooVertexFormat
-import cn.coostack.cooparticlesapi.renderer.shader.glsl.IdentifierShader
-import cn.coostack.cooparticlesapi.renderer.shader.vertex.SimpleVertexBuffer
-import cn.coostack.cooparticlesapi.renderer.utils.ShaderUtil
 import cn.coostack.usefulmagic.UsefulMagic
-import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
-import org.joml.Matrix4f
-import org.joml.Matrix4fStack
-import org.joml.Quaternionf
 import org.joml.Vector3f
-import org.lwjgl.opengl.GL33
-import kotlin.math.max
-import kotlin.math.sin
 
+/** 保存陨石大气火焰的同步状态、方向和淡入淡出生命周期。 */
 @CooAutoRegister
 class MeteoriteAtmosphereFireRenderEntity(
     world: Level? = null,
     pos: Vec3 = Vec3.ZERO,
-) : AutoRenderEntity(world, pos),
-    WorldPassRenderEntityRenderer<MeteoriteAtmosphereFireRenderEntity>,
-    FramePostRenderEntityRenderer<MeteoriteAtmosphereFireRenderEntity>,
-    RenderEntityReleaseHook<MeteoriteAtmosphereFireRenderEntity> {
+) : AutoRenderEntity(world, pos) {
+    /** 火焰椭球的朝向，非法零向量会回退为向下。 */
     @CodecField
-    var direction: Vec3 = DEFAULT_DIRECTION
+    var direction: Vec3 = Vec3(0.0, -1.0, 0.0)
 
+    /** 大气火焰的同步 RGB 颜色。 */
     @CodecField
-    var color: Vector3f = Vector3f(1.0f, 0.42f, 0.10f)
+    var color: Vector3f = Vector3f(1.0F, 0.42F, 0.10F)
 
+    /** 火焰椭球的基础世界尺寸。 */
     @CodecField
-    var size: Float = DEFAULT_SIZE
+    var size: Float = 1.35F
 
+    /** 火焰整体透明度，渲染时限制到有效范围。 */
     @CodecField
     var alpha: Double = 1.0
 
+    /** 完成淡入后维持火焰的 tick 数。 */
     @CodecField
     var lifetime: Int = DEFAULT_LIFETIME
 
+    /** 火焰淡入阶段持续的 tick 数。 */
     @CodecField
     var fadeInTicks: Int = DEFAULT_FADE_IN_TICKS
 
+    /** 火焰自然淡出阶段持续的 tick 数。 */
     @CodecField
     var fadeOutTicks: Int = DEFAULT_FADE_OUT_TICKS
 
+    /** 火焰噪声纹理的流动速度倍率。 */
     @CodecField
-    var flowSpeed: Float = DEFAULT_FLOW_SPEED
+    var flowSpeed: Float = 1.0F
 
+    /** mask bloom 的强度倍率。 */
     @CodecField
-    var bloomStrength: Float = 1.0f
+    var bloomStrength: Float = 1.0F
 
+    /** 是否已经进入主动消散阶段。 */
     @CodecField
     var discarding: Boolean = false
 
+    /** 主动消散开始时的实体年龄。 */
     @CodecField
     var discardStartTick: Int = 0
 
+    /** 主动消散阶段持续的 tick 数。 */
     @CodecField
     var discardTicks: Int = DEFAULT_FADE_OUT_TICKS
 
@@ -83,15 +70,7 @@ class MeteoriteAtmosphereFireRenderEntity(
         updateRenderRange()
     }
 
-    override fun initialize(instance: RenderEntityInstance<MeteoriteAtmosphereFireRenderEntity>) {
-        initStatic()
-        updateRenderRange()
-    }
-
     override fun getRenderID(): ResourceLocation = ID
-
-    override fun release(instance: RenderEntityInstance<MeteoriteAtmosphereFireRenderEntity>) {
-    }
 
     override fun clientTick() {
         updateLifecycle()
@@ -101,78 +80,19 @@ class MeteoriteAtmosphereFireRenderEntity(
         updateLifecycle()
     }
 
-    override fun renderLocal(input: LocalRenderInput<MeteoriteAtmosphereFireRenderEntity>) {
-        initStatic()
-        val visibleAlpha = currentAlpha(input.tickDelta)
-        if (visibleAlpha <= MIN_VISIBLE_ALPHA) {
-            return
-        }
-        val radius = size.coerceAtLeast(MIN_SIZE)
-        val time = currentTime(input.tickDelta)
-        val pulse = currentPulse(input.tickDelta)
-        renderPasses(
-            modelMatrix = orientedModelMatrix(input.modelMatrix),
-            viewMatrix = input.viewMatrix,
-            projMatrix = input.projMatrix,
-            passes = listOf(
-                MeteoriteAtmosphereFirePass(
-                    blendMode = MeteoriteAtmosphereFireBlendMode.ALPHA,
-                    radius = Vector3f(radius * 1.02f, radius * 0.82f, radius * 1.02f),
-                    color = normalizedColor(),
-                    alpha = visibleAlpha * 0.46f,
-                    brightness = 1.28f,
-                    frontPower = 1.10f,
-                    noiseScale = 1.0f,
-                    time = time,
-                    pulse = pulse,
-                    passMode = PASS_SURFACE,
-                ),
-                MeteoriteAtmosphereFirePass(
-                    blendMode = MeteoriteAtmosphereFireBlendMode.ADDITIVE,
-                    radius = Vector3f(radius * 0.72f, radius * 0.54f, radius * 0.72f),
-                    color = hotColor(),
-                    alpha = visibleAlpha * 0.28f,
-                    brightness = 2.65f,
-                    frontPower = 1.75f,
-                    noiseScale = 1.28f,
-                    time = time * 1.18f,
-                    pulse = pulse,
-                    passMode = PASS_CORE,
-                ),
-            ),
-        )
-    }
-
-    override fun collectRenderContributions(
-        input: RenderContributionInput<MeteoriteAtmosphereFireRenderEntity>,
-        collector: RenderContributionCollector,
-    ) {
-        val visibleAlpha = currentAlpha(input.frameContext.tickDelta)
-        if (visibleAlpha <= MIN_VISIBLE_ALPHA) {
-            return
-        }
-        collector.submit(
-            BuiltinRenderEffectDescriptors.maskBloom(
-                effectId = METEORITE_ATMOSPHERE_FIRE_BLOOM_EFFECT_ID,
-                sourceInstanceId = uuid.toString(),
-                frameContext = input.frameContext,
-                sourceEntity = this,
-                config = METEORITE_ATMOSPHERE_FIRE_BLOOM_CONFIG.copy(
-                    intensity = METEORITE_ATMOSPHERE_FIRE_BLOOM_CONFIG.intensity * bloomStrength.coerceIn(0f, 4f),
-                    tint = normalizedColor(),
-                ),
-                priority = METEORITE_ATMOSPHERE_FIRE_BLOOM_PRIORITY,
-                requiredCapabilities = UsefulMagicShaderPipelines.DEPTH_AWARE_MASK_BLOOM_CAPABILITIES,
-            ) {
-                renderBloomMask(
-                    tickDelta = input.frameContext.tickDelta,
-                    viewMatrix = input.frameContext.viewMatrix,
-                    projMatrix = input.frameContext.projMatrix,
-                )
-            },
-        )
-    }
-
+    /**
+     * 配置大气火焰的位置、方向、尺寸和生命周期。
+     *
+     * @param center 火焰中心的世界坐标
+     * @param moveDirection 陨石移动方向，零向量回退为竖直向下
+     * @param meteoriteSize 火焰基础尺寸，过小值按 [MIN_SIZE] 处理
+     * @param flameColor 火焰 RGB 颜色
+     * @param maxLifetime 总生命周期 tick 数，最小按 `1` 处理
+     * @param fadeIn 淡入 tick 数，负数按 `0` 处理
+     * @param fadeOut 自然淡出 tick 数，负数按 `0` 处理
+     * @param opacity 整体透明度，限制到 `0.0..1.0`
+     * @return 当前实体，可继续链式配置
+     */
     fun configure(
         center: Vec3,
         moveDirection: Vec3,
@@ -199,6 +119,13 @@ class MeteoriteAtmosphereFireRenderEntity(
         return this
     }
 
+    /**
+     * 更新火焰中心和移动方向。
+     *
+     * @param center 新中心世界坐标
+     * @param moveDirection 新移动方向，零向量回退为竖直向下
+     * @return 当前实体
+     */
     fun moveTo(center: Vec3, moveDirection: Vec3 = direction): MeteoriteAtmosphereFireRenderEntity {
         pos = center
         direction = safeDirection(moveDirection)
@@ -206,10 +133,17 @@ class MeteoriteAtmosphereFireRenderEntity(
         return this
     }
 
+    /** 按当前自然淡出时长开始结束火焰。 */
     fun finish() {
         discard()
     }
 
+    /**
+     * 开始主动淡出。
+     *
+     * @param fadeTicks 主动淡出 tick 数，负数按 `0` 处理
+     * @return 当前实体；已在消散或已取消时保持原状态
+     */
     fun discard(fadeTicks: Int = fadeOutTicks): MeteoriteAtmosphereFireRenderEntity {
         if (discarding || canceled) {
             return this
@@ -224,112 +158,7 @@ class MeteoriteAtmosphereFireRenderEntity(
         return this
     }
 
-    private fun renderBloomMask(
-        tickDelta: Float,
-        viewMatrix: Matrix4f,
-        projMatrix: Matrix4f,
-    ) {
-        initStatic()
-        val visibleAlpha = currentAlpha(tickDelta)
-        if (visibleAlpha <= MIN_VISIBLE_ALPHA) {
-            return
-        }
-        val radius = size.coerceAtLeast(MIN_SIZE)
-        val time = currentTime(tickDelta)
-        val pulse = currentPulse(tickDelta)
-        val modelMatrix = Matrix4fStack(16)
-        RenderUtil.setRenderStackWithEntity(modelMatrix, this, tickDelta)
-        renderPasses(
-            modelMatrix = orientedModelMatrix(modelMatrix),
-            viewMatrix = viewMatrix,
-            projMatrix = projMatrix,
-            passes = listOf(
-                MeteoriteAtmosphereFirePass(
-                    blendMode = MeteoriteAtmosphereFireBlendMode.ADDITIVE,
-                    radius = Vector3f(radius * 1.10f, radius * 0.88f, radius * 1.10f),
-                    color = normalizedColor(),
-                    alpha = visibleAlpha * 0.42f * bloomStrength.coerceIn(0f, 4f),
-                    brightness = 2.8f,
-                    frontPower = 1.06f,
-                    noiseScale = 0.92f,
-                    time = time,
-                    pulse = pulse,
-                    passMode = PASS_BLOOM,
-                ),
-                MeteoriteAtmosphereFirePass(
-                    blendMode = MeteoriteAtmosphereFireBlendMode.ADDITIVE,
-                    radius = Vector3f(radius * 0.76f, radius * 0.58f, radius * 0.76f),
-                    color = hotColor(),
-                    alpha = visibleAlpha * 0.26f * bloomStrength.coerceIn(0f, 4f),
-                    brightness = 4.2f,
-                    frontPower = 1.68f,
-                    noiseScale = 1.20f,
-                    time = time * 1.16f,
-                    pulse = pulse,
-                    passMode = PASS_CORE,
-                ),
-            ),
-        )
-    }
-
-    private fun renderPasses(
-        modelMatrix: Matrix4f,
-        viewMatrix: Matrix4f,
-        projMatrix: Matrix4f,
-        passes: List<MeteoriteAtmosphereFirePass>,
-    ) {
-        RenderSystem.disableCull()
-        RenderSystem.enableDepthTest()
-        RenderSystem.depthFunc(GL33.GL_LEQUAL)
-        RenderSystem.enableBlend()
-        RenderSystem.depthMask(false)
-        try {
-            passes.forEach { pass ->
-                if (pass.alpha <= MIN_VISIBLE_ALPHA) {
-                    return@forEach
-                }
-                when (pass.blendMode) {
-                    MeteoriteAtmosphereFireBlendMode.ALPHA -> RenderSystem.blendFunc(GL33.GL_SRC_ALPHA, GL33.GL_ONE_MINUS_SRC_ALPHA)
-                    MeteoriteAtmosphereFireBlendMode.ADDITIVE -> RenderSystem.blendFunc(GL33.GL_SRC_ALPHA, GL33.GL_ONE)
-                }
-                drawPass(modelMatrix, viewMatrix, projMatrix, pass)
-            }
-        } finally {
-            RenderSystem.depthMask(true)
-            RenderSystem.defaultBlendFunc()
-            RenderSystem.disableBlend()
-            RenderSystem.enableDepthTest()
-            RenderSystem.depthFunc(GL33.GL_LEQUAL)
-            RenderSystem.enableCull()
-        }
-    }
-
-    private fun drawPass(
-        modelMatrix: Matrix4f,
-        viewMatrix: Matrix4f,
-        projMatrix: Matrix4f,
-        pass: MeteoriteAtmosphereFirePass,
-    ) {
-        fireShader.useOnContext {
-            RenderSystem.setShaderTexture(0, FIRE_TEXTURE)
-            setInt("fireTexture", 0)
-            setMatrix4("modelMatrix", modelMatrix)
-            setMatrix4("viewMatrix", viewMatrix)
-            setMatrix4("projMatrix", projMatrix)
-            setFloat3("radius", pass.radius)
-            setFloat3("color", pass.color)
-            setFloat("alpha", pass.alpha.coerceIn(0f, 2f))
-            setFloat("brightness", pass.brightness.coerceIn(0f, 8f))
-            setFloat("frontPower", pass.frontPower.coerceIn(0.1f, 4f))
-            setFloat("noiseScale", pass.noiseScale.coerceAtLeast(0.05f))
-            setFloat("flowSpeed", flowSpeed.coerceIn(0f, 5f))
-            setFloat("time", pass.time)
-            setFloat("pulse", pass.pulse)
-            setInt("passMode", pass.passMode)
-            fireVertexBuffer.draw()
-        }
-    }
-
+    /** 更新自然或主动消散生命周期，并同步终止状态。 */
     private fun updateLifecycle() {
         updateRenderRange()
         if (discarding) {
@@ -345,147 +174,80 @@ class MeteoriteAtmosphereFireRenderEntity(
         }
     }
 
+    /** 按火焰尺寸同步服务端可见范围。 */
     private fun updateRenderRange() {
         renderRange = size.coerceAtLeast(MIN_SIZE).toDouble() * 18.0 + 48.0
     }
 
-    private fun currentTime(tickDelta: Float): Float {
-        return (age - 1f + tickDelta).coerceAtLeast(0f)
+    /**
+     * 返回包含帧插值的火焰流动时间。
+     *
+     * @return 从实体首个渲染 tick 开始计算的非负时间
+     */
+    internal fun currentTime(tickDelta: Float): Float {
+        return (age - 1F + tickDelta).coerceAtLeast(0F)
     }
 
-    private fun currentAlpha(tickDelta: Float): Float {
+    /**
+     * 计算当前帧火焰透明度。
+     *
+     * @return 叠加自然淡入、自然淡出和主动淡出后的透明度
+     */
+    internal fun currentAlpha(tickDelta: Float): Float {
         val time = currentTime(tickDelta)
+        // 分别计算自然淡入、自然淡出和主动淡出，再相乘保证任一结束路径都能归零。
         val maxLifetime = lifetime.coerceAtLeast(1).toFloat()
         val fadeIn = fadeInTicks.coerceAtLeast(0).toFloat()
         val fadeOut = fadeOutTicks.coerceAtLeast(0).toFloat().coerceAtMost(maxLifetime)
-        val inAlpha = if (fadeIn <= 0f) 1f else smoothstep(0f, fadeIn, time)
+        val inAlpha = if (fadeIn <= 0F) 1F else smoothstep(0F, fadeIn, time)
         val outStart = maxLifetime - fadeOut
-        val outAlpha = if (fadeOut <= 0f || time <= outStart) {
-            1f
+        val outAlpha = if (fadeOut <= 0F || time <= outStart) {
+            1F
         } else {
-            1f - smoothstep(0f, fadeOut, time - outStart)
+            1F - smoothstep(0F, fadeOut, time - outStart)
         }
         val discardAlpha = if (!discarding) {
-            1f
+            1F
         } else {
             val discardDuration = discardTicks.coerceAtLeast(0).toFloat()
-            if (discardDuration <= 0f) {
-                0f
+            if (discardDuration <= 0F) {
+                0F
             } else {
-                1f - smoothstep(0f, discardDuration, time - discardStartTick.toFloat())
+                1F - smoothstep(0F, discardDuration, time - discardStartTick.toFloat())
             }
         }
-        return alpha.toFloat().coerceIn(0f, 1f) * inAlpha * outAlpha * discardAlpha
-    }
-
-    private fun currentPulse(tickDelta: Float): Float {
-        return 0.5f + 0.5f * sin(currentTime(tickDelta) * 0.38f)
-    }
-
-    private fun orientedModelMatrix(source: Matrix4f): Matrix4f {
-        return Matrix4f(source).rotate(directionRotation())
-    }
-
-    private fun directionRotation(): Quaternionf {
-        return Quaternionf().rotationTo(Vector3f(0f, 1f, 0f), safeDirectionVector())
-    }
-
-    private fun safeDirectionVector(): Vector3f {
-        val dir = safeDirection(direction)
-        return Vector3f(dir.x.toFloat(), dir.y.toFloat(), dir.z.toFloat())
-    }
-
-    private fun normalizedColor(): Vector3f {
-        return Vector3f(
-            color.x.coerceIn(0f, 1f),
-            color.y.coerceIn(0f, 1f),
-            color.z.coerceIn(0f, 1f),
-        )
-    }
-
-    private fun hotColor(): Vector3f {
-        return Vector3f(normalizedColor()).lerp(Vector3f(1.0f, 0.92f, 0.58f), 0.54f)
+        return alpha.toFloat().coerceIn(0F, 1F) * inAlpha * outAlpha * discardAlpha
     }
 
     companion object {
-        private const val DEFAULT_SIZE = 1.35f
-        private const val DEFAULT_LIFETIME = 80
-        private const val DEFAULT_FADE_IN_TICKS = 6
-        private const val DEFAULT_FADE_OUT_TICKS = 14
-        private const val DEFAULT_FLOW_SPEED = 1.0f
-        private const val MIN_SIZE = 0.05f
-        private const val MIN_VISIBLE_ALPHA = 0.001f
-        private const val PASS_SURFACE = 0
-        private const val PASS_CORE = 1
-        private const val PASS_BLOOM = 2
-        private const val METEORITE_ATMOSPHERE_FIRE_BLOOM_EFFECT_ID = "usefulmagic:meteorite_atmosphere_fire_bloom"
-        private const val METEORITE_ATMOSPHERE_FIRE_BLOOM_PRIORITY = 245
-        private val DEFAULT_DIRECTION = Vec3(0.0, -1.0, 0.0)
+        /** 陨石大气火焰实体的稳定注册路径。 */
+        private const val RENDER_ENTITY_ID = "meteorite_atmosphere_fire_render_entity"
 
+        /** 字段默认值和 spawn 入口共用的生命周期。 */
+        private const val DEFAULT_LIFETIME = 80
+        /** 字段默认值和 spawn 入口共用的淡入 tick 数。 */
+        private const val DEFAULT_FADE_IN_TICKS = 6
+        /** 字段默认值和 spawn 入口共用的淡出 tick 数。 */
+        private const val DEFAULT_FADE_OUT_TICKS = 14
+        /** 实体状态和 renderer 共用的最小有效尺寸。 */
+        internal const val MIN_SIZE = 0.05F
+        /** 陨石大气火焰的稳定 RenderEntity 注册 ID。 */
         @JvmField
         val ID: ResourceLocation =
-            ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "meteorite_atmosphere_fire_render_entity")
+            ofID(UsefulMagic.MOD_ID, RENDER_ENTITY_ID)
 
-        private val FIRE_TEXTURE: ResourceLocation =
-            ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "textures/effect/meteorite_atmosphere_fire.png")
-
-        private val METEORITE_ATMOSPHERE_FIRE_BLOOM_CONFIG = MaskBloomConfig(
-            blurSigma = 7.2f,
-            blurRange = 5.4f,
-            intensity = 1.85f,
-            baseMaskIntensity = 0.04f,
-            threshold = 0.02f,
-            thresholdSoftness = 0.03f,
-            tint = Vector3f(1.0f, 0.45f, 0.16f),
-        )
-
-        @JvmField
-        var initialized: Boolean = false
-
-        private lateinit var fireVertexBuffer: SimpleVertexBuffer
-        private lateinit var fireShader: CooShaderProgram
-
-        @JvmStatic
-        @Synchronized
-        fun initStatic() {
-            if (initialized) {
-                return
-            }
-            fireVertexBuffer = SimpleVertexBuffer().apply {
-                init()
-                setVertexes(ShaderUtil.genBall(1f, 64, 96), CooVertexFormat.POINT_FORMAT)
-            }
-            fireShader = ShaderProgramBuilder()
-                .vertex(
-                    IdentifierShader(
-                        ResourceLocation.fromNamespaceAndPath(
-                            UsefulMagic.MOD_ID,
-                            "core/vsh/meteorite_atmosphere_fire.vsh",
-                        ),
-                        GlShaderType.VERTEX,
-                    ),
-                )
-                .fragment(
-                    IdentifierShader(
-                        ResourceLocation.fromNamespaceAndPath(
-                            UsefulMagic.MOD_ID,
-                            "core/fsh/meteorite_atmosphere_fire.fsh",
-                        ),
-                        GlShaderType.FRAGMENT,
-                    ),
-                )
-                .build()
-            fireShader.init()
-            initialized = true
-        }
-
+        /**
+         * 生成并注册一个沿指定方向流动的大气火焰实体。
+         *
+         * @return 已提交到服务端 RenderEntity 管理器的火焰实体
+         */
         @JvmStatic
         fun spawn(
             world: ServerLevel,
             center: Vec3,
             moveDirection: Vec3,
             size: Float,
-            color: Vector3f = Vector3f(1.0f, 0.42f, 0.10f),
+            color: Vector3f = Vector3f(1.0F, 0.42F, 0.10F),
             lifetime: Int = DEFAULT_LIFETIME,
             fadeInTicks: Int = DEFAULT_FADE_IN_TICKS,
             fadeOutTicks: Int = DEFAULT_FADE_OUT_TICKS,
@@ -496,44 +258,32 @@ class MeteoriteAtmosphereFireRenderEntity(
                 .also(ServerRenderEntityManager::spawn)
         }
 
+        /**
+         * 返回可用于旋转和 shader 计算的安全单位方向。
+         *
+         * @return 输入方向的单位向量，零向量回退为竖直向下
+         */
         @JvmStatic
         fun safeDirection(direction: Vec3): Vec3 {
-            if (direction.lengthSqr() <= 1.0E-8) {
-                return DEFAULT_DIRECTION
+            if (direction.lengthSqr() <= 0.00000001) {
+                return Vec3(0.0, -1.0, 0.0)
             }
             return direction.normalize()
         }
 
+        /**
+         * 返回区间内平滑过渡的插值值。
+         *
+         * @return 位于 `0F..1F` 的平滑插值进度
+         */
         @JvmStatic
         fun smoothstep(edge0: Float, edge1: Float, value: Float): Float {
             if (edge0 == edge1) {
-                return if (value >= edge1) 1f else 0f
+                return if (value >= edge1) 1F else 0F
             }
-            val x = ((value - edge0) / (edge1 - edge0)).coerceIn(0f, 1f)
-            return x * x * (3f - 2f * x)
+            val x = ((value - edge0) / (edge1 - edge0)).coerceIn(0F, 1F)
+            return x * x * (3F - 2F * x)
         }
 
-        @JvmStatic
-        fun maxComponent(vector: Vector3f): Float {
-            return max(vector.x, max(vector.y, vector.z))
-        }
     }
 }
-
-private enum class MeteoriteAtmosphereFireBlendMode {
-    ALPHA,
-    ADDITIVE,
-}
-
-private data class MeteoriteAtmosphereFirePass(
-    val blendMode: MeteoriteAtmosphereFireBlendMode,
-    val radius: Vector3f,
-    val color: Vector3f,
-    val alpha: Float,
-    val brightness: Float,
-    val frontPower: Float,
-    val noiseScale: Float,
-    val time: Float,
-    val pulse: Float,
-    val passMode: Int,
-)

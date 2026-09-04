@@ -1,14 +1,15 @@
-﻿package cn.coostack.usefulmagic.particles.composition
+package cn.coostack.usefulmagic.particles.composition
 
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComposition
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoSequencedParticleComposition
+import cn.coostack.cooparticlesapi.cparticle.CParticleRenderLayer
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableFlashEffect
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
+import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.utils.ParticleOption
-import net.minecraft.client.particle.ParticleRenderType
 import net.minecraft.world.phys.Vec3
 import org.joml.Quaterniond
 import org.joml.Quaternionf
@@ -68,28 +69,18 @@ class LightComposition(
         val size = locations.size
         locations.forEachIndexed { index, it ->
             val data = CompositionData().setDisplayerSupplier {
-                ParticleDisplayer.withSingle(
-                    ControlableEndRodEffect(it, true)
-                )
+                ParticleDisplayer.withCParticle(it, CParticleRenderLayer.TRANSLUCENT)
             }.apply { this.order = index }
-                .addParticleInstanceInit {
-                    textureSheet = ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
-                    colorOfRGB(
+                .addCParticleInstanceInit {
+                    effect = ControlableEndRodEffect(UUID.randomUUID(), true)
+                    color = Math3DUtil.colorOf(
                         this@LightComposition.color.x.toInt(),
                         this@LightComposition.color.y.toInt(),
                         this@LightComposition.color.z.toInt()
                     )
-                    particleAlpha = alpha
+                    this.alpha = this@LightComposition.alpha
                     val count = abs(maxHeight - it.y).roundToInt()
                     this.size = minSize + sizeStep * count
-                }.addParticleControlerInstanceInit {
-                    this.addPreTickAction {
-
-//                        previewAngleX = currentAngleX
-//                        currentAngleX += (-PI / 36).toFloat()
-//                        previewAngleY = currentAngleY
-//                        currentAngleY += (PI / 36).toFloat()
-                    }
                 }
             res[data ] = it
         }
@@ -100,7 +91,11 @@ class LightComposition(
     override fun onDisplay() {
         val spawnCount = count / 30
         addPreTickAction {
+            val displayedBefore = displayedParticleCount
             addMultiple(count)
+            if (!client && displayedParticleCount != displayedBefore) {
+                markDirty()
+            }
             rotateAsAxis(0.0)
             if (current++ > maxAge) {
                 remove()

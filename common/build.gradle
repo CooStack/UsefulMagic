@@ -2,6 +2,7 @@ plugins {
     id 'multiloader-common'
     id 'net.neoforged.moddev'
     id 'org.jetbrains.kotlin.jvm'
+    id "org.jetbrains.kotlin.kapt"
 }
 
 neoForge {
@@ -31,6 +32,7 @@ dependencies {
     implementation "software.bernie.geckolib:geckolib-common-${minecraft_version}:${geckolib_version}"
     annotationProcessor group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit5:2.2.0"
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
 }
 
 sourceSets {
@@ -60,5 +62,8 @@ configurations {
 artifacts {
     commonJava sourceSets.main.java.sourceDirectories.singleFile
     commonResources sourceSets.main.resources.sourceDirectories.singleFile
+}
+repositories {
+    mavenCentral()
 }
 

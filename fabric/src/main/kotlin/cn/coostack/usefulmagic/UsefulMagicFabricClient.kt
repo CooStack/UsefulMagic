@@ -13,6 +13,7 @@ import cn.coostack.usefulmagic.entity.MagicBookEntityModel
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityLayers
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
 import cn.coostack.usefulmagic.entity.custom.renderer.*
+import cn.coostack.usefulmagic.gui.magicexchange.MagicExchangeOverlay
 import cn.coostack.usefulmagic.gui.mana.ManaBarCallback
 import cn.coostack.usefulmagic.items.UsefulMagicDataComponentTypes.LARGE_REVIVE_USE_COUNT
 import cn.coostack.usefulmagic.items.UsefulMagicItems
@@ -53,6 +54,7 @@ object UsefulMagicFabricClient : ClientModInitializer {
     private fun loadScreenRenderer() {
         HudRenderCallback.EVENT.register { gui, t ->
             ManaBarCallback.onHudRender(gui, t.getGameTimeDeltaPartialTick(true))
+            MagicExchangeOverlay.onHudRender(gui, t.getGameTimeDeltaPartialTick(true))
         }
     }
 

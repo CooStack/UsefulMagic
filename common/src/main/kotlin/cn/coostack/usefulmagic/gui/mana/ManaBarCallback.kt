@@ -8,7 +8,6 @@ import cn.coostack.usefulmagic.items.consumer.ManaStar
 import cn.coostack.usefulmagic.items.prop.DefendCoreItem
 import cn.coostack.usefulmagic.items.prop.FlyingRuneItem
 import cn.coostack.usefulmagic.items.weapon.wands.MagicWand
-import cn.coostack.usefulmagic.managers.client.ClientManaManager
 import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
@@ -35,6 +34,12 @@ object ManaBarCallback {
         if (player.isCreative || player.isSpectator) {
             return
         }
+        val gameInformationVisible =
+            Minecraft.getInstance().debugOverlay.showDebugScreen()
+        if (gameInformationVisible || client.options.hideGui) {
+            return
+        }
+
         var shouldRender = false
         if (player.inventory.contains {
                 it.item is FlyingRuneItem || it.item is DefendCoreItem

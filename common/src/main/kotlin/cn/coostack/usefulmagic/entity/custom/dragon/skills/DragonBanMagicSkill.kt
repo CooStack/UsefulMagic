@@ -1,11 +1,14 @@
 package cn.coostack.usefulmagic.entity.custom.dragon.skills
 
 import cn.coostack.cooparticlesapi.network.particle.data.minRangeTo
+import cn.coostack.cooparticlesapi.extend.asVec3
+import cn.coostack.cooparticlesapi.extend.offsetRandomly
+import cn.coostack.cooparticlesapi.extend.plus
+import cn.coostack.cooparticlesapi.extend.random
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.renderer.post.CooPostEffects
-import cn.coostack.cooparticlesapi.sound.ServerManagedSoundInstance
-import cn.coostack.cooparticlesapi.sound.ServerSoundManager
-import cn.coostack.cooparticlesapi.sound.SoundVolumeFalloff
+import cn.coostack.cooparticlesapi.supports.sound.ServerManagedSoundInstance
+import cn.coostack.cooparticlesapi.supports.sound.ServerSoundManager
+import cn.coostack.cooparticlesapi.supports.sound.SoundVolumeFalloff
 import cn.coostack.cooparticlesapi.supports.TextureSheetsEnum
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
@@ -30,11 +33,10 @@ import net.minecraft.sounds.SoundSource
 import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.phys.Vec3
-import cn.coostack.cooparticlesapi.extend.*
 import kotlin.random.Random
 
 /**
- * TODO
+ * TODO 补充技能的阶段说明。
  *
  * 一个中场面，  释放后会让周围的玩家有60秒的魔力禁止时间
  *
@@ -49,6 +51,12 @@ import kotlin.random.Random
  *
  */
 class DragonBanMagicSkill : DragonSkill() {
+    /** 禁魔技能的稳定标识。 */
+    companion object {
+        /** 技能管理器使用的稳定 ID。 */
+        const val ID = "dragon_ban_magic_skill"
+    }
+
     override var chance: Double = 0.6
 
     private var emitter: CollectDisplayLineEmitter? = null
@@ -66,41 +74,40 @@ class DragonBanMagicSkill : DragonSkill() {
     }
 
     override fun onRelease(source: MagicDragonEntity, holdingTick: Int) {
-        // 这里要进行 explode 然后给128范围内的所有实体设置 1分钟的 禁魔
+        // 爆炸后给 128 格范围内的实体施加一分钟禁魔。
         val world = source.serverLevel!!
-        val start = source.boxCenterPosition().add(0.0, 256.0, 0.0)
-        val end = source.boxCenterPosition().add(0.0, -256.0, 0.0)
+        val start = source.boxCenterPosition() + Vec3(0.0, 256.0, 0.0)
+        val end = source.boxCenterPosition() + Vec3(0.0, -256.0, 0.0)
         CylinderLaserRenderEntity.spawn(
             world, start, end, 15, 0,
-            maxRadius = 120f,
+            maxRadius = 120F,
             color = Math3DUtil.colorOf(255, 150, 240).asVec3(),
             shrinkOnFadeOut = false,
         ).apply {
-            brightness = 0.4f
+            brightness = 0.4F
         }
 
         playDragonSoundOnce(
             source,
             UsefulMagicSoundEvents.DRAGON_MAGIC_BAN.get(),
             SoundSource.HOSTILE,
-            1.5f,
-            1f,
+            1.5F,
+            1F,
             256.0,
         )
         source.addEffect(MobEffectInstance(UsefulMagicEffects.MAGIC_SEALED.asHolder(), 20 * 60))
         world.getEntitiesOfClass(LivingEntity::class.java, source.boundingBox.inflate(256.0), EntityUtil.filterDragon).forEach {
-            it.hurt(UsefulMagicDamageSources.entityDamage(it.level(), source, source), 10f)
+            it.hurt(UsefulMagicDamageSources.entityDamage(it.level(), source, source), 10F)
             it.addEffect(MobEffectInstance(UsefulMagicEffects.MAGIC_SEALED.asHolder(), 20 * 60))
             if (it is ServerPlayer) {
                 // 发送震动和RGB分离
-                // Shake
-                ServerCameraUtil.sendShake(world.serverLevel!!, source.boxCenterPosition(), 256.0, 6.2, 40, 5.0)
-                CooPostEffects.server.send(it, UsefulMagicPostEffects.flameExplodeFlash(10, 2f, 0.85f))
-                CooPostEffects.server.send(it, UsefulMagicPostEffects.rgbDashBlur(20, 2f, 2f))
+                // 屏幕震动
+                ServerCameraUtil.sendShake(world, source.boxCenterPosition(), 256.0, 6.2, 40, 5.0)
+                UsefulMagicPostEffects.playFlameExplodeFlash(it, 10, 2F, 0.85F)
+                UsefulMagicPostEffects.playRgbDashBlur(it, 20, 2F, 2F)
             }
         }
-        // play particles
-        // 吸收collect， 然后做几个收缩淡入淡出效果 最后激光爆炸撑开
+        // 吸收聚集粒子，接着播放收缩和淡入淡出，最后用激光爆炸撑开。
         clear(source)
     }
 
@@ -118,9 +125,9 @@ class DragonBanMagicSkill : DragonSkill() {
                 UsefulMagicSoundEvents.LASER_LOOP.get(),
                 SoundSource.HOSTILE
             )
-                .volume(0.4f)
+                .volume(0.4F)
                 .visibleRange(256.0)
-                .pitch(0.2f)
+                .pitch(0.2F)
                 .syncEveryTick(true)
                 .volumeFalloff(SoundVolumeFalloff.LINEAR)
                 .layer("dragon_ban_charging")
@@ -146,12 +153,12 @@ class DragonBanMagicSkill : DragonSkill() {
         }
         if (holdTicks % 5 == 0) {
             // 这里召唤一个内敛的球 作为收缩
-            // 或者是一个缩小的一个能量脉冲 billboard
+            // 或者生成逐渐缩小的能量脉冲公告板。
             ShotWaveBillboardRenderEntity.spawn(
                 holdingEntity.serverLevel!!, holdingEntity.boxCenterPosition(), 5, 5,
-                limitScale = 0.5f,
+                limitScale = 0.5F,
                 timeoutTick = 60,
-                scaleSpeed = -16f,
+                scaleSpeed = -16F,
                 roll = Random.nextFloat(),
                 alpha = 0.1,
                 initialScale = 120F,
@@ -209,7 +216,7 @@ class DragonBanMagicSkill : DragonSkill() {
                     this.arriveCanceled = true
                     particleConfig.apply {
                         this.color = color
-                        this.visibleRange = 256f
+                        this.visibleRange = 256F
                         this.setTextureSheet(TextureSheetsEnum.ADDITION_BLEND_TRANSLUCENT)
                     }
                     this.simpleConfig.apply {
@@ -235,7 +242,7 @@ class DragonBanMagicSkill : DragonSkill() {
 
 //        if (holdTicks > 20 * 5) {
 //            sealedTarget?.takeIf { it.isAlive && it.distanceToSqr(holdingEntity) <= 16.0 * 16.0 }?.let {
-//                it.hurt(it.damageSources().mobAttack(holdingEntity), 8f)
+//                it.hurt(it.damageSources().mobAttack(holdingEntity), 8F)
 //                it.deltaMovement = holdingEntity.createImpactVelocity(holdingEntity.getBreathAimDirection(), 0.35, 0.8)
 //                it.hurtMarked = true
 //                stopHolding(holdingEntity, holdTicks)
@@ -248,7 +255,7 @@ class DragonBanMagicSkill : DragonSkill() {
     }
 
     override fun getSkillID(): String {
-        return "dragon_ban_magic_skill"
+        return ID
     }
 
     private fun clear(entity: MagicDragonEntity) {

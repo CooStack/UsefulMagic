@@ -6,7 +6,10 @@ import cn.coostack.usefulmagic.items.consumer.*
 import cn.coostack.usefulmagic.items.misc.TutorialBookItem
 import cn.coostack.usefulmagic.items.prop.*
 import cn.coostack.usefulmagic.items.weapon.MagicAxe
-import cn.coostack.usefulmagic.items.weapon.magic.*
+import cn.coostack.usefulmagic.items.weapon.magic.attack.*
+import cn.coostack.usefulmagic.items.weapon.magic.useful.BloomMagic
+import cn.coostack.usefulmagic.items.weapon.magic.useful.DiggingMagic
+import cn.coostack.usefulmagic.items.weapon.magic.useful.PushMagic
 import cn.coostack.usefulmagic.items.weapon.wands.MagicWand
 import cn.coostack.usefulmagic.profile.PreferMagicData
 import net.minecraft.core.component.DataComponents
@@ -73,6 +76,55 @@ object UsefulMagicItems {
                 .component(UsefulMagicDataComponentTypes.MAGIC_MIN_USAGE.get(), 2)
                 .component(UsefulMagicDataComponentTypes.MAGIC_BASE_DAMAGE.get(), 4.0)
                 .component(UsefulMagicDataComponentTypes.MAGIC_RELEASE_CD.get(), 0)
+        )
+    }
+
+    @JvmField
+    val BLOOM_MAGIC = register(
+        "bloom_magic"
+    ) {
+        BloomMagic(
+            Item.Properties()
+                .stacksTo(1)
+                .component(UsefulMagicDataComponentTypes.MAGIC_LEVEL.get(), 4)
+                .component(UsefulMagicDataComponentTypes.MAGIC_BASE_USAGE.get(), 300)
+                .component(UsefulMagicDataComponentTypes.MAGIC_BASE_MANA_COST.get(), 1050)
+                .component(UsefulMagicDataComponentTypes.MAGIC_MIN_USAGE.get(), 100)
+                .component(UsefulMagicDataComponentTypes.MAGIC_BASE_DAMAGE.get(), 0.0)
+                .component(UsefulMagicDataComponentTypes.MAGIC_RELEASE_CD.get(), 100)
+        )
+    }
+
+
+    @JvmField
+    val PUSH_MAGIC = register(
+        "push_magic"
+    ) {
+        PushMagic(
+            Item.Properties()
+                .stacksTo(1)
+                .component(UsefulMagicDataComponentTypes.MAGIC_LEVEL.get(), 5)
+                .component(UsefulMagicDataComponentTypes.MAGIC_BASE_USAGE.get(), 220)
+                .component(UsefulMagicDataComponentTypes.MAGIC_BASE_MANA_COST.get(), 400)
+                .component(UsefulMagicDataComponentTypes.MAGIC_MIN_USAGE.get(), 30)
+                .component(UsefulMagicDataComponentTypes.MAGIC_BASE_DAMAGE.get(), 25.0)
+                .component(UsefulMagicDataComponentTypes.MAGIC_RELEASE_CD.get(), 100)
+        )
+    }
+
+    @JvmField
+    val DIGGING_MAGIC = register(
+        "digging_magic"
+    ) {
+        DiggingMagic(
+            Item.Properties()
+                .stacksTo(1)
+                .component(UsefulMagicDataComponentTypes.MAGIC_LEVEL.get(), 1)
+                .component(UsefulMagicDataComponentTypes.MAGIC_BASE_MANA_COST.get(), 5)
+                .component(UsefulMagicDataComponentTypes.MAGIC_BASE_USAGE.get(), 600)
+                .component(UsefulMagicDataComponentTypes.MAGIC_MIN_USAGE.get(), 600)
+                .component(UsefulMagicDataComponentTypes.MAGIC_BASE_DAMAGE.get(), 2.0)
+                .component(UsefulMagicDataComponentTypes.MAGIC_RELEASE_CD.get(), 200)
         )
     }
 
@@ -398,6 +450,7 @@ object UsefulMagicItems {
                         .putPrefer(LASER_MAGIC.getItem(), 3)
                         .putPrefer(LIGHTNING_MAGIC.getItem(), 1)
                         .putPrefer(SWORD_FORMATION_MAGIC.getItem(), 5)
+                        .putPrefer(PUSH_MAGIC.getItem(),4)
                 )
         )
     }
@@ -439,6 +492,8 @@ object UsefulMagicItems {
                         .putPrefer(SWORD_FORMATION_MAGIC.getItem(), 2)
                         .putPrefer(METEORITE_MAGIC.getItem(), 5)
                         .putPrefer(STARRY_MAGIC.getItem(), 3)
+                        .putPrefer(BLOOM_MAGIC.getItem(), -5)
+                        .putPrefer(PUSH_MAGIC.getItem(),4)
                 )
         )
     }
@@ -465,6 +520,8 @@ object UsefulMagicItems {
                         .putPrefer(METEORITE_MAGIC.getItem(), 3)
                         .putPrefer(STARRY_MAGIC.getItem(), 5)
                         .putPrefer(ANTI_ENTITY_DOMAIN_MAGIC.getItem(), 5)
+                        .putPrefer(BLOOM_MAGIC.getItem(), -5)
+                        .putPrefer(PUSH_MAGIC.getItem(),5)
                 )
         )
     }
@@ -492,6 +549,8 @@ object UsefulMagicItems {
                         .putPrefer(BARRAGE_MAGIC.getItem(), -5)
                         .putPrefer(SWORD_FORMATION_MAGIC.getItem(), -5)
                         .putPrefer(HEALTH_MAGIC.getItem(), 5)
+                        .putPrefer(BLOOM_MAGIC.getItem(), 5)
+                        .putPrefer(PUSH_MAGIC.getItem(),-1)
                 )
         )
     }
@@ -519,6 +578,9 @@ object UsefulMagicItems {
                         .putPrefer(SWORD_FORMATION_MAGIC.getItem(), 3)
                         .putPrefer(HEALTH_MAGIC.getItem(), -5)
                         .putPrefer(ANTI_ENTITY_DOMAIN_MAGIC.getItem(), 5)
+                        .putPrefer(BLOOM_MAGIC.getItem(), -5)
+                        .putPrefer(PUSH_MAGIC.getItem(),5)
+
                 )
         )
     }
@@ -546,6 +608,7 @@ object UsefulMagicItems {
                         .putPrefer(LIGHTNING_MAGIC.getItem(), 5)
                         .putPrefer(HEALTH_MAGIC.getItem(), 2)
                         .putPrefer(LIGHT_BEAM_MAGIC.getItem(), 5)
+                        .putPrefer(PUSH_MAGIC.getItem(),2)
                 )
         )
     }
@@ -578,6 +641,7 @@ object UsefulMagicItems {
                         .putPrefer(METEORITE_MAGIC.getItem(), 4)
                         .putPrefer(EXPLOSION_MAGIC.getItem(), 5)
                         .putPrefer(LIGHT_BEAM_MAGIC.getItem(), 5)
+                        .putPrefer(PUSH_MAGIC.getItem(),5)
                 )
         )
     }

@@ -157,11 +157,11 @@ class MagicSubEyeEntity(
         val value = super.hurt(source, amount)
         if (value) {
             MagicEyeHurtEmitter(positionOnEye(), level()).apply {
-                ParticleEmittersManager.spawnEmitters(this)
                 this.particleOption.apply {
                     maxCount = 15
                     minCount = 5
                 }
+                ParticleEmittersManager.spawnEmitters(this)
             }
         }
         return value

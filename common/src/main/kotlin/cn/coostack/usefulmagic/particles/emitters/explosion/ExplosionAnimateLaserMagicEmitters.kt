@@ -1,70 +1,47 @@
 package cn.coostack.usefulmagic.particles.emitters.explosion
 
+import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
-import cn.coostack.cooparticlesapi.extend.relativize
-import cn.coostack.cooparticlesapi.network.particle.emitters.ClassParticleEmitters
+import cn.coostack.cooparticlesapi.network.particle.emitters.AutoParticleEmitters
+import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableCParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
-import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmitters
 import cn.coostack.cooparticlesapi.particles.control.ParticleControler
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
-import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import cn.coostack.cooparticlesapi.utils.helper.emitters.LinearResistanceHelper
 import cn.coostack.usefulmagic.utils.MathUtil
-import net.minecraft.network.RegistryFriendlyByteBuf
-
-import net.minecraft.network.codec.StreamCodec
-import net.minecraft.world.phys.Vec3
 import net.minecraft.world.level.Level
-import kotlin.math.PI
+import net.minecraft.world.phys.Vec3
 import kotlin.random.Random
 
 @CooAutoRegister
-class ExplosionAnimateLaserMagicEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, world) {
-    companion object {
-        const val ID = "explosion-animate-laser-magic-emitters"
-        val CODEC = StreamCodec.of<RegistryFriendlyByteBuf, ParticleEmitters>(
-            { buf, data ->
-                data as ExplosionAnimateLaserMagicEmitters
-                encodeBase(data, buf)
-                ControlableParticleData.PACKET_CODEC.encode(
-                    buf, data.templateData
-                )
-                buf.writeDouble(data.minDiscrete)
-                buf.writeDouble(data.maxDiscrete)
-                buf.writeDouble(data.maxRadius)
-                buf.writeDouble(data.height)
-                buf.writeDouble(data.heightStep)
-                buf.writeDouble(data.radiusStep)
-                buf.writeInt(data.minCount)
-                buf.writeInt(data.maxCount)
-            }, {
-                val container = ExplosionAnimateLaserMagicEmitters(Vec3.ZERO, null)
-                decodeBase(container, it)
-                container.templateData = ControlableParticleData.PACKET_CODEC.decode(it)
-                container.minDiscrete = it.readDouble()
-                container.maxDiscrete = it.readDouble()
-                container.maxRadius = it.readDouble()
-                container.height = it.readDouble()
-                container.heightStep = it.readDouble()
-                container.radiusStep = it.readDouble()
-                container.minCount = it.readInt()
-                container.maxCount = it.readInt()
-                container
-            }
-        )
-
-    }
-
-    var templateData = ControlableParticleData()
+class ExplosionAnimateLaserMagicEmitters(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, world) {
 
     val random = Random(System.currentTimeMillis())
+
+    @CodecField
+    var templateData = ControlableCParticleData()
+
+    @CodecField
     var minDiscrete = 1.0
+
+    @CodecField
     var maxDiscrete = 10.0
+
+    @CodecField
     var maxRadius = 10.0
+
+    @CodecField
     var height = 100.0
+
+    @CodecField
     var heightStep = 1.0
+
+    @CodecField
     var radiusStep = 1.0
+
+    @CodecField
     var minCount = 20
+
+    @CodecField
     var maxCount = 120
     override fun doTick() {
     }
@@ -72,7 +49,11 @@ class ExplosionAnimateLaserMagicEmitters(pos: Vec3, world: Level?) : ClassPartic
     override fun genParticles(lerpProgress: Float): List<Pair<ControlableParticleData, RelativeLocation>> {
         return MathUtil.discreteCylinderGenerator(
             minDiscrete, maxDiscrete, maxRadius, height, heightStep, radiusStep, minCount, maxCount
-        ).map { templateData.clone() to it }
+        ).map {
+            templateData.clone().apply {
+                velocity = (it.normalize().offsetRandomly(0.5).normalize() * 0.1).toVector()
+            } to it
+        }
     }
 
     override fun singleParticleAction(
@@ -83,36 +64,8 @@ class ExplosionAnimateLaserMagicEmitters(pos: Vec3, world: Level?) : ClassPartic
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
-        data.velocity = pos.relativize(spawnPos)
-            .normalize().add(
-                Vec3(
-                    random.nextDouble(-0.5, 0.5),
-                    random.nextDouble(-0.5, 0.5),
-                    random.nextDouble(-0.5, 0.5),
-                )
-            ).normalize().scale(0.1)
-        controler.addPreTickAction {
-            updatePhysics(pos, data, this)
-        }
     }
 
-    override fun getEmittersID(): String {
-        return ID
-    }
 
-    override fun getCodec(): StreamCodec<RegistryFriendlyByteBuf, ParticleEmitters> {
-        return CODEC
-    }
-
-    override fun update(emitters: ParticleEmitters) {
-        this.pos = emitters.pos
-        this.world = emitters.world
-//        this.tick = emitters.tick
-        this.maxTick = emitters.maxTick
-        this.delay = emitters.delay
-        this.uuid = emitters.uuid
-        this.canceled = emitters.canceled
-        this.playing = emitters.playing
-    }
 
 }

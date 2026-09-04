@@ -1,21 +1,22 @@
-﻿package cn.coostack.usefulmagic.particles.composition.skill
+package cn.coostack.usefulmagic.particles.composition.skill
 
-import cn.coostack.cooparticlesapi.extend.relativize
+import cn.coostack.cooparticlesapi.annotations.CodecField
+import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
+import cn.coostack.cooparticlesapi.cparticle.CParticleRenderLayer
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComposition
+import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
+import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
+import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionScaleHelper
 import cn.coostack.usefulmagic.utils.ParticleOption
-import java.util.UUID
-import kotlin.math.PI
-import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
-import cn.coostack.cooparticlesapi.annotations.CodecField
-import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
-import cn.coostack.cooparticlesapi.network.particle.composition.AutoSequencedParticleComposition
-import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionScaleHelper
+import cn.coostack.cooparticlesapi.extend.*
+import java.util.*
+import kotlin.math.PI
 
 @CooAutoRegister
 class SwordLightComposition(
@@ -45,19 +46,18 @@ class SwordLightComposition(
             .addPolygonInCircle(3, 40 * option, 10.0)
             .createWithCompositionData {
                 CompositionData().setDisplayerSupplier {
-                    ParticleDisplayer.withSingle(
-                        ControlableEndRodEffect(it)
-                    )
+                    ParticleDisplayer.withCParticle(it, CParticleRenderLayer.OPAQUE)
                 }
-                    .addParticleInstanceInit {
-                        colorOfRGB(255, 255, 255)
+                    .addCParticleInstanceInit {
+                        effect = ControlableEndRodEffect(UUID.randomUUID())
+                        color = Math3DUtil.colorOf(255, 255, 255)
                     }
             }
     }
 
     override fun onDisplay() {
         addPreTickAction {
-            if (status.displayStatus == 2) {
+            if (status.isDisable()) {
                 scaleHelper.doScaleReversed()
             } else {
                 scaleHelper.doScale()

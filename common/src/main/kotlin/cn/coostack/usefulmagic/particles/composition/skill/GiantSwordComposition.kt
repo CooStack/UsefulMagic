@@ -1,10 +1,12 @@
-﻿package cn.coostack.usefulmagic.particles.composition.skill
+package cn.coostack.usefulmagic.particles.composition.skill
 
+import cn.coostack.cooparticlesapi.cparticle.CParticleRenderLayer
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComposition
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
+import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.usefulmagic.utils.ParticleOption
 import net.minecraft.world.phys.Vec3
 import java.util.UUID
@@ -38,12 +40,11 @@ class GiantSwordComposition(
             )
             .createWithCompositionData {
                 CompositionData().setDisplayerSupplier {
-                    ParticleDisplayer.withSingle(
-                        ControlableEndRodEffect(it)
-                    )
+                    ParticleDisplayer.withCParticle(it, CParticleRenderLayer.OPAQUE)
                 }
-                    .addParticleInstanceInit {
-                        colorOfRGB(255, 255, 255)
+                    .addCParticleInstanceInit {
+                        effect = ControlableEndRodEffect(UUID.randomUUID())
+                        color = Math3DUtil.colorOf(255, 255, 255)
                     }
             }
     }

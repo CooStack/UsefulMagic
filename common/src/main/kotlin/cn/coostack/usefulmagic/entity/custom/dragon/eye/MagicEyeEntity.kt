@@ -4,16 +4,15 @@ import cn.coostack.cooparticlesapi.barrages.BarrageManager
 import cn.coostack.cooparticlesapi.network.particle.composition.manager.ParticleCompositionManager
 import cn.coostack.cooparticlesapi.network.particle.data.minRangeTo
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.renderer.post.CooPostEffects
 import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
 import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
 import cn.coostack.usefulmagic.barrages.entity.skill.TrackedPointBarrage
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
 import cn.coostack.usefulmagic.entity.custom.UnlimitHealthEntity
-import cn.coostack.usefulmagic.entity.custom.dragon.playDragonSoundOnce
 import cn.coostack.usefulmagic.entity.custom.dragon.eye.goal.MagicEyeAttackGoal
 import cn.coostack.usefulmagic.entity.custom.dragon.eye.phases.EyeCombatFlightPhase
 import cn.coostack.usefulmagic.entity.custom.dragon.eye.skills.*
+import cn.coostack.usefulmagic.entity.custom.dragon.playDragonSoundOnce
 import cn.coostack.usefulmagic.entity.custom.dragon.spawn.DragonSpawner
 import cn.coostack.usefulmagic.entity.util.FlightMovementUtil
 import cn.coostack.usefulmagic.entity.util.phases.PhaseManager
@@ -100,15 +99,10 @@ class MagicEyeEntity(
     var hasLaserSkillActive = false
 
     companion object {
-        private const val MIN_SPAWN_HEALTH = 0.5f
-        private const val SPAWNING_TICKS = 200f
-        private const val STAR_GLOW_HEIGHT_FACTOR = 0.52
-        private const val IDLE_HOVER_HEIGHT = 3.0
-        private const val IDLE_ACCELERATION = 0.05
+        /** 生成阶段和濒死保护使用的最低血量。 */
+        private const val MIN_SPAWN_HEALTH = 0.5F
         const val MAX_SUB_EYE_COUNT = 20
-        private const val SUB_EYE_SEARCH_RANGE = 128.0
         private const val PHASE_KEY = "phase"
-        private const val DEG_TO_RAD = 0.017453292f
 
         @JvmStatic
         private val ENTITY_SPAWNING = SynchedEntityData.defineId(
@@ -171,13 +165,14 @@ class MagicEyeEntity(
         get() = entityData.get(DAMAGE_REDUCTION)
         set(value) = entityData.set(DAMAGE_REDUCTION, value)
 
-    var secondDamage = 0f
+    /** 当前一秒窗口内累计的实际伤害，用于限制秒伤。 */
+    var secondDamage = 0F
 
-    fun positionOnEye() = position().add(0.0, bbHeight.toDouble() / 2, 0.0)
+    fun positionOnEye() = position() + Vec3(0.0, bbHeight.toDouble() / 2, 0.0)
 
     fun currentTowards(): Vec3 {
-        val yawRad = yRot * DEG_TO_RAD
-        val pitchRad = xRot * DEG_TO_RAD
+        val yawRad = radianF(yRot)
+        val pitchRad = radianF(xRot)
         val direction = Vec3(
             (-sin(yawRad) * cos(pitchRad)).toDouble(),
             (-sin(pitchRad)).toDouble(),
@@ -187,7 +182,7 @@ class MagicEyeEntity(
     }
 
     fun targetTowards(targetPos: Vec3): Vec3 {
-        val direction = targetPos.subtract(positionOnEye())
+        val direction = targetPos - positionOnEye()
         return if (direction.lengthSqr() > 1.0E-6) direction.normalize() else currentTowards()
     }
 
@@ -199,7 +194,7 @@ class MagicEyeEntity(
         if (angle <= 1.0E-6) {
             return targetDirection
         }
-        val maxStep = rotationSpeed * DEG_TO_RAD
+        val maxStep = radianF(rotationSpeed)
         val alpha = min(1.0, maxStep / angle)
         return currentDirection.lerp(targetDirection, alpha).normalize()
     }
@@ -247,7 +242,7 @@ class MagicEyeEntity(
 
     private fun initSkillManager() {
         SkillManagerManager.setCache(skillManager)
-        skillManager.addSkill(EyeThornSkill(64.0, 12f))
+        skillManager.addSkill(EyeThornSkill(64.0, 12F))
         skillManager.addSkill(EyeTrackedBarrageSkill(64.0, 8.0))
         skillManager.addSkill(EyeSplitSkill())
         skillManager.addSkill(EyeLaserSkill(12.0))
@@ -259,7 +254,7 @@ class MagicEyeEntity(
         builder.define(ENTITY_SPAWNING, true)
         builder.define(EYE_HEALTH, MIN_SPAWN_HEALTH)
         builder.define(ENTITY_SPAWNING_POSITION, Vector3f())
-        builder.define(DAMAGE_REDUCTION, 0f)
+        builder.define(DAMAGE_REDUCTION, 0F)
         builder.define(PHASE_STATE, CompoundTag())
     }
 
@@ -291,7 +286,7 @@ class MagicEyeEntity(
     fun countOwnedSubEyes(): Int {
         return serverLevel?.getEntitiesOfClass(
             MagicSubEyeEntity::class.java,
-            boundingBox.inflate(SUB_EYE_SEARCH_RANGE)
+            boundingBox.inflate(128.0)
         ) {
             it.isAlive && !it.isRemoved && it.isOwnedBy(this)
         }?.size ?: -1
@@ -303,6 +298,9 @@ class MagicEyeEntity(
         spawnAtLocation {
             UsefulMagicItems.EXPLOSION_WAND.getItem()
         }
+        spawnAtLocation {
+            UsefulMagicItems.EXPLOSION_MAGIC.getItem()
+        }
     }
 
     override fun tick() {
@@ -310,12 +308,12 @@ class MagicEyeEntity(
         super.tick()
         clearFire()
         if (tickCount % 20 == 0) {
-            secondDamage = 0f
+            secondDamage = 0F
         }
         if (!level().isClientSide && entitySpawning) {
             tickSpawnProgress()
         }
-        bossBar.progress = (health / maxHealth.coerceAtLeast(1f)).coerceIn(0f, 1f)
+        bossBar.progress = (health / maxHealth.coerceAtLeast(1F)).coerceIn(0F, 1F)
         if (!level().isClientSide && !entitySpawning) {
             phaseManager.tickPhase()
             skillManager.tick()
@@ -326,11 +324,11 @@ class MagicEyeEntity(
                 val count = players().count {
                     it.distanceTo(this@MagicEyeEntity) <= 64.0
                 }
-                damageReduction = (0.1f * count).coerceAtMost(0.9f)
+                damageReduction = (0.1F * count).coerceAtMost(0.9F)
             }
         }
         isNoGravity = true
-        fallDistance = 0f
+        fallDistance = 0F
         yBodyRot = yRot
         yHeadRot = yRot
     }
@@ -341,8 +339,8 @@ class MagicEyeEntity(
             deltaMovement = FlightMovementUtil.moveToPoint(
                 currentPosition = position(),
                 currentVelocity = deltaMovement,
-                targetPoint = spawnPos.add(0.0, IDLE_HOVER_HEIGHT, 0.0),
-                acceleration = IDLE_ACCELERATION,
+                targetPoint = spawnPos + Vec3(0.0, 3.0, 0.0),
+                acceleration = 0.05,
                 damping = 0.88,
                 arriveDistance = 1.2
             )
@@ -356,7 +354,7 @@ class MagicEyeEntity(
         }
         val target = currentTarget.boxCenterPosition()
 
-        lookAtPos(target, 8f, 8f)
+        lookAtPos(target, 8F, 8F)
 
         deltaMovement = FlightMovementUtil.maintainOffset(
             currentPosition = position(),
@@ -401,18 +399,18 @@ class MagicEyeEntity(
     }
 
     private fun tickSpawnProgress() {
-        val targetHealth = maxHealth.coerceAtLeast(1f)
+        val targetHealth = maxHealth.coerceAtLeast(1F)
         if (health < MIN_SPAWN_HEALTH) {
             health = MIN_SPAWN_HEALTH
         }
         if (health < targetHealth) {
-            val step = (targetHealth - MIN_SPAWN_HEALTH).coerceAtLeast(0f) / SPAWNING_TICKS
+            val step = (targetHealth - MIN_SPAWN_HEALTH).coerceAtLeast(0F) / 200F
             health = (health + step).coerceAtMost(targetHealth)
 
             val r = Random.nextDouble(3.0, 10.0)
             val p = Vec3.ZERO.random() * r
             val composition = ExplosionStarComposition(
-                positionOnEye().add(p),
+                positionOnEye() + p,
                 level()
             )
             ParticleCompositionManager.spawn(composition)
@@ -432,8 +430,8 @@ class MagicEyeEntity(
             this,
             UsefulMagicSoundEvents.EYE_SPAWN.get(),
             SoundSource.HOSTILE,
-            1f,
-            1.4f,
+            1F,
+            1.4F,
             256.0,
         )
 
@@ -446,7 +444,7 @@ class MagicEyeEntity(
     private fun spawnSpawnStarGlow() {
         val star = BillboardStarRenderEntity(
             level(),
-            position().add(0.0, bbHeight * STAR_GLOW_HEIGHT_FACTOR, 0.0)
+            position() + Vec3(0.0, bbHeight * 0.52, 0.0)
         )
         ServerRenderEntityManager.spawn(star)
     }
@@ -457,7 +455,7 @@ class MagicEyeEntity(
             val count = players().count {
                 it.distanceTo(this@MagicEyeEntity) <= 64.0
             }
-            damageReduction = (0.1f * count).coerceAtMost(0.9f)
+            damageReduction = (0.1F * count).coerceAtMost(0.9F)
             ServerCameraUtil.sendShake(
                 this, positionOnEye(),
                 256.0,
@@ -467,9 +465,7 @@ class MagicEyeEntity(
                 false
             )
             getEntitiesOfClass(Player::class.java, boundingBox.inflate(64.0)).forEach {
-                CooPostEffects.server.send(
-                    it as ServerPlayer, UsefulMagicPostEffects.rgbDashBlur(40, 1f, 2f)
-                )
+                UsefulMagicPostEffects.playRgbDashBlur(it as ServerPlayer, 40, 1F, 2F)
             }
         }
     }
@@ -497,12 +493,12 @@ class MagicEyeEntity(
         }
         // 秒伤最高20 高额减伤
         var passDamage = if (secondDamage > 20) {
-            1e-6f
+            1e-6F
         } else {
-            1f
+            1F
         }
         if (!hasLaserSkillActive && health <= 1) {
-            passDamage = 1e-8f
+            passDamage = 1e-8F
         }
 
         val id = skillManager.active?.getSkillID() ?: ""
@@ -512,13 +508,13 @@ class MagicEyeEntity(
         }
 
         val afterReduction = amount * (1 - damageReduction)
-        var input = (afterReduction * 0.75f * passDamage)
-        if (input > 20f) {
-            input *= 1e-6f
+        var input = (afterReduction * 0.75F * passDamage)
+        if (input > 20F) {
+            input *= 1e-6F
         }
         val value = super.hurt(source, input)
         if (isDeadOrDying && !hasLaserSkillActive) {
-            health = 1f
+            health = 1F
             return value
         }
         if (value) {
@@ -602,14 +598,14 @@ class MagicEyeEntity(
 
     override fun die(damageSource: DamageSource) {
         skillManager.setEntityDeath()
-        bossBar.progress = 0f
+        bossBar.progress = 0F
         SkillManagerManager.removeCache(skillManager.cacheUUID)
 
         // 直接击杀不会用激光
         // 加一个判定防止在第一次死亡的时候误判执行die
         if (hasLaserSkillActive || damageSource.`is`(DamageTypes.GENERIC_KILL)) {
             serverLevelApply {
-                DragonSpawner(spawnPos.add(0.0,-3.0,0.0), it)
+                DragonSpawner(spawnPos + Vec3(0.0, -3.0, 0.0), it)
                     .start()
             }
         }
@@ -648,7 +644,7 @@ class MagicEyeEntity(
     }
 
     override fun setHealth(health: Float) {
-        entityData.set(EYE_HEALTH, health.coerceIn(0f, maxHealth.coerceAtLeast(MIN_SPAWN_HEALTH)))
+        entityData.set(EYE_HEALTH, health.coerceIn(0F, maxHealth.coerceAtLeast(MIN_SPAWN_HEALTH)))
     }
 
     override fun getHealth(): Float {
@@ -676,7 +672,7 @@ class MagicEyeEntity(
         val actualOffset = Random.nextDouble(offset)
         var vec = position().offsetRandom(level().random, actualOffset.toFloat())
         if (vec.y < spawnPos.y) {
-            vec = vec.add(0.0, spawnPos.y - vec.y + Random.nextDouble(actualOffset), 0.0)
+            vec += Vec3(0.0, spawnPos.y - vec.y + Random.nextDouble(actualOffset), 0.0)
         }
         // 判断位置合理性
         val world = level()
@@ -701,7 +697,7 @@ class MagicEyeEntity(
             return
         }
         if (level().isClientSide) return
-        if (health < 1f) return
+        if (health < 1F) return
         // 找范围内的玩家
         val world = level() as ServerLevel
         repeat(Random.nextInt(1, 3)) {

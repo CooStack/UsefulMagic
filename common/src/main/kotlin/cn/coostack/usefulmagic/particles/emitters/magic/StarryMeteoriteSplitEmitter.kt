@@ -2,10 +2,14 @@ package cn.coostack.usefulmagic.particles.emitters.magic
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
-import cn.coostack.cooparticlesapi.network.particle.emitters.*
-import cn.coostack.cooparticlesapi.network.particle.emitters.command.*
+import cn.coostack.cooparticlesapi.network.particle.emitters.AutoParticleEmitters
+import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
+import cn.coostack.cooparticlesapi.network.particle.emitters.SimpleRandomParticleData
+import cn.coostack.cooparticlesapi.network.particle.emitters.command.ParticleCommandQueue
+import cn.coostack.cooparticlesapi.network.particle.emitters.command.ParticleDragCommand
+import cn.coostack.cooparticlesapi.network.particle.emitters.command.ParticleNoiseCommand
 import cn.coostack.cooparticlesapi.particles.control.ParticleControler
-import cn.coostack.cooparticlesapi.particles.impl.*
+import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import net.minecraft.world.level.Level
@@ -69,7 +73,7 @@ class StarryMeteoriteSplitEmitter(pos: Vec3, world: Level?) : AutoParticleEmitte
         val res = mutableListOf<Pair<ControlableParticleData, RelativeLocation>>()
 
         // 发射器 #1: Emitter 1
-        if (tick >= 0 && tick <= 2) {
+        if (tick in 0..2) {
             run {
                 val data1 = SimpleRandomParticleData().apply {
                     minAge = 10

@@ -2,8 +2,6 @@ package cn.coostack.usefulmagic.entity.custom.dragon.skills
 
 import cn.coostack.cooparticlesapi.network.particle.composition.manager.ParticleCompositionManager
 import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
-import cn.coostack.cooparticlesapi.sound.ServerSoundManager
-import cn.coostack.cooparticlesapi.sound.SoundVolumeFalloff
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.usefulmagic.damagetypes.UsefulMagicDamageSources
 import cn.coostack.usefulmagic.entity.custom.book.MagicBookEntity
@@ -145,7 +143,7 @@ class DragonLaserSkill : DragonSkill() {
         }
         hugeLaserEntity = StraightLaserRenderEntity(world, start).apply {
             maxRadius = 5f
-            brightness = 1.1f
+            brightness = 1.4f
             phaseTicks = 10
             lifetime = 20 * 120
             color = Math3DUtil.colorOf(255, 100, 200)
@@ -161,7 +159,10 @@ class DragonLaserSkill : DragonSkill() {
         )
         submitTaskTimerMaxTickServer(40) {
             // 跟随
-            hugeComposition?.direction = hugeBeamDirection.asRelative()
+            hugeComposition?.apply {
+                direction = hugeBeamDirection.asRelative()
+                markDirty()
+            }
             hugeBeamDirection = (target.boxCenterPosition() - start).normalize()
         }.setCancelPredicate {
             hugeComposition?.status?.isDisable() ?: true
@@ -219,7 +220,7 @@ class DragonLaserSkill : DragonSkill() {
                 updateBeam(start, end)
                 this.maxRadius = 0.5f
                 this.color = Math3DUtil.colorOf(255, 100, 255)
-                this.brightness = 0.7f
+                this.brightness = 1.0f
                 this.phaseTicks = 2
                 this.lifetime = 2
                 ServerRenderEntityManager.spawn(this)

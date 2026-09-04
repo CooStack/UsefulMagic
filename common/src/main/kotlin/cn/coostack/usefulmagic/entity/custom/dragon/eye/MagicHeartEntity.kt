@@ -115,7 +115,7 @@ class MagicHeartEntity(
                                             arriveRadius = 0.5
                                             particleConfig.apply {
                                                 color = Math3DUtil.colorOf(255, 150, 200)
-                                                setTextureSheet(TextureSheetsEnum.ADDITION_BLEND_TRANSLUCENT)
+                                                setTextureSheet(TextureSheetsEnum.ADDITION_BLEND_TRANSLUCENT_NOT_HDR)
                                                 effect = ControlableEndRodEffect(uuid)
                                             }
                                             velocity = Vec3.ZERO.random()

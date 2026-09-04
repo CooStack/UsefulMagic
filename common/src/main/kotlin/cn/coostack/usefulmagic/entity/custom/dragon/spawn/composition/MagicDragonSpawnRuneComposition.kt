@@ -2,20 +2,20 @@ package cn.coostack.usefulmagic.entity.custom.dragon.spawn.composition
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
+import cn.coostack.cooparticlesapi.cparticle.CParticleCurve
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComposition
 import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
 import cn.coostack.cooparticlesapi.network.particle.composition.ParticleShapeComposition
-import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEnchantmentEffect
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionAlphaHelper
 import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionBezierScaleHelper
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
+import java.util.UUID
 import kotlin.math.PI
 import kotlin.random.Random
 
@@ -32,13 +32,9 @@ class MagicDragonSpawnRuneComposition(position: Vec3, world: Level? = null) : Au
         RelativeLocation(0.936795, 1.19193, 0.0)
     )
 
-    private val alphaHelper = CompositionAlphaHelper(0.0, 1.0, 10)
-
     init {
         axis = RelativeLocation.yAxis()
         scaleHelper.loadControler(this)
-        alphaHelper.loadControler(this)
-        alphaHelper.resetAlphaMax()
         setDisabledInterval(10)
     }
 
@@ -57,13 +53,13 @@ class MagicDragonSpawnRuneComposition(position: Vec3, world: Level? = null) : Au
                             ) { shapeRel1 ->
                                 CompositionData()
                                     .setDisplayerSupplier {
-                                        ParticleDisplayer.withSingle(ControlableEnchantmentEffect(it))
+                                        ParticleDisplayer.withCParticle(it)
                                     }
-                                    .addParticleInstanceInit {
+                                    .addCParticleInstanceInit {
+                                        effect = ControlableEnchantmentEffect(UUID.randomUUID())
                                         size = 1.0F
-                                        currentAge = Random.nextInt(lifetime)
+                                        age = Random.nextInt(maxAge)
                                         color = this@MagicDragonSpawnRuneComposition.color
-                                        textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
                                     }
                             }
                             applyDisplayAction {
@@ -88,13 +84,13 @@ class MagicDragonSpawnRuneComposition(position: Vec3, world: Level? = null) : Au
                             ) { shapeRel1 ->
                                 CompositionData()
                                     .setDisplayerSupplier {
-                                        ParticleDisplayer.withSingle(ControlableEnchantmentEffect(it))
+                                        ParticleDisplayer.withCParticle(it)
                                     }
-                                    .addParticleInstanceInit {
+                                    .addCParticleInstanceInit {
+                                        effect = ControlableEnchantmentEffect(UUID.randomUUID())
                                         size = 1.0F
-                                        currentAge = Random.nextInt(lifetime)
+                                        age = Random.nextInt(maxAge)
                                         color = this@MagicDragonSpawnRuneComposition.color
-                                        textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
                                     }
                             }
                             applyDisplayAction {
@@ -119,13 +115,13 @@ class MagicDragonSpawnRuneComposition(position: Vec3, world: Level? = null) : Au
                             ) { shapeRel1 ->
                                 CompositionData()
                                     .setDisplayerSupplier {
-                                        ParticleDisplayer.withSingle(ControlableEnchantmentEffect(it))
+                                        ParticleDisplayer.withCParticle(it)
                                     }
-                                    .addParticleInstanceInit {
-                                        textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
+                                    .addCParticleInstanceInit {
+                                        effect = ControlableEnchantmentEffect(UUID.randomUUID())
                                         color = this@MagicDragonSpawnRuneComposition.color
                                         size = 1.5F
-                                        currentAge = Random.nextInt(lifetime)
+                                        age = Random.nextInt(maxAge)
                                     }
                             }
                             applyDisplayAction {
@@ -151,13 +147,13 @@ class MagicDragonSpawnRuneComposition(position: Vec3, world: Level? = null) : Au
                             ) { shapeRel1 ->
                                 CompositionData()
                                     .setDisplayerSupplier {
-                                        ParticleDisplayer.withSingle(ControlableEndRodEffect(it))
+                                        ParticleDisplayer.withCParticle(it)
                                     }
-                                    .addParticleInstanceInit {
+                                    .addCParticleInstanceInit {
+                                        effect = ControlableEndRodEffect(UUID.randomUUID())
                                         size = (Random.nextFloat() * 0.6 + 0.4).toFloat()
                                         color = this@MagicDragonSpawnRuneComposition.color
-                                        currentAge = Random.nextInt(lifetime)
-                                        textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
+                                        age = Random.nextInt(maxAge)
                                     }
                             }
                             loadScaleHelperBezierValue(
@@ -192,9 +188,7 @@ class MagicDragonSpawnRuneComposition(position: Vec3, world: Level? = null) : Au
         addPreTickAction {
             scaleHelper.doScale()
             if (status.isDisable()) {
-                alphaHelper.decreaseAlpha()
-            } else {
-                alphaHelper.increaseAlpha()
+                playCParticleAlphaTransition(10f, CParticleCurve.linear(1f, 0f))
             }
         }
     }

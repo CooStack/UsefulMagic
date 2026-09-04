@@ -1,7 +1,6 @@
-﻿package cn.coostack.usefulmagic.blocks.entity.formation
+package cn.coostack.usefulmagic.blocks.entity.formation
 
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
@@ -10,8 +9,8 @@ import cn.coostack.usefulmagic.formation.api.FormationCrystal
 import cn.coostack.usefulmagic.formation.api.FormationTargetOption
 import cn.coostack.usefulmagic.particles.emitters.LightningParticleEmitters
 import cn.coostack.cooparticlesapi.extend.relativize
-import cn.coostack.usefulmagic.particles.style.formation.crystal.CrystalStyle
-import cn.coostack.usefulmagic.particles.style.formation.crystal.RecoverCrystalStyle
+import cn.coostack.usefulmagic.particles.composition.formation.crystal.CrystalComposition
+import cn.coostack.usefulmagic.particles.composition.formation.crystal.RecoverCrystalComposition
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
 import net.minecraft.nbt.CompoundTag
@@ -85,13 +84,13 @@ class RecoverCrystalBlockEntity(pos: BlockPos, state: BlockState) :
         return option
     }
 
-    var style: CrystalStyle? = null
+    var style: CrystalComposition? = null
     override fun onFormationActive(formation: BlockFormation) {
         this.activeFormation = formation
         if (level!!.isClientSide) return
-        style = RecoverCrystalStyle()
+        style = RecoverCrystalComposition()
         style!!.crystalPos = worldPosition
-        ParticleStyleManager.spawnStyle(level!!, worldPosition.center.add(0.0, -0.4, 0.0), style!!)
+        style!!.spawn(level!!, worldPosition.center.add(0.0, -0.4, 0.0))
     }
 
 }

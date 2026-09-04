@@ -179,6 +179,18 @@
       "usefulmagic:magic/meteorite/rock_loop"
     ]
   },
+  "blooming": {
+    "subtitle": "sounds.usefulmagic.blooming",
+    "sounds": [
+      "usefulmagic:magic/useful/blooming"
+    ]
+  },
+  "bloom_wind": {
+    "subtitle": "sounds.usefulmagic.bloom_wind",
+    "sounds": [
+      "usefulmagic:magic/useful/bloom_wind"
+    ]
+  },
   "thorn_hit": {
     "subtitle": "sounds.usefulmagic.thorn_hit",
     "sounds": [

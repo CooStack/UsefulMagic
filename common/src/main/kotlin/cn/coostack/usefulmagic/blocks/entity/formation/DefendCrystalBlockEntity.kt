@@ -1,10 +1,9 @@
-﻿package cn.coostack.usefulmagic.blocks.entity.formation
+package cn.coostack.usefulmagic.blocks.entity.formation
 
 import cn.coostack.cooparticlesapi.CooParticlesAPI
 import cn.coostack.cooparticlesapi.barrages.BarrageHitResult
 import cn.coostack.cooparticlesapi.extend.relativize
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.usefulmagic.blocks.entity.UsefulMagicBlockEntities
@@ -16,8 +15,8 @@ import cn.coostack.usefulmagic.formation.target.LivingEntityTargetOption
 import cn.coostack.usefulmagic.formation.target.ProjectileEntityTargetOption
 import cn.coostack.usefulmagic.meteorite.MeteoriteBarrage
 import cn.coostack.usefulmagic.barrages.api.DamagedBarrage
-import cn.coostack.usefulmagic.particles.style.formation.crystal.CrystalStyle
-import cn.coostack.usefulmagic.particles.style.formation.crystal.DefendCrystalStyle
+import cn.coostack.usefulmagic.particles.composition.formation.crystal.CrystalComposition
+import cn.coostack.usefulmagic.particles.composition.formation.crystal.DefendCrystalComposition
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.Packet
@@ -37,16 +36,16 @@ class DefendCrystalBlockEntity(pos: BlockPos, state: BlockState) :
         set(value) {
         }
     val preDamageTake = 8f
-    var style: CrystalStyle? = null
+    var style: CrystalComposition? = null
     override fun onFormationActive(formation: BlockFormation) {
         this.activeFormation = formation
         if (formation.world!!.isClientSide) {
             return
         }
 
-        style = DefendCrystalStyle()
+        style = DefendCrystalComposition()
         style!!.crystalPos = worldPosition
-        ParticleStyleManager.spawnStyle(level!!, worldPosition.center.add(0.0, -0.4, 0.0), style!!)
+        style!!.spawn(level!!, worldPosition.center.add(0.0, -0.4, 0.0))
     }
 
 
@@ -163,4 +162,3 @@ class DefendCrystalBlockEntity(pos: BlockPos, state: BlockState) :
 //        ParticleEmittersManager.spawnEmitters(emitters)
     }
 }
-

@@ -1,25 +1,21 @@
-﻿package cn.coostack.usefulmagic.particles.composition
+package cn.coostack.usefulmagic.particles.composition
 
-import cn.coostack.cooparticlesapi.network.buffer.Vec3dControlerBuffer
+import cn.coostack.cooparticlesapi.annotations.CodecField
+import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
+import cn.coostack.cooparticlesapi.cparticle.CParticleCurve
+import cn.coostack.cooparticlesapi.cparticle.CParticleRenderLayer
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComposition
+import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
+import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import cn.coostack.cooparticlesapi.utils.helper.HelperUtil
-import cn.coostack.usefulmagic.utils.ParticleOption
-import net.minecraft.client.particle.ParticleRenderType
-import net.minecraft.world.phys.Vec3
-import java.util.Random
-import java.util.UUID
-import kotlin.math.PI
-import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
-import cn.coostack.cooparticlesapi.annotations.CodecField
-import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
-import net.minecraft.world.level.Level
-import cn.coostack.cooparticlesapi.network.particle.composition.AutoSequencedParticleComposition
-import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionAlphaHelper
 import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionScaleHelper
+import cn.coostack.usefulmagic.utils.ParticleOption
+import net.minecraft.world.level.Level
+import net.minecraft.world.phys.Vec3
+import java.util.*
 
 @CooAutoRegister
 class EndRodSwordComposition(
@@ -44,11 +40,6 @@ class EndRodSwordComposition(
         .addLine(RelativeLocation(-weight, 0, 0), RelativeLocation(weight, 0, 0), 40 * options)
         .addLine(RelativeLocation(0, lowest, 0), RelativeLocation(0, height, 0), 40 * options)
 
-    @CodecField
-    var enableScale = false
-
-    @CodecField
-    var scaleTick = 10
 
     @CodecField
     var enableAlpha = false
@@ -58,20 +49,22 @@ class EndRodSwordComposition(
 
     @CodecField
     var alphaTick = 10
-    val alphaHelper = CompositionAlphaHelper(0.0, 1.0, alphaTick)
-    val scaleHelper = CompositionScaleHelper(0.01, 1.0, scaleTick)
+    val scaleHelper = CompositionScaleHelper(0.01, 1.0, 10)
+
+    init {
+        scaleHelper.loadControler(this)
+    }
 
     override fun getParticles(): Map<CompositionData, RelativeLocation> {
         return swordPoints.createWithCompositionData {
             CompositionData().setDisplayerSupplier {
-                ParticleDisplayer.withSingle(
-                    ControlableEndRodEffect(it)
+                ParticleDisplayer.withCParticle(
+                    it,
+                    if (enableAlpha) CParticleRenderLayer.TRANSLUCENT else CParticleRenderLayer.OPAQUE,
                 )
-            }.addParticleInstanceInit {
-                if (enableAlpha) {
-                    this.textureSheet = ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
-                }
-                colorOfRGB(
+            }.addCParticleInstanceInit {
+                effect = ControlableEndRodEffect(UUID.randomUUID())
+                color = Math3DUtil.colorOf(
                     this@EndRodSwordComposition.color.x.toInt(),
                     this@EndRodSwordComposition.color.y.toInt(),
                     this@EndRodSwordComposition.color.z.toInt(),
@@ -80,29 +73,19 @@ class EndRodSwordComposition(
         }
     }
 
-    override fun beforeDisplay(styles: Map<CompositionData, RelativeLocation>) {
-        if (enableScale) {
-            scaleHelper.loadControler(this)
-        }
-        if (enableAlpha) {
-            alphaHelper.loadControler(this)
-        }
-        super.beforeDisplay(styles)
+    override fun beforeDisplay(map: Map<CompositionData, RelativeLocation>) {
+        preRotateTo(map, direction)
+        super.beforeDisplay(map)
     }
 
     override fun onDisplay() {
-        scaleHelper.scaleTick = scaleTick
-        scaleHelper.recalculateStep()
-        scaleHelper.resetScaleMin()
-        alphaHelper.alphaTick = alphaTick
-        alphaHelper.recalculateStep()
-        alphaHelper.resetAlphaMin()
         addPreTickAction {
-            if (enableScale) {
-                scaleHelper.doScale()
-            }
+            scaleHelper.doScale()
             if (enableAlpha) {
-                alphaHelper.increaseAlpha()
+                playCParticleAlphaTransition(
+                    durationTicks = alphaTick.toFloat(),
+                    alphaCurve = CParticleCurve.linear(0f, 1f),
+                )
             }
             rotateToPoint(direction)
         }

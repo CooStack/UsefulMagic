@@ -28,8 +28,8 @@ class StylesAnimate(
             val style = styleToPos.first
             val pos = styleToPos.second
             style.teleportTo(pos)
-            ParticleCompositionManager.spawn(style)
             spawnAction(style)
+            ParticleCompositionManager.spawn(style)
         }
         if (animateDuration == -1) return
         animateDuration--

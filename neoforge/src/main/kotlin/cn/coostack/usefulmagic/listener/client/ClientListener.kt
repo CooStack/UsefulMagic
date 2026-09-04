@@ -2,6 +2,7 @@ package cn.coostack.usefulmagic.listener.client
 
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.UsefulMagicClient
+import cn.coostack.usefulmagic.gui.magicexchange.MagicExchangeOverlay
 import cn.coostack.usefulmagic.gui.mana.ManaBarCallback
 import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.SubscribeEvent
@@ -20,5 +21,6 @@ object ClientListener {
     @SubscribeEvent
     fun hudCallback(event: RenderGuiEvent.Post) {
         ManaBarCallback.onHudRender(event.guiGraphics, event.partialTick.getGameTimeDeltaPartialTick(true))
+        MagicExchangeOverlay.onHudRender(event.guiGraphics, event.partialTick.getGameTimeDeltaPartialTick(true))
     }
 }

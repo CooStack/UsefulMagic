@@ -81,6 +81,12 @@ object UsefulMagicSoundEvents {
     val ROCK_LOOP = register("rock_loop")
 
     @JvmStatic
+    val BLOOMING = register("blooming")
+
+    @JvmStatic
+    val BLOOM_WIND = register("bloom_wind")
+
+    @JvmStatic
     val SMALL_LASER_SHOOT = register("small_laser_shoot")
 
     @JvmStatic

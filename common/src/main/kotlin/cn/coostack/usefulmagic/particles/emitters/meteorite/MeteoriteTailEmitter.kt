@@ -2,30 +2,38 @@ package cn.coostack.usefulmagic.particles.emitters.meteorite
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
+import cn.coostack.cooparticlesapi.cparticle.force.CParticleForce
 import cn.coostack.cooparticlesapi.network.particle.emitters.AutoParticleEmitters
+import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableCParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.SimpleRandomParticleData
-import cn.coostack.cooparticlesapi.network.particle.emitters.command.ParticleCommandQueue
-import cn.coostack.cooparticlesapi.network.particle.emitters.command.ParticleDragCommand
-import cn.coostack.cooparticlesapi.network.particle.emitters.command.ParticleNoiseCommand
 import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
 import cn.coostack.cooparticlesapi.particles.control.ParticleControler
-import cn.coostack.cooparticlesapi.particles.control.RemoveReason
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
-import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
-import cn.coostack.cooparticlesapi.utils.GraphMathHelper
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
-import kotlin.math.acos
-import kotlin.math.cbrt
-import kotlin.math.cos
-import kotlin.math.sin
 
 @CooAutoRegister
 class MeteoriteTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, world) {
+    override fun cparticleForces(): List<CParticleForce> = listOf(
+        CParticleForce.Noise(
+            strength = 0.03,
+            frequency = 0.15,
+            speed = 0.12,
+            affectY = 1.0,
+            clampSpeed = 0.8,
+            useLifeCurve = true,
+        ),
+        CParticleForce.ExpDrag(
+            damping = 0.01,
+            minSpeed = 0.0,
+            linear = 0.0,
+        ),
+    )
+
     @CodecField
     var mainData = SimpleRandomParticleData().apply {
         minAge = 20
@@ -45,26 +53,6 @@ class MeteoriteTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos,
         emittersInterpolator.setRefiner(1.25)
     }
 
-    private fun buildFireCommand(): ParticleCommandQueue {
-        return ParticleCommandQueue()
-            .add(
-                ParticleNoiseCommand()
-                    .strength(0.03)
-                    .frequency(0.15)
-                    .speed(0.12)
-                    .affectY(1.0)
-                    .clampSpeed(0.8)
-                    .useLifeCurve(true)
-            )
-            .add(
-                ParticleDragCommand()
-                    .damping(0.01)
-                    .minSpeed(0.0)
-                    .linear(0.0)
-            )
-    }
-
-
     override fun singleParticleAction(
         controler: ParticleControler,
         data: ControlableParticleData,
@@ -73,15 +61,6 @@ class MeteoriteTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos,
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
-        var fireCommand: ParticleCommandQueue? = null
-        controler.addPreTickAction {
-            val queue = fireCommand ?: buildFireCommand().also { fireCommand = it }
-            queue.applyVelocity(data, this)
-            if (data.sign == 1) {
-                val progress = currentAge / lifetime.toDouble()
-                color = GraphMathHelper.lerp(progress, Vector3f(1f, 1f, 1f), Vector3f(1F, 79 / 255F, 66 / 255F))
-            }
-        }
     }
 
     @CodecField
@@ -95,7 +74,7 @@ class MeteoriteTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos,
         // 发射器 #1: Emitter 1
         if (tick >= 0) {
             run {
-                val template1 = ControlableParticleData().apply {
+                val template1 = ControlableCParticleData().apply {
                     velocity = Vec3(0.0, 0.0, 1.0)
                     visibleRange = 512.0f
                     color = Vector3f(1.0f, 1.0f, 1.0f)
@@ -154,7 +133,7 @@ class MeteoriteTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos,
                     maxSpeed = 3.0
                 }
 
-                val template2 = ControlableParticleData().apply {
+                val template2 = ControlableCParticleData().apply {
                     velocity = Vec3(0.0, 0.0, 1.0)
                     visibleRange = 512.0f
                     color = Vector3f(0.439216f, 0.439216f, 0.439216f)

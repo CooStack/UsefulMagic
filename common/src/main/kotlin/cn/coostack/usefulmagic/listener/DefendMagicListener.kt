@@ -1,6 +1,5 @@
 package cn.coostack.usefulmagic.listener
 
-import cn.coostack.cooparticlesapi.extend.relativize
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
@@ -10,13 +9,14 @@ import cn.coostack.usefulmagic.items.prop.DefendCoreItem
 import cn.coostack.usefulmagic.particles.emitters.CircleEmitters
 import cn.coostack.usefulmagic.particles.emitters.ExplodeMagicEmitters
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
-import net.minecraft.world.entity.Entity
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundSource
 import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.projectile.Projectile
 import net.minecraft.world.phys.Vec3
+import cn.coostack.cooparticlesapi.extend.*
 import kotlin.math.roundToInt
 
 object DefendMagicListener {
@@ -24,11 +24,12 @@ object DefendMagicListener {
         direction: Vec3?,
         damagedEntity: ServerPlayer,
         sourceEntity: Entity?,
-        barrage: Boolean
+        barrage: Boolean,
+        source: DamageSource
     ) {
         if (direction == null) {
             // direction为null 说明 sourceEntity 也为null
-            showDefendPartSuccess(null, damagedEntity, null)
+            showDefendPartSuccess(null, damagedEntity, null, source)
             return
         }
         // 在entity方向显示一个圆环
@@ -59,13 +60,14 @@ object DefendMagicListener {
             1f
         )
         if (!barrage) {
-            sourceEntity!!.hurtMarked = true
             sourceEntity ?: return
             if (sourceEntity is Projectile) {
                 sourceEntity.deltaMovement = direction.normalize().scale(1.5)
+                sourceEntity.hurtMarked = true
             } else {
                 if (sourceEntity.distanceTo(damagedEntity) < 2f) {
                     sourceEntity.deltaMovement = direction.normalize().scale(0.5)
+                    sourceEntity.hurtMarked = true
                 }
             }
         }
@@ -74,7 +76,8 @@ object DefendMagicListener {
     private fun showDefendPartSuccess(
         direction: Vec3?,
         damagedEntity: ServerPlayer,
-        sourceEntity: Entity?
+        sourceEntity: Entity?,
+        source: DamageSource
     ) {
         // 身上暴粒子
         val emitters = ExplodeMagicEmitters(
@@ -106,8 +109,14 @@ object DefendMagicListener {
      * neoforge还不知道 TODO
      */
     fun call(entity: LivingEntity, source: DamageSource, amount: Float): Boolean {
-        if (entity !is ServerPlayer) return true
-        return tryDefend(entity, source.entity, amount, source.sourcePosition ?: Vec3.ZERO, source, false)
+        return entity !is ServerPlayer || tryDefend(
+            entity,
+            source.entity,
+            amount,
+            source.sourcePosition ?: Vec3.ZERO,
+            source,
+            false
+        )
     }
 
 
@@ -139,14 +148,14 @@ object DefendMagicListener {
         if (mana >= manaCost) {
             entity.mana -= manaCost.roundToInt()
             // 防御成功
-            showDefendSuccess(sourceDirection, entity, attacker, barrage)
+            showDefendSuccess(sourceDirection, entity, attacker, barrage, source)
             return false
         }
         entity.mana = 0
         val actualDamage = count - mana / 5
         entity.hurt(source, actualDamage)
         // 成功了一部分
-        showDefendPartSuccess(sourceDirection, entity, attacker)
+        showDefendPartSuccess(sourceDirection, entity, attacker, source)
         return false
     }
 

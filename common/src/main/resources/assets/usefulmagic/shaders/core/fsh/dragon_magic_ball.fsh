@@ -12,14 +12,21 @@ uniform float brightness = 1.0;
 uniform float time = 0.0;
 uniform float discardProgress = 0.0;
 uniform int passMode = 0;
+uniform int renderTarget = 2;
 
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out vec4 MaskColor;
 
 const float PI = 3.14159265359;
 const float TAU = 6.28318530718;
 
 float saturate(float value) {
     return clamp(value, 0.0, 1.0);
+}
+
+void outputColor(vec4 value) {
+    FragColor = renderTarget != 1 ? value : vec4(0.0);
+    MaskColor = renderTarget != 0 ? value : vec4(0.0);
 }
 
 float luma(vec3 value) {
@@ -92,7 +99,7 @@ void main() {
         vec3 lit = mix(cloudTint, vec3(0.98, 0.99, 1.0), saturate(cloudPuff * 0.24 + cloudDensity * 0.06));
         vec3 cloudColor = mix(shadow, lit, saturate(cloudPuff * 0.42 + cloudDensity * 0.10));
         cloudColor *= brightness * (0.82 + cloudPuff * 0.10);
-        FragColor = vec4(cloudColor, saturate(finalAlpha));
+        outputColor(vec4(cloudColor, saturate(finalAlpha)));
         return;
     }
 
@@ -115,7 +122,7 @@ void main() {
         }
         vec3 maskColor = mix(tint, whiteHot, saturate(hotPatch * 0.30 + hardRim * 0.26));
         maskColor *= brightness * (0.72 + flow * 0.22 + hardRim * 0.22);
-        FragColor = vec4(maskColor, maskAlpha);
+        outputColor(vec4(maskColor, maskAlpha));
         return;
     }
 
@@ -124,5 +131,5 @@ void main() {
         discard;
     }
     surfaceColor *= brightness * (0.76 + flow * 0.20 + hotPatch * 0.14 + rim * 0.12);
-    FragColor = vec4(surfaceColor, saturate(finalAlpha));
+    outputColor(vec4(surfaceColor, saturate(finalAlpha)));
 }

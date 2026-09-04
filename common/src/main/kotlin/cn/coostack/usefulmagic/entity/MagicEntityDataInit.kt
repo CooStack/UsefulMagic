@@ -1,14 +1,40 @@
 package cn.coostack.usefulmagic.entity
 
+import cn.coostack.cooparticlesapi.annotations.codec.CodecHelper
+import cn.coostack.usefulmagic.data.magic.DiggingState
 import cn.coostack.usefulmagic.data.tracked.CooDataTracker
 import cn.coostack.usefulmagic.data.tracked.CooTrackedData
+import net.minecraft.core.registries.Registries
+import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.phys.Vec3
 
 object MagicEntityDataInit {
+    fun init() {
+        CodecHelper.register(
+            DiggingState::class.java,
+            StreamCodec.of<FriendlyByteBuf, DiggingState>({ buf, state ->
+                buf.writeBlockPos(state.pos)
+                buf.writeFloat(state.progress)
+                buf.writeResourceKey(state.world)
+            }) {
+                val pos = it.readBlockPos()
+                val progress = it.readFloat()
+                val world = it.readResourceKey(Registries.DIMENSION)
+                DiggingState(pos, progress, world)
+            }
+        )
+    }
+
     @JvmField
     val MAX_MANA = CooDataTracker.register(
         CooTrackedData(Int::class.java, "max_mana")
+    )
+
+    @JvmField
+    val DIGGING_STATE = CooDataTracker.register(
+        CooTrackedData(DiggingState::class.java, "digging")
     )
 
     @JvmField
@@ -51,8 +77,5 @@ object MagicEntityDataInit {
         CooTrackedData(Boolean::class.java, "has_vec3_target")
     )
 
-    fun init() {
-
-    }
 
 }

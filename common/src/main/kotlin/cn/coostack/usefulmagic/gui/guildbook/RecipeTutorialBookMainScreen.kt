@@ -53,6 +53,8 @@ open class RecipeTutorialBookMainScreen(val parent: TutorialBookScreen) : Tutori
 
     override fun getCloseTargetScreen(): Screen = parent
 
+    protected open fun getRecipeListScreen(): RecipeTutorialBookMainScreen = this
+
     override fun initTypeIcons() {
         val player = client.player ?: return
 
@@ -98,7 +100,7 @@ open class RecipeTutorialBookMainScreen(val parent: TutorialBookScreen) : Tutori
                     16,
                     output
                 ) {
-                    client.setScreen(RecipeTutorialBookScreen(recipeHolder, this))
+                    client.setScreen(RecipeTutorialBookScreen(recipeHolder, getRecipeListScreen()))
                 }
             ).apply {
                 clickSound = SoundEvents.BOOK_PAGE_TURN

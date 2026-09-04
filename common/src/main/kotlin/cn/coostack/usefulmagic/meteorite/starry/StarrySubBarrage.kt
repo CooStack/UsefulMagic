@@ -5,13 +5,13 @@ import cn.coostack.cooparticlesapi.api.controler.server.ServerControler
 import cn.coostack.cooparticlesapi.barrages.BarrageHitResult
 import cn.coostack.cooparticlesapi.barrages.BarrageOption
 import cn.coostack.cooparticlesapi.barrages.HitBox
-import cn.coostack.cooparticlesapi.extend.asRelative
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
-import cn.coostack.usefulmagic.damagetypes.UsefulMagicDamageSources
-import cn.coostack.usefulmagic.meteorite.MeteoriteImpactHelper
-import cn.coostack.usefulmagic.meteorite.MeteoriteDisplay
 import cn.coostack.usefulmagic.barrages.api.DamagedBarrage
+import cn.coostack.usefulmagic.damagetypes.UsefulMagicDamageSources
+import cn.coostack.usefulmagic.gamerules.UsefulMagicGameRules
+import cn.coostack.usefulmagic.meteorite.MeteoriteDisplay
+import cn.coostack.usefulmagic.meteorite.MeteoriteImpactHelper
 import cn.coostack.usefulmagic.particles.emitters.StarryMeteoriteLocusEmitters
 import cn.coostack.usefulmagic.particles.emitters.magic.StarryHugeBarrageExplosionEmitter
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
@@ -25,10 +25,10 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
-import java.util.ArrayDeque
+import cn.coostack.cooparticlesapi.extend.*
+import java.util.*
 import kotlin.math.abs
 import kotlin.math.roundToInt
-import kotlin.random.Random
 
 class StarrySubBarrage(loc: Vec3, world: ServerLevel, options: BarrageOption, damage: Double) :
     DamagedBarrage(loc, world, options, damage) {
@@ -107,7 +107,7 @@ class StarrySubBarrage(loc: Vec3, world: ServerLevel, options: BarrageOption, da
         if (aligningToMainDirection) {
             applyAttraction()
         }
-        trailEmitter.pos = loc
+        trailEmitter.teleportTo(loc)
         val control = bindControl.get() as MeteoriteDisplay
         if (direction.lengthSqr() > 1e-6) {
             control.rotateToPoint(direction.asRelative())
@@ -204,6 +204,12 @@ class StarrySubBarrage(loc: Vec3, world: ServerLevel, options: BarrageOption, da
     }
 
     private fun triggerImpactExplosion() {
+        // 关闭魔法地形破坏时使用 NONE(等价于 BlockInteraction.KEEP): 仍造成实体伤害, 但不破坏方块。
+        val interaction = if (UsefulMagicGameRules.canDestroyTerrain(world)) {
+            Level.ExplosionInteraction.MOB
+        } else {
+            Level.ExplosionInteraction.NONE
+        }
         world.explode(
             shooter,
             loc.x,
@@ -211,7 +217,7 @@ class StarrySubBarrage(loc: Vec3, world: ServerLevel, options: BarrageOption, da
             loc.z,
             calculateExplosionPower(),
             false,
-            Level.ExplosionInteraction.MOB
+            interaction
         )
     }
 
@@ -223,6 +229,7 @@ class StarrySubBarrage(loc: Vec3, world: ServerLevel, options: BarrageOption, da
             val pendingBlocks = ArrayDeque<BlockPos>()
             val impactRadius = calculateExplosionRadius().roundToInt().coerceAtLeast(1)
             val blocksPerTick = MeteoriteImpactHelper.queueImpactExplosion(
+                world = world,
                 pendingBlocks = pendingBlocks,
                 radius = impactRadius,
                 center = explosionCenter,
@@ -261,7 +268,6 @@ class StarrySubBarrage(loc: Vec3, world: ServerLevel, options: BarrageOption, da
             return
         }
         trailStarted = true
-        ParticleEmittersManager.spawnEmitters(trailEmitter)
         spawnTrailEffect()
     }
 
@@ -287,7 +293,6 @@ class StarrySubBarrage(loc: Vec3, world: ServerLevel, options: BarrageOption, da
     }
 
     private fun spawnExplosionEffect() {
-        // TODO: 在小陨石落地爆炸时生成粒子效果
     }
 
     private fun spawnMeteoriteImpactEffect(impactDirection: Vec3, impactSize: Double) {
@@ -309,6 +314,6 @@ class StarrySubBarrage(loc: Vec3, world: ServerLevel, options: BarrageOption, da
     }
 
     private fun spawnTrailEffect() {
-        // TODO: 在小陨石开始飞行时生成拖尾粒子效果
+        ParticleEmittersManager.spawnEmitters(trailEmitter)
     }
 }

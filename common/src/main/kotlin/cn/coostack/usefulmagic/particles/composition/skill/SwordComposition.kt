@@ -2,6 +2,7 @@ package cn.coostack.usefulmagic.particles.composition.skill
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
+import cn.coostack.cooparticlesapi.cparticle.CParticleRenderLayer
 import cn.coostack.cooparticlesapi.network.particle.composition.*
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.*
@@ -10,6 +11,7 @@ import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionScaleHelper
+import java.util.UUID
 
 @CooAutoRegister
 class SwordComposition(position: Vec3, world: Level? = null) : AutoParticleComposition(position, world) {
@@ -59,9 +61,11 @@ class SwordComposition(position: Vec3, world: Level? = null) : AutoParticleCompo
                 .createWithCompositionData { rel ->
                     CompositionData()
                         .setDisplayerSupplier {
-                            ParticleDisplayer.withSingle(ControlableEndRodEffect(it))
+                            ParticleDisplayer.withCParticle(it, CParticleRenderLayer.OPAQUE)
                         }
-
+                        .addCParticleInstanceInit {
+                            effect = ControlableEndRodEffect(UUID.randomUUID())
+                        }
                 }
         )
 

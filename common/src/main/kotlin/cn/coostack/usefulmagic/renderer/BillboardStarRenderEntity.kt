@@ -1,87 +1,55 @@
 package cn.coostack.usefulmagic.renderer
 
+import cn.coostack.cooparticlesapi.extend.ofID
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.renderer.AutoRenderEntity
-import cn.coostack.cooparticlesapi.renderer.client.ClientRenderPipelineManager
-import cn.coostack.cooparticlesapi.renderer.client.RenderUtil
-import cn.coostack.cooparticlesapi.renderer.effects.builtin.BuiltinRenderEffectDescriptors
-import cn.coostack.cooparticlesapi.renderer.effects.builtin.MaskBloomConfig
-import cn.coostack.cooparticlesapi.renderer.runtime.FramePostRenderEntityRenderer
-import cn.coostack.cooparticlesapi.renderer.runtime.LocalRenderInput
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderContributionCollector
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderContributionInput
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderEntityInstance
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderEntityReleaseHook
-import cn.coostack.cooparticlesapi.renderer.runtime.WorldPassRenderEntityRenderer
-import cn.coostack.cooparticlesapi.renderer.shader.ShaderProgramBuilder
-import cn.coostack.cooparticlesapi.renderer.shader.api.CooShaderProgram
-import cn.coostack.cooparticlesapi.renderer.shader.api.glsl.GlShaderType
-import cn.coostack.cooparticlesapi.renderer.shader.data.CooVertexFormat
-import cn.coostack.cooparticlesapi.renderer.shader.data.VertexData
-import cn.coostack.cooparticlesapi.renderer.shader.glsl.IdentifierShader
-import cn.coostack.cooparticlesapi.renderer.shader.vertex.SimpleVertexBuffer
 import cn.coostack.usefulmagic.UsefulMagic
-import com.mojang.blaze3d.systems.RenderSystem
-import net.minecraft.client.Minecraft
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
-import org.joml.Matrix3f
-import org.joml.Matrix4f
-import org.joml.Matrix4fStack
-import org.joml.Vector2f
 import org.joml.Vector3f
-import org.joml.Vector4f
-import kotlin.math.max
 import kotlin.math.sin
 
-private data class BillboardProjectedBlend(
-    val projectedRadiusPx: Float,
-    val directWeight: Float,
-)
-
+/** 保存公告板星芒的同步状态、生命周期和渲染范围。 */
 @CooAutoRegister
 class BillboardStarRenderEntity(
     world: Level? = null,
     pos: Vec3 = Vec3.ZERO,
-) : AutoRenderEntity(world, pos),
-    WorldPassRenderEntityRenderer<BillboardStarRenderEntity>,
-    FramePostRenderEntityRenderer<BillboardStarRenderEntity>,
-    RenderEntityReleaseHook<BillboardStarRenderEntity> {
+) : AutoRenderEntity(world, pos) {
+    /** 星芒主体和辉光使用的 RGB 颜色。 */
     @CodecField
-    var color: Vector3f = Vector3f(1.0f, 0.94f, 0.72f)
+    var color: Vector3f = Vector3f(1.0F, 0.94F, 0.72F)
 
+    /** 星芒整体透明度，渲染时限制到有效范围。 */
     @CodecField
     var alpha: Double = 1.0
 
+    /** 星芒完全展开时的世界尺寸。 */
     @CodecField
-    var maxScale: Float = DEFAULT_MAX_SCALE
+    var maxScale: Float = 3.5F
 
+    /** 从最小尺寸扩张到完整尺寸的 tick 数。 */
     @CodecField
-    var expandTicks: Int = DEFAULT_EXPAND_TICKS
+    var expandTicks: Int = 4
 
+    /** 完全展开后保持显示的 tick 数。 */
     @CodecField
-    var holdTicks: Int = DEFAULT_HOLD_TICKS
+    var holdTicks: Int = 8
 
+    /** 从完整尺寸收束到消失的 tick 数。 */
     @CodecField
-    var shrinkTicks: Int = DEFAULT_SHRINK_TICKS
+    var shrinkTicks: Int = 6
 
+    /** 星芒公告板每 tick 的自转弧度。 */
     @CodecField
-    var spinSpeed: Float = DEFAULT_SPIN_SPEED
+    var spinSpeed: Float = 0.24F
 
     init {
         renderRange = 96.0
     }
 
-    override fun initialize(instance: RenderEntityInstance<BillboardStarRenderEntity>) {
-        initStatic()
-    }
-
     override fun getRenderID(): ResourceLocation = ID
-
-    override fun release(instance: RenderEntityInstance<BillboardStarRenderEntity>) {
-    }
 
     override fun clientTick() {
         updateLifecycle()
@@ -91,287 +59,39 @@ class BillboardStarRenderEntity(
         updateLifecycle()
     }
 
-    override fun renderLocal(input: LocalRenderInput<BillboardStarRenderEntity>) {
-        initStatic()
-        val bodyAlpha = currentBodyAlpha(input.tickDelta)
-        if (bodyAlpha <= MIN_VISIBLE_ALPHA) {
-            return
-        }
-        val scale = currentScale(input.tickDelta)
-        val viewRotationMatrix = Matrix3f(input.viewMatrix)
-        val inverseViewRotationMatrix = Matrix3f(viewRotationMatrix).invert()
-        val blend = projectedBlend(
-            scale = scale,
-            cameraWorldPos = currentCameraWorldPos(),
-            viewRotationMatrix = viewRotationMatrix,
-            inverseViewRotationMatrix = inverseViewRotationMatrix,
-            projMatrix = input.projMatrix,
-            screenSize = currentScreenSize(),
-        )
-        val directAlpha = bodyAlpha * mix(0.18f, 1.0f, blend.directWeight)
-        if (directAlpha <= MIN_VISIBLE_ALPHA) {
-            return
-        }
-        renderPasses(
-            modelMatrix = input.modelMatrix,
-            viewMatrix = input.viewMatrix,
-            projMatrix = input.projMatrix,
-            inverseViewRotationMatrix = inverseViewRotationMatrix,
-            scale = scale,
-            time = currentTimeline(input.tickDelta),
-            roll = currentRoll(input.tickDelta),
-            rayMorph = currentRayMorph(input.tickDelta),
-            whiteCore = currentWhiteCore(input.tickDelta),
-            twinkle = currentTwinkle(input.tickDelta),
-            collapse = currentCollapse(input.tickDelta),
-            passAlpha = directAlpha,
-            bloomPass = false,
-        )
-    }
-
-    override fun collectRenderContributions(
-        input: RenderContributionInput<BillboardStarRenderEntity>,
-        collector: RenderContributionCollector,
-    ) {
-        collector.submit(
-            BuiltinRenderEffectDescriptors.maskBloom(
-                effectId = STAR_BLOOM_EFFECT_ID,
-                sourceInstanceId = uuid.toString(),
-                frameContext = input.frameContext,
-                sourceEntity = this,
-                config = STAR_BLOOM_CONFIG,
-                priority = STAR_BLOOM_PRIORITY,
-                requiredCapabilities = UsefulMagicShaderPipelines.DEPTH_AWARE_MASK_BLOOM_CAPABILITIES,
-            ) {
-                renderBloomMask(
-                    tickDelta = input.frameContext.tickDelta,
-                    viewMatrix = input.frameContext.viewMatrix,
-                    projMatrix = input.frameContext.projMatrix,
-                )
-            },
-        )
-    }
-
-    private fun renderBloomMask(
-        tickDelta: Float,
-        viewMatrix: Matrix4f,
-        projMatrix: Matrix4f,
-    ) {
-        initStatic()
-        val bloomAlpha = currentBloomAlpha(tickDelta)
-        if (bloomAlpha <= MIN_VISIBLE_ALPHA) {
-            return
-        }
-        val scale = currentScale(tickDelta)
-        val viewRotationMatrix = Matrix3f(viewMatrix)
-        val inverseViewRotationMatrix = Matrix3f(viewRotationMatrix).invert()
-        val blend = projectedBlend(
-            scale = scale,
-            cameraWorldPos = currentCameraWorldPos(),
-            viewRotationMatrix = viewRotationMatrix,
-            inverseViewRotationMatrix = inverseViewRotationMatrix,
-            projMatrix = projMatrix,
-            screenSize = currentScreenSize(),
-        )
-        val bloomScale = scale * mix(1.0f, 1.18f, 1.0f - blend.directWeight)
-        val maskAlpha = bloomAlpha * max(0.42f, farBloomIntensityScale(blend.projectedRadiusPx, 18.0f, 2.0f))
-        val modelMatrix = Matrix4fStack(16)
-        RenderUtil.setRenderStackWithEntity(modelMatrix, this, tickDelta)
-        renderPasses(
-            modelMatrix = modelMatrix,
-            viewMatrix = viewMatrix,
-            projMatrix = projMatrix,
-            inverseViewRotationMatrix = inverseViewRotationMatrix,
-            scale = bloomScale,
-            time = currentTimeline(tickDelta),
-            roll = currentRoll(tickDelta),
-            rayMorph = currentRayMorph(tickDelta),
-            whiteCore = currentWhiteCore(tickDelta),
-            twinkle = currentTwinkle(tickDelta),
-            collapse = currentCollapse(tickDelta),
-            passAlpha = maskAlpha,
-            bloomPass = true,
-        )
-    }
-
-    private fun renderPasses(
-        modelMatrix: Matrix4f,
-        viewMatrix: Matrix4f,
-        projMatrix: Matrix4f,
-        inverseViewRotationMatrix: Matrix3f,
-        scale: Float,
-        time: Float,
-        roll: Float,
-        rayMorph: Float,
-        whiteCore: Float,
-        twinkle: Float,
-        collapse: Float,
-        passAlpha: Float,
-        bloomPass: Boolean,
-    ) {
-        if (passAlpha <= MIN_VISIBLE_ALPHA) {
-            return
-        }
-        RenderSystem.disableCull()
-        RenderSystem.enableDepthTest()
-        RenderSystem.enableBlend()
-        RenderSystem.depthMask(false)
-        try {
-            if (bloomPass) {
-                RenderSystem.blendFunc(770, 1)
-                drawPass(
-                    modelMatrix = modelMatrix,
-                    viewMatrix = viewMatrix,
-                    projMatrix = projMatrix,
-                    inverseViewRotationMatrix = inverseViewRotationMatrix,
-                    scale = Vector2f(scale * 1.22f, scale * 1.22f),
-                    time = time,
-                    roll = roll,
-                    depthOffset = -0.002f,
-                    passColor = mixColor(color, Vector3f(1.0f, 0.96f, 0.84f), 0.26f),
-                    alpha = passAlpha * 0.34f,
-                    brightness = 2.9f,
-                    haloStrength = 0.78f,
-                    rayStrength = rayMorph,
-                    raySharpness = 0.62f,
-                    coreRadius = 0.30f,
-                    whiteCore = whiteCore * 0.88f,
-                    twinkle = twinkle,
-                    collapse = collapse,
-                )
-                drawPass(
-                    modelMatrix = modelMatrix,
-                    viewMatrix = viewMatrix,
-                    projMatrix = projMatrix,
-                    inverseViewRotationMatrix = inverseViewRotationMatrix,
-                    scale = Vector2f(scale * 1.74f, scale * 1.74f),
-                    time = time,
-                    roll = -roll * 1.18f,
-                    depthOffset = 0.0015f,
-                    passColor = mixColor(color, Vector3f(1.0f, 0.98f, 0.94f), 0.38f),
-                    alpha = passAlpha * 0.18f,
-                    brightness = 4.1f,
-                    haloStrength = 1.12f,
-                    rayStrength = mix(0.66f, 1.0f, rayMorph),
-                    raySharpness = 0.42f,
-                    coreRadius = 0.22f,
-                    whiteCore = whiteCore * 0.56f,
-                    twinkle = twinkle,
-                    collapse = collapse,
-                )
-            } else {
-                RenderSystem.blendFunc(770, 771)
-                drawPass(
-                    modelMatrix = modelMatrix,
-                    viewMatrix = viewMatrix,
-                    projMatrix = projMatrix,
-                    inverseViewRotationMatrix = inverseViewRotationMatrix,
-                    scale = Vector2f(scale, scale),
-                    time = time,
-                    roll = roll,
-                    depthOffset = -0.002f,
-                    passColor = color,
-                    alpha = passAlpha * 0.42f,
-                    brightness = 1.26f,
-                    haloStrength = 0.34f,
-                    rayStrength = rayMorph,
-                    raySharpness = 0.78f,
-                    coreRadius = 0.34f,
-                    whiteCore = whiteCore * 0.62f,
-                    twinkle = twinkle,
-                    collapse = collapse,
-                )
-                RenderSystem.blendFunc(770, 1)
-                drawPass(
-                    modelMatrix = modelMatrix,
-                    viewMatrix = viewMatrix,
-                    projMatrix = projMatrix,
-                    inverseViewRotationMatrix = inverseViewRotationMatrix,
-                    scale = Vector2f(scale * 0.58f, scale * 0.58f),
-                    time = time,
-                    roll = -roll * 1.34f,
-                    depthOffset = 0.0035f,
-                    passColor = mixColor(color, Vector3f(1.0f, 0.98f, 0.90f), 0.44f),
-                    alpha = passAlpha * 0.30f,
-                    brightness = 2.7f,
-                    haloStrength = 0.12f,
-                    rayStrength = mix(0.52f, 0.76f, rayMorph),
-                    raySharpness = 0.96f,
-                    coreRadius = 0.48f,
-                    whiteCore = whiteCore,
-                    twinkle = twinkle,
-                    collapse = collapse,
-                )
-            }
-        } finally {
-            RenderSystem.depthMask(true)
-            RenderSystem.defaultBlendFunc()
-            RenderSystem.disableBlend()
-            RenderSystem.enableCull()
-        }
-    }
-
-    private fun drawPass(
-        modelMatrix: Matrix4f,
-        viewMatrix: Matrix4f,
-        projMatrix: Matrix4f,
-        inverseViewRotationMatrix: Matrix3f,
-        scale: Vector2f,
-        time: Float,
-        roll: Float,
-        depthOffset: Float,
-        passColor: Vector3f,
-        alpha: Float,
-        brightness: Float,
-        haloStrength: Float,
-        rayStrength: Float,
-        raySharpness: Float,
-        coreRadius: Float,
-        whiteCore: Float,
-        twinkle: Float,
-        collapse: Float,
-    ) {
-        if (alpha <= MIN_VISIBLE_ALPHA) {
-            return
-        }
-        starShader.useOnContext {
-            setMatrix4("modelMatrix", modelMatrix)
-            setMatrix4("viewMatrix", viewMatrix)
-            setMatrix4("projMatrix", projMatrix)
-            setMatrix3f("inverseViewRotationMatrix", inverseViewRotationMatrix)
-            setFloat2("scale", scale)
-            setFloat("spin", roll)
-            setFloat("depthOffset", depthOffset)
-            setFloat3("color", passColor)
-            setFloat("alpha", alpha)
-            setFloat("brightness", brightness)
-            setFloat("haloStrength", haloStrength)
-            setFloat("rayStrength", rayStrength)
-            setFloat("raySharpness", raySharpness)
-            setFloat("coreRadius", coreRadius)
-            setFloat("whiteCore", whiteCore)
-            setFloat("twinkle", twinkle)
-            setFloat("collapse", collapse)
-            setFloat("time", time)
-            starVertexBuffer.draw()
-        }
-    }
-
+    /** 在完整动画结束后终止实体。 */
     private fun updateLifecycle() {
         if (age > totalDurationTicks() + 1) {
             canceled = true
         }
     }
 
+    /**
+     * 计算展开、停留和收束阶段的总时长。
+     *
+     * @return 至少包含一个展开 tick 和一个收束 tick 的总时长
+     */
     private fun totalDurationTicks(): Int {
         return expandTicks.coerceAtLeast(1) + holdTicks.coerceAtLeast(0) + shrinkTicks.coerceAtLeast(1)
     }
 
-    private fun currentTimeline(tickDelta: Float): Float {
-        return (age - 1f + tickDelta).coerceAtLeast(0f)
+    /**
+     * 返回包含帧插值的生命周期时间。
+     *
+     * @return 从动画起点开始计算的非负 tick 时间
+     */
+    internal fun currentTimeline(tickDelta: Float): Float {
+        return (age - 1F + tickDelta).coerceAtLeast(0F)
     }
 
-    private fun currentScale(tickDelta: Float): Float {
+    /**
+     * 计算当前帧星芒尺寸。
+     *
+     * @return 当前帧的世界空间尺寸
+     */
+    internal fun currentScale(tickDelta: Float): Float {
+        val minimumScale = 0.05F
+        // 先确定三个生命周期区间，再分别使用缓出、轻微脉冲和收束曲线计算尺寸。
         val time = currentTimeline(tickDelta)
         val expandDuration = expandTicks.coerceAtLeast(1).toFloat()
         val holdDuration = holdTicks.coerceAtLeast(0).toFloat()
@@ -379,268 +99,196 @@ class BillboardStarRenderEntity(
         val holdEnd = expandDuration + holdDuration
         val pulse = currentTwinkle(tickDelta)
         return when {
-            time < expandDuration -> maxScale.coerceAtLeast(MIN_WORLD_SCALE) *
-                    mix(0.16f, 1.0f, easeOutQuint(smoothstep(0f, expandDuration, time)))
+            time < expandDuration -> maxScale.coerceAtLeast(minimumScale) *
+                    mix(0.16F, 1.0F, easeOutQuint(smoothstep(0F, expandDuration, time)))
 
-            time < holdEnd -> maxScale.coerceAtLeast(MIN_WORLD_SCALE) * mix(0.96f, 1.08f, pulse)
+            time < holdEnd -> maxScale.coerceAtLeast(minimumScale) * mix(0.96F, 1.08F, pulse)
             else -> {
-                val collapse = smoothstep(0f, shrinkDuration, time - holdEnd)
-                maxScale.coerceAtLeast(MIN_WORLD_SCALE) * mix(1.0f, 0.12f, collapse)
+                val collapse = smoothstep(0F, shrinkDuration, time - holdEnd)
+                maxScale.coerceAtLeast(minimumScale) * mix(1.0F, 0.12F, collapse)
             }
         }
     }
 
-    private fun currentBodyAlpha(tickDelta: Float): Float {
+    /**
+     * 计算当前帧主体透明度。
+     *
+     * @return 叠加生命周期淡入淡出后的主体透明度
+     */
+    internal fun currentBodyAlpha(tickDelta: Float): Float {
         val time = currentTimeline(tickDelta)
+        // 透明度与尺寸共用阶段边界，但收束阶段使用平方衰减以避免尾帧突变。
         val expandDuration = expandTicks.coerceAtLeast(1).toFloat()
         val holdDuration = holdTicks.coerceAtLeast(0).toFloat()
         val shrinkDuration = shrinkTicks.coerceAtLeast(1).toFloat()
         val holdEnd = expandDuration + holdDuration
-        val baseAlpha = alpha.toFloat().coerceIn(0f, 1f)
+        val baseAlpha = alpha.toFloat().coerceIn(0F, 1F)
         return when {
-            time < expandDuration -> mix(0.18f, 1.0f, easeOutCubic(smoothstep(0f, expandDuration, time))) * baseAlpha
-            time < holdEnd -> mix(0.84f, 1.0f, currentTwinkle(tickDelta)) * baseAlpha
+            time < expandDuration -> mix(
+                0.18F,
+                1.0F,
+                easeOutCubic(smoothstep(0F, expandDuration, time)),
+            ) * baseAlpha
+
+            time < holdEnd -> mix(0.84F, 1.0F, currentTwinkle(tickDelta)) * baseAlpha
             else -> {
-                val collapse = smoothstep(0f, shrinkDuration, time - holdEnd)
-                val fade = 1f - collapse
+                val collapse = smoothstep(0F, shrinkDuration, time - holdEnd)
+                val fade = 1F - collapse
                 fade * fade * baseAlpha
             }
         }
     }
 
-    private fun currentBloomAlpha(tickDelta: Float): Float {
+    /**
+     * 计算当前帧写入泛光 mask 的透明度。
+     *
+     * @return 叠加独立淡入、脉冲与三次淡出后的 mask 透明度
+     */
+    internal fun currentBloomAlpha(tickDelta: Float): Float {
         val time = currentTimeline(tickDelta)
         val expandDuration = expandTicks.coerceAtLeast(1).toFloat()
         val holdDuration = holdTicks.coerceAtLeast(0).toFloat()
         val shrinkDuration = shrinkTicks.coerceAtLeast(1).toFloat()
         val holdEnd = expandDuration + holdDuration
-        val baseAlpha = alpha.toFloat().coerceIn(0f, 1f)
+        val baseAlpha = alpha.toFloat().coerceIn(0F, 1F)
         return when {
-            time < expandDuration -> mix(0.28f, 1.0f, easeOutQuint(smoothstep(0f, expandDuration, time))) * baseAlpha
-            time < holdEnd -> mix(0.92f, 1.12f, currentTwinkle(tickDelta)) * baseAlpha
+            time < expandDuration -> mix(
+                0.28F,
+                1.0F,
+                easeOutQuint(smoothstep(0F, expandDuration, time)),
+            ) * baseAlpha
+
+            time < holdEnd -> mix(0.92F, 1.12F, currentTwinkle(tickDelta)) * baseAlpha
             else -> {
-                val collapse = smoothstep(0f, shrinkDuration, time - holdEnd)
-                val fade = 1f - collapse
+                val collapse = smoothstep(0F, shrinkDuration, time - holdEnd)
+                val fade = 1F - collapse
                 fade * fade * fade * baseAlpha
             }
         }
     }
 
-    private fun currentGlowAlpha(tickDelta: Float): Float {
-        val time = currentTimeline(tickDelta)
-        val expandDuration = expandTicks.coerceAtLeast(1).toFloat()
-        val holdDuration = holdTicks.coerceAtLeast(0).toFloat()
-        val shrinkDuration = shrinkTicks.coerceAtLeast(1).toFloat()
-        val holdEnd = expandDuration + holdDuration
-        val baseAlpha = alpha.toFloat().coerceIn(0f, 1f)
-        return when {
-            time < expandDuration -> mix(0.22f, 0.94f, easeOutCubic(smoothstep(0f, expandDuration, time))) * baseAlpha
-            time < holdEnd -> mix(0.86f, 1.08f, currentTwinkle(tickDelta)) * baseAlpha
-            else -> {
-                val collapse = smoothstep(0f, shrinkDuration, time - holdEnd)
-                val fade = 1f - collapse
-                fade * fade * baseAlpha
-            }
-        }
-    }
-
-    private fun currentRayMorph(tickDelta: Float): Float {
+    /**
+     * 计算星芒射线从尖锐到收束的形变进度。
+     *
+     * @return 当前帧的射线形变权重
+     */
+    internal fun currentRayMorph(tickDelta: Float): Float {
         val time = currentTimeline(tickDelta)
         val expandDuration = expandTicks.coerceAtLeast(1).toFloat()
         val holdDuration = holdTicks.coerceAtLeast(0).toFloat()
         val shrinkDuration = shrinkTicks.coerceAtLeast(1).toFloat()
         val holdEnd = expandDuration + holdDuration
         return when {
-            time < expandDuration -> mix(0.0f, 1.0f, easeOutCubic(smoothstep(0f, expandDuration, time)))
-            time < holdEnd -> mix(0.84f, 1.0f, currentTwinkle(tickDelta))
-            else -> mix(1.0f, 0.24f, smoothstep(0f, shrinkDuration, time - holdEnd))
+            time < expandDuration -> mix(0F, 1.0F, easeOutCubic(smoothstep(0F, expandDuration, time)))
+            time < holdEnd -> mix(0.84F, 1.0F, currentTwinkle(tickDelta))
+            else -> mix(1.0F, 0.24F, smoothstep(0F, shrinkDuration, time - holdEnd))
         }
     }
 
-    private fun currentWhiteCore(tickDelta: Float): Float {
+    /**
+     * 计算中心白色区域的强度。
+     *
+     * @return 当前帧的白色核心强度
+     */
+    internal fun currentWhiteCore(tickDelta: Float): Float {
         val time = currentTimeline(tickDelta)
         val expandDuration = expandTicks.coerceAtLeast(1).toFloat()
         val holdDuration = holdTicks.coerceAtLeast(0).toFloat()
         val shrinkDuration = shrinkTicks.coerceAtLeast(1).toFloat()
         val holdEnd = expandDuration + holdDuration
         return when {
-            time < expandDuration -> mix(0.22f, 1.0f, easeOutCubic(smoothstep(0f, expandDuration, time)))
-            time < holdEnd -> mix(0.76f, 1.0f, currentTwinkle(tickDelta))
-            else -> mix(1.0f, 0.42f, smoothstep(0f, shrinkDuration, time - holdEnd))
+            time < expandDuration -> mix(0.22F, 1.0F, easeOutCubic(smoothstep(0F, expandDuration, time)))
+            time < holdEnd -> mix(0.76F, 1.0F, currentTwinkle(tickDelta))
+            else -> mix(1.0F, 0.42F, smoothstep(0F, shrinkDuration, time - holdEnd))
         }
     }
 
-    private fun currentTwinkle(tickDelta: Float): Float {
-        return 0.5f + 0.5f * sin(currentTimeline(tickDelta) * 0.72f + 0.8f)
+    /**
+     * 计算当前帧闪烁倍率。
+     *
+     * @return 位于 `0F..1F` 的周期闪烁值
+     */
+    internal fun currentTwinkle(tickDelta: Float): Float {
+        return 0.5F + 0.5F * sin(currentTimeline(tickDelta) * 0.72F + 0.8F)
     }
 
-    private fun currentCollapse(tickDelta: Float): Float {
+    /**
+     * 计算消散阶段的收束进度。
+     *
+     * @return 收束前为 `0F`，收束期间位于 `0F..1F`
+     */
+    internal fun currentCollapse(tickDelta: Float): Float {
         val time = currentTimeline(tickDelta)
         val expandDuration = expandTicks.coerceAtLeast(1).toFloat()
         val holdEnd = expandDuration + holdTicks.coerceAtLeast(0).toFloat()
         val shrinkDuration = shrinkTicks.coerceAtLeast(1).toFloat()
         return if (time < holdEnd) {
-            0f
+            0F
         } else {
-            smoothstep(0f, shrinkDuration, time - holdEnd)
+            smoothstep(0F, shrinkDuration, time - holdEnd)
         }
     }
 
-    private fun currentRoll(tickDelta: Float): Float {
+    /**
+     * 计算当前帧公告板旋转角。
+     *
+     * @return 当前帧的旋转弧度
+     */
+    internal fun currentRoll(tickDelta: Float): Float {
         return currentTimeline(tickDelta) * spinSpeed
     }
 
-    private fun centerPosition(): Vector3f {
-        return Vector3f(pos.x.toFloat(), pos.y.toFloat(), pos.z.toFloat())
-    }
-
-    private fun glowWorldRadius(scale: Float): Float {
-        return max(MIN_WORLD_SCALE, scale * 0.84f)
-    }
-
-    private fun projectedBlend(
-        scale: Float,
-        cameraWorldPos: Vector3f,
-        viewRotationMatrix: Matrix3f,
-        inverseViewRotationMatrix: Matrix3f,
-        projMatrix: Matrix4f,
-        screenSize: Vector2f,
-    ): BillboardProjectedBlend {
-        val distance = Vector3f(centerPosition()).sub(cameraWorldPos).length().coerceAtLeast(0.125f)
-        val screenHeight = screenSize.y.coerceAtLeast(1.0f)
-        val projectedRadiusPx = glowWorldRadius(scale) / distance * screenHeight * 0.92f
-        return BillboardProjectedBlend(
-            projectedRadiusPx = projectedRadiusPx,
-            directWeight = smoothstep(5.0f, 20.0f, projectedRadiusPx),
-        )
-    }
-
-    private fun farBloomIntensityScale(
-        projectedRadiusPx: Float,
-        compensationFadeStartPx: Float,
-        maxCompensationPx: Float,
-    ): Float {
-        val farWeight = 1f - smoothstep(4.0f, compensationFadeStartPx, projectedRadiusPx)
-        return 1f + farWeight * maxCompensationPx * 0.18f
-    }
-
-    private fun currentCameraWorldPos(): Vector3f {
-        val cameraPos = Minecraft.getInstance().gameRenderer.mainCamera.position
-        return Vector3f(cameraPos.x.toFloat(), cameraPos.y.toFloat(), cameraPos.z.toFloat())
-    }
-
-    private fun currentScreenSize(): Vector2f {
-        val renderTarget = Minecraft.getInstance().mainRenderTarget
-        val width = ClientRenderPipelineManager.currentRenderWidth().takeIf { it > 0 }
-            ?: renderTarget?.width?.takeIf { it > 0 }
-            ?: 0
-        val height = ClientRenderPipelineManager.currentRenderHeight().takeIf { it > 0 }
-            ?: renderTarget?.height?.takeIf { it > 0 }
-            ?: 0
-        return Vector2f(width.toFloat(), height.toFloat())
-    }
-
     companion object {
-        private const val DEFAULT_MAX_SCALE = 3.5f
-        private const val DEFAULT_EXPAND_TICKS = 4
-        private const val DEFAULT_HOLD_TICKS = 8
-        private const val DEFAULT_SHRINK_TICKS = 6
-        private const val DEFAULT_SPIN_SPEED = 0.24f
-        private const val BILLBOARD_EXTENT = 2.4f
-        private const val MIN_VISIBLE_ALPHA = 0.001f
-        private const val MIN_WORLD_SCALE = 0.05f
-        private const val STAR_BLOOM_EFFECT_ID = "usefulmagic:billboard_star_bloom"
-        private const val STAR_BLOOM_PRIORITY = 240
+        /** 星芒实体的稳定注册路径。 */
+        private const val RENDER_ENTITY_ID = "billboard_star_render_entity"
 
+        /** 公告板星芒的稳定 RenderEntity 注册 ID。 */
         @JvmField
         val ID: ResourceLocation =
-            ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "billboard_star_render_entity")
+            ofID(UsefulMagic.MOD_ID, RENDER_ENTITY_ID)
 
-        @JvmField
-        var initialized: Boolean = false
-
-        private val STAR_BLOOM_CONFIG = MaskBloomConfig(
-            blurSigma = 13.0f,
-            blurRange = 9.5f,
-            intensity = 4.6f,
-            baseMaskIntensity = 0.36f,
-            threshold = 0.0f,
-            thresholdSoftness = 0.02f,
-            tint = Vector3f(1.0f, 0.94f, 0.78f),
-        )
-
-        private lateinit var starVertexBuffer: SimpleVertexBuffer
-        private lateinit var starShader: CooShaderProgram
-
-        @JvmStatic
-        fun initStatic() {
-            if (initialized) {
-                return
-            }
-            starVertexBuffer = SimpleVertexBuffer().apply {
-                init()
-                setVertexes(buildQuadVertices(), CooVertexFormat.POINT_FORMAT)
-            }
-            starShader = ShaderProgramBuilder()
-                .vertex(
-                    IdentifierShader(
-                        ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "core/vsh/billboard_star.vsh"),
-                        GlShaderType.VERTEX,
-                    )
-                )
-                .fragment(
-                    IdentifierShader(
-                        ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "core/fsh/billboard_star.fsh"),
-                        GlShaderType.FRAGMENT,
-                    )
-                )
-                .build()
-            starShader.init()
-            initialized = true
-        }
-
-        private fun buildQuadVertices(): List<VertexData> {
-            return listOf(
-                VertexData(Vector3f(-BILLBOARD_EXTENT, -BILLBOARD_EXTENT, 0f), Vector4f(), Vector2f()),
-                VertexData(Vector3f(BILLBOARD_EXTENT, -BILLBOARD_EXTENT, 0f), Vector4f(), Vector2f()),
-                VertexData(Vector3f(BILLBOARD_EXTENT, BILLBOARD_EXTENT, 0f), Vector4f(), Vector2f()),
-                VertexData(Vector3f(-BILLBOARD_EXTENT, -BILLBOARD_EXTENT, 0f), Vector4f(), Vector2f()),
-                VertexData(Vector3f(BILLBOARD_EXTENT, BILLBOARD_EXTENT, 0f), Vector4f(), Vector2f()),
-                VertexData(Vector3f(-BILLBOARD_EXTENT, BILLBOARD_EXTENT, 0f), Vector4f(), Vector2f()),
-            )
-        }
-
-        private fun smoothstep(edge0: Float, edge1: Float, value: Float): Float {
+        /**
+         * 返回区间内平滑过渡的插值值。
+         *
+         * @return 位于 `0F..1F` 的平滑插值进度
+         */
+        internal fun smoothstep(edge0: Float, edge1: Float, value: Float): Float {
             if (edge0 == edge1) {
-                return if (value >= edge1) 1f else 0f
+                return if (value >= edge1) 1F else 0F
             }
-            val x = ((value - edge0) / (edge1 - edge0)).coerceIn(0f, 1f)
-            return x * x * (3f - 2f * x)
+            val x = ((value - edge0) / (edge1 - edge0)).coerceIn(0F, 1F)
+            return x * x * (3F - 2F * x)
         }
 
+        /**
+         * 对插值进度应用三次缓出。
+         *
+         * @return 位于 `0F..1F` 的三次缓出结果
+         */
         private fun easeOutCubic(value: Float): Float {
-            val x = value.coerceIn(0f, 1f)
-            val inverse = 1f - x
-            return 1f - inverse * inverse * inverse
+            val x = value.coerceIn(0F, 1F)
+            val inverse = 1F - x
+            return 1F - inverse * inverse * inverse
         }
 
+        /**
+         * 对插值进度应用五次缓出。
+         *
+         * @return 位于 `0F..1F` 的五次缓出结果
+         */
         private fun easeOutQuint(value: Float): Float {
-            val x = value.coerceIn(0f, 1f)
-            val inverse = 1f - x
-            return 1f - inverse * inverse * inverse * inverse * inverse
+            val x = value.coerceIn(0F, 1F)
+            val inverse = 1F - x
+            return 1F - inverse * inverse * inverse * inverse * inverse
         }
 
-        private fun mix(from: Float, to: Float, alpha: Float): Float {
-            return from + (to - from) * alpha.coerceIn(0f, 1f)
-        }
-
-        private fun mixColor(a: Vector3f, b: Vector3f, alpha: Float): Vector3f {
-            val t = alpha.coerceIn(0f, 1f)
-            return Vector3f(
-                mix(a.x, b.x, t),
-                mix(a.y, b.y, t),
-                mix(a.z, b.z, t),
-            )
+        /**
+         * 在线性区间插值两个标量。
+         *
+         * @return 按限制后的插值权重计算的标量
+         */
+        internal fun mix(from: Float, to: Float, alpha: Float): Float {
+            return from + (to - from) * alpha.coerceIn(0F, 1F)
         }
     }
 }

@@ -2,14 +2,13 @@ package cn.coostack.usefulmagic.particles.emitters.magic
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
+import cn.coostack.cooparticlesapi.cparticle.CParticleColorCurve
+import cn.coostack.cooparticlesapi.cparticle.force.CParticleForce
 import cn.coostack.cooparticlesapi.network.particle.emitters.AutoParticleEmitters
+import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableCParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.SimpleRandomParticleData
-import cn.coostack.cooparticlesapi.network.particle.emitters.command.ParticleCommandQueue
-import cn.coostack.cooparticlesapi.network.particle.emitters.command.ParticleDragCommand
-import cn.coostack.cooparticlesapi.network.particle.emitters.command.ParticleNoiseCommand
 import cn.coostack.cooparticlesapi.particles.control.ParticleControler
-import cn.coostack.cooparticlesapi.utils.GraphMathHelper
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import net.minecraft.world.level.Level
@@ -27,40 +26,29 @@ class BarrageTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, w
         enableInterpolator = true
     }
 
-    private fun buildNoiseCommand(): ParticleCommandQueue {
-        return ParticleCommandQueue()
-            .add(
-                ParticleNoiseCommand()
-                    .strength(0.25)
-                    .frequency(1.3)
-                    .speed(2.0)
-                    .affectY(1.0)
-                    .clampSpeed(15.0)
-                    .useLifeCurve(true)
-            )
+    override fun cparticleForces(): List<CParticleForce> {
+        return listOf(
+            CParticleForce.Noise(
+                0.25,1.3,2.0,20.0,1.0,true
+            ),
+            CParticleForce.ExpDrag(0.15,0.01,0.0)
+        )
     }
 
-    private fun buildDragCommand(): ParticleCommandQueue {
-        return ParticleCommandQueue()
-            .add(
-                ParticleDragCommand()
-                    .damping(0.15)
-                    .linear(0.0)
-                    .minSpeed(0.01)
-            )
-    }
 
     @CodecField
-    var template = ControlableParticleData().apply {
+    var template = ControlableCParticleData().apply {
         velocity = Vec3(0.0, 0.0, 0.0)
         visibleRange = 256.0f
-        color = Vector3f(0.996078f, 0.329412f, 0.164706f)
         alpha = 1.0f
         light = 15
         faceToCamera = true
         speedLimit = 32.0
         sign = 0
     }
+
+    @CodecField
+    var left = Vector3f(0.996078f, 0.329412f, 0.164706f)
 
     @CodecField
     var right = Vector3f(1f)
@@ -94,6 +82,7 @@ class BarrageTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, w
                         template.clone().apply {
                             maxAge = randomData.getRandomParticleMaxAge()
                             size = randomData.getRandomSize()
+                            colorCurve = CParticleColorCurve.linear(left, right)
                         } to rel
                     }
             )
@@ -111,20 +100,6 @@ class BarrageTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, w
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
-        val maxAge = data.maxAge
-        val left = data.color
-        var noiseCommand: ParticleCommandQueue? = null
-        var dragCommand: ParticleCommandQueue? = null
-        controler.addPreTickAction {
-            if (currentAge > 10) {
-                val queue = noiseCommand ?: buildNoiseCommand().also { noiseCommand = it }
-                queue.applyVelocity(data, this)
-            }
-            val dragQueue = dragCommand ?: buildDragCommand().also { dragCommand = it }
-            dragQueue.applyVelocity(data, this)
-            val progress = (currentAge.toDouble() / maxAge)
-            color = GraphMathHelper.lerp(progress, left, right)
-        }
     }
 
     override fun doTick() {

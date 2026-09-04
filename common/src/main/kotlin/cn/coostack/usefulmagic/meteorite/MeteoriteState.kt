@@ -2,11 +2,15 @@ package cn.coostack.usefulmagic.meteorite
 
 import cn.coostack.cooparticlesapi.barrages.BarrageManager
 import cn.coostack.cooparticlesapi.barrages.BarrageOption
+import cn.coostack.cooparticlesapi.extend.canSee
+import cn.coostack.cooparticlesapi.extend.minus
+import cn.coostack.cooparticlesapi.extend.plus
+import cn.coostack.cooparticlesapi.extend.random
+import cn.coostack.cooparticlesapi.extend.times
+import cn.coostack.cooparticlesapi.extend.unaryMinus
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.renderer.post.CooPostEffects
 import cn.coostack.cooparticlesapi.utils.PhysicsUtil
 import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
-import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.damagetypes.UsefulMagicDamageSources
 import cn.coostack.usefulmagic.extend.minus
 import cn.coostack.usefulmagic.extend.plus
@@ -17,7 +21,6 @@ import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import cn.coostack.usefulmagic.utils.FriendFilterHelper
 import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.game.ClientboundStopSoundPacket
-import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundSource
@@ -25,17 +28,11 @@ import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
-import cn.coostack.cooparticlesapi.extend.*
 import kotlin.math.exp
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
 object MeteoriteState {
-    private const val METEOR_SOUND_RANGE = 512.0
-    private const val METEOR_NEAR_DISTANCE = 12.0
-    private const val EXPLOSION_RADIUS_MULTIPLIER = 1.25
-    private const val ENTITY_DAMAGE_RADIUS_MULTIPLIER = 2.0
-
     val FALLING = object : MeteoriteStateAction {
         override fun tick(context: MeteoriteAnimateAction) {
             processPendingExplosion(context)
@@ -61,18 +58,17 @@ object MeteoriteState {
                     )
                     mainBarrage.addPreTickAction {
                         context.tailEmitter.teleportTo(loc)
-                        context.tailEmitter.direction = -dir
                         context.mainMeteoriteRenderer?.moveTo(loc, direction)
                     }.addHitOnServer {
                         if (context.impactTriggered) return@addHitOnServer
                         val fallDir = dir.normalize()
                         stopMeteorFarFlySound(context, loc)
                         playMeteorImpactSound(context, loc)
-                        val explosionCenter = loc.add(fallDir * (context.targetSize * 1.25))
-                        val explosionRadius = (exp(context.explosionPower) * EXPLOSION_RADIUS_MULTIPLIER)
+                        val explosionCenter = loc + fallDir * (context.targetSize * 1.25)
+                        val explosionRadius = (exp(context.explosionPower) * 1.25)
                             .roundToInt()
                             .coerceAtLeast(1)
-                        val entityDamageRadius = explosionRadius * ENTITY_DAMAGE_RADIUS_MULTIPLIER
+                        val entityDamageRadius = explosionRadius * 2.0
                         queueMeteorImpactExplosion(
                             context = context,
                             radius = explosionRadius,
@@ -93,10 +89,10 @@ object MeteoriteState {
                         ServerCameraUtil.sendShake(context.world, loc, 256.0, 5.0, 20, 240.0, false)
                         context.world.players().filter {
                             it.position().distanceTo(loc) <= 256.0
-                                    && it.canSee(loc)
+                                    && it canSee loc
                         }
                             .forEach {
-                                CooPostEffects.server.send(it, UsefulMagicPostEffects.flameExplodeFlash(40, 2f, 2f))
+                                UsefulMagicPostEffects.playFlameExplodeFlash(it, 40, 2F, 2F)
                             }
 
                         ParticleEmittersManager.spawnEmitters(
@@ -161,8 +157,8 @@ object MeteoriteState {
                     MeteoriteBarrage(
                         spawnPos, context.world, MeteoriteDisplay(spawnPos, context.world).apply {
                             state = Blocks.NETHERRACK.defaultBlockState()
-                            scale = 0f
-                            prevScale = 0f
+                            scale = 0F
+                            prevScale = 0F
                         },
                         BarrageOption()
                             .acrossBlock(true)
@@ -204,7 +200,7 @@ object MeteoriteState {
 
         override fun start(context: MeteoriteAnimateAction) {
             context.mergingTick = 0
-            val mergeSpeed = context.mergeSpeed.coerceAtLeast(0.001f)
+            val mergeSpeed = context.mergeSpeed.coerceAtLeast(0.001F)
             context.mergingTotalTick = (context.targetSize / mergeSpeed).roundToInt().coerceAtLeast(1)
         }
     }
@@ -224,8 +220,8 @@ object MeteoriteState {
         override fun start(context: MeteoriteAnimateAction) {
             val mainBarrage = MeteoriteBarrage(
                 context.mainSpawnPos, context.world, MeteoriteDisplay(context.mainSpawnPos, context.world).apply {
-                    scale = 0f
-                    prevScale = 0f
+                    scale = 0F
+                    prevScale = 0F
                 },
                 BarrageOption()
             )
@@ -246,6 +242,7 @@ object MeteoriteState {
     ) {
         context.impactTriggered = true
         context.explosionBlocksPerTick = MeteoriteImpactHelper.queueImpactExplosion(
+            world = context.world,
             pendingBlocks = context.pendingExplosionBlocks,
             radius = radius,
             center = center,
@@ -277,7 +274,7 @@ object MeteoriteState {
         radius: Double,
         fullDamageRadius: Double
     ) {
-        if (spellDamage <= 0f || radius <= 0.0) return
+        if (spellDamage <= 0F || radius <= 0.0) return
         val effectiveFullDamageRadius = fullDamageRadius.coerceIn(0.0, radius)
         val world = context.world
         val rangeBox = AABB.ofSize(center, radius * 2.0, radius * 2.0, radius * 2.0)
@@ -292,18 +289,18 @@ object MeteoriteState {
             val distanceDamageFactor = if (
                 distance <= effectiveFullDamageRadius || effectiveFullDamageRadius >= radius
             ) {
-                1.0f
+                1.0F
             } else {
                 val falloffRate = (
                         (distance - effectiveFullDamageRadius) / (radius - effectiveFullDamageRadius)
                         ).coerceIn(0.0, 1.0).toFloat()
-                1.0f - falloffRate
+                1.0F - falloffRate
             }
             val blockFactor = calculateBlockDamageFactor(world = world, start = center, end = targetPoint)
-            if (blockFactor <= 0f) return@forEach
+            if (blockFactor <= 0F) return@forEach
 
             val finalDamage = spellDamage * distanceDamageFactor * blockFactor
-            if (finalDamage <= 0.05f) return@forEach
+            if (finalDamage <= 0.05F) return@forEach
 
             target.hurt(damageSource, finalDamage)
         }
@@ -316,11 +313,11 @@ object MeteoriteState {
         end: Vec3
     ): Float {
         val lineDistance = start.distanceTo(end)
-        if (lineDistance <= 1e-6) return 1f
+        if (lineDistance <= 1e-6) return 1F
 
         val sampleCount = (lineDistance * 2.0).roundToInt().coerceAtLeast(1)
         val visited = HashSet<BlockPos>(sampleCount + 1)
-        var factor = 1f
+        var factor = 1F
         for (i in 0..sampleCount) {
             val t = i.toDouble() / sampleCount
             val point = start.lerp(end, t)
@@ -330,9 +327,9 @@ object MeteoriteState {
             val state = world.getBlockState(pos)
             if (state.isAir || state.getCollisionShape(world, pos).isEmpty) continue
 
-            factor *= 0.9f
+            factor *= 0.9F
         }
-        return factor.coerceIn(0f, 1f)
+        return factor.coerceIn(0F, 1F)
     }
 
     private fun playMeteorFarFlySound(context: MeteoriteAnimateAction, soundPos: Vec3) {
@@ -344,8 +341,8 @@ object MeteoriteState {
             soundPos.z,
             UsefulMagicSoundEvents.METEOR_FALL_FAR.get(),
             SoundSource.HOSTILE,
-            16f,
-            1f
+            16F,
+            1F
         )
         context.farFlySoundStarted = true
     }
@@ -353,7 +350,7 @@ object MeteoriteState {
     private fun tryPlayMeteorNearFlySound(context: MeteoriteAnimateAction, soundPos: Vec3) {
         if (context.nearFlySoundPlayed) return
         val distanceToGroundTarget = soundPos.distanceTo(context.fallingTarget)
-        if (distanceToGroundTarget > METEOR_NEAR_DISTANCE) return
+        if (distanceToGroundTarget > 12.0) return
         stopMeteorFarFlySound(context, soundPos)
         context.world.playSound(
             null,
@@ -362,8 +359,8 @@ object MeteoriteState {
             soundPos.z,
             UsefulMagicSoundEvents.METEOR_FALL_NEAR.get(),
             SoundSource.HOSTILE,
-            18f,
-            1.1f
+            18F,
+            1.1F
         )
         context.nearFlySoundPlayed = true
     }
@@ -376,18 +373,18 @@ object MeteoriteState {
             soundPos.z,
             UsefulMagicSoundEvents.METEOR_IMPACT.get(),
             SoundSource.HOSTILE,
-            32f,
-            1f
+            32F,
+            1F
         )
     }
 
     private fun stopMeteorFarFlySound(context: MeteoriteAnimateAction, soundPos: Vec3) {
         if (!context.farFlySoundStarted) return
         val stopPacket = ClientboundStopSoundPacket(
-            ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "meteor_fall_far"),
+            UsefulMagicSoundEvents.METEOR_FALL_FAR.id,
             SoundSource.HOSTILE
         )
-        nearbyPlayers(context.world, soundPos, METEOR_SOUND_RANGE).forEach {
+        nearbyPlayers(context.world, soundPos, 512.0).forEach {
             it.connection.send(stopPacket)
         }
         context.farFlySoundStarted = false

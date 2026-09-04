@@ -22,8 +22,8 @@ class EmittersAnimate(
         tick++
         if (tick % interval == 0) {
             val emitter = emitterGenerator(origin)
-            ParticleEmittersManager.spawnEmitters(emitter)
             preTickAction(emitter)
+            ParticleEmittersManager.spawnEmitters(emitter)
             spawnedEmitters.add(emitter)
         }
         if (animateDuration == -1) return

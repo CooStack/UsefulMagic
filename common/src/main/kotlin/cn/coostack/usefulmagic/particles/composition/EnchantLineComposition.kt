@@ -1,19 +1,20 @@
-﻿package cn.coostack.usefulmagic.particles.composition
+package cn.coostack.usefulmagic.particles.composition
 
+import cn.coostack.cooparticlesapi.annotations.CodecField
+import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
+import cn.coostack.cooparticlesapi.cparticle.CParticleCurve
+import cn.coostack.cooparticlesapi.cparticle.CParticleRenderLayer
+import cn.coostack.cooparticlesapi.cparticle.CParticleUpdateMode
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComposition
+import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEnchantmentEffect
+import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import net.minecraft.client.particle.ParticleRenderType
-import net.minecraft.world.phys.Vec3
-import java.util.Random
-import java.util.UUID
-import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
-import cn.coostack.cooparticlesapi.annotations.CodecField
-import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
 import net.minecraft.world.level.Level
-import cn.coostack.cooparticlesapi.network.particle.composition.AutoSequencedParticleComposition
+import net.minecraft.world.phys.Vec3
+import java.util.*
 
 @CooAutoRegister
 class EnchantLineComposition(
@@ -30,25 +31,26 @@ class EnchantLineComposition(
     var lifetime: Int = 0
 
     /**
-     * 鏄惁閲囩敤閫忔槑搴︽贰鍏ユ贰鍑?
+     * 是否启用透明度淡入淡出。
      */
     var fade: Boolean = false
 
     /**
-     * 鏄惁闅忔満鍗曚釜绮掑瓙鐨勫懆鏈?
+     * 是否随机设置单个粒子的生命周期。
      */
     var particleRandomAge: Boolean = true
 
     /**
-     * 鏄惁姣弔ick闅忔満涓€娆＄矑瀛愮殑鍛ㄦ湡
+     * 是否每 tick 重新随机粒子的生命周期。
      */
-    var particleRandomAgePreTick: Boolean = false
+    var particleRandomAgePreTick: Boolean = true
     var fadeInTick = 10
     var fadeOutTick = 10
     var defaultAlpha = 0.8f
-    var r = 255
-    var g = 255
-    var b = 255
+
+    @CodecField
+    var color = Math3DUtil.colorOf(255, 255, 255)
+
     var current = 0
     var particleSize = 0.2f
     var speedDirection = RelativeLocation()
@@ -66,64 +68,58 @@ class EnchantLineComposition(
                 remove()
                 return@addPreTickAction
             }
+            if (fade) {
+                if (current == 1 && fadeInTick <= lifetime) {
+                    playCParticleAlphaTransition(
+                        durationTicks = fadeInTick.toFloat(),
+                        alphaCurve = CParticleCurve.linear(0f, 1f),
+                    )
+                }
+                if (current == lifetime - fadeOutTick && fadeOutTick <= lifetime) {
+                    playCParticleAlphaTransition(
+                        durationTicks = fadeOutTick.toFloat(),
+                        alphaCurve = CParticleCurve.linear(1f, 0f),
+                    )
+                }
+            }
             teleportTo(position.add(speedDirection.toVector()))
         }
     }
 
     /**
-     * 鍦╞eforeDisplay鎴栬€卛nit鎵ц鎵嶄細鐢熸晥
+     * 仅在 beforeDisplay 或 init 阶段调用才会生效。
      */
     fun colorOf(vec: Vec3) {
-        this.r = vec.x.toInt().coerceIn(0, 255)
-        this.g = vec.y.toInt().coerceIn(0, 255)
-        this.b = vec.z.toInt().coerceIn(0, 255)
+        color = Math3DUtil.colorOf(
+            vec.x.toInt().coerceIn(0, 255),
+            vec.y.toInt().coerceIn(0, 255),
+            vec.z.toInt().coerceIn(0, 255)
+        )
     }
 
     fun colorOf(r: Int, g: Int, b: Int) {
-        this.r = r
-        this.g = g
-        this.b = b
+        color = Math3DUtil.colorOf(r, g, b)
     }
 
     private fun withEffect(): CompositionData = CompositionData().setDisplayerSupplier {
-        ParticleDisplayer.withSingle(ControlableEnchantmentEffect(it))
-    }.addParticleInstanceInit {
+        ParticleDisplayer.withCParticle(it, CParticleRenderLayer.TRANSLUCENT)
+    }.addCParticleInstanceInit {
         val random = Random(System.currentTimeMillis())
-        this.colorOfRGB(r, g, b)
+        effect = ControlableEnchantmentEffect(UUID.randomUUID())
+        color = this@EnchantLineComposition.color
         this.size = particleSize
-        this.textureSheet = ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
-        if (particleRandomAge) {
-            this.currentAge = random.nextInt(this.lifetime)
+        alpha = if (fade) defaultAlpha else 1f
+        if (particleRandomAgePreTick) {
+            updateMode = CParticleUpdateMode.DYNAMIC
         }
-    }.addParticleControlerInstanceInit {
+        if (particleRandomAge) {
+            age = random.nextInt(maxAge)
+        }
+    }.addCParticleControlerInstanceInit {
         val random = Random(System.currentTimeMillis())
         if (particleRandomAgePreTick) {
             addPreTickAction {
-                this.currentAge = random.nextInt(this.lifetime)
-            }
-        }
-        if (fade) {
-            if (fadeInTick <= lifetime) {
-                // 璁剧疆fadein
-                val step = defaultAlpha / fadeInTick
-                particle.particleAlpha = 0f
-                addPreTickAction {
-                    if (this@EnchantLineComposition.current > fadeInTick) {
-                        return@addPreTickAction
-                    }
-                    particle.particleAlpha += step
-                }
-            }
-            if (fadeOutTick <= lifetime) {
-                val step = defaultAlpha / fadeOutTick
-                particle.particleAlpha = defaultAlpha
-                // 璁剧疆fadeout
-                addPreTickAction {
-                    if (this@EnchantLineComposition.current !in this@EnchantLineComposition.lifetime - fadeOutTick..this@EnchantLineComposition.lifetime) {
-                        return@addPreTickAction
-                    }
-                    particle.particleAlpha -= step
-                }
+                age = random.nextInt(Int.MAX_VALUE)
             }
         }
     }

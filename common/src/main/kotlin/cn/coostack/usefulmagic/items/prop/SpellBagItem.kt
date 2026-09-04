@@ -173,10 +173,14 @@ class SpellBagItem(properties: Properties) : Item(properties) {
         return true
     }
 
-    private fun exchangeWithWand(bagStack: ItemStack, wandStack: ItemStack, player: Player): Boolean {
+    fun exchangeWithWandAt(bagStack: ItemStack, wandStack: ItemStack, magicIndex: Int, player: Player): Boolean {
         val wand = wandStack.item as? MagicWand ?: return false
         val contents = getMagicContents(bagStack)
-        val bagMagic = contents.firstOrNull()
+        val bagMagic = when {
+            magicIndex == EMPTY_MAGIC_INDEX -> null
+            magicIndex in contents.indices -> contents[magicIndex]
+            else -> return false
+        }
         val loadedMagic = wand.getLoadedMagic(wandStack)
         if (bagMagic == null && loadedMagic.isEmpty) {
             return false
@@ -187,13 +191,14 @@ class SpellBagItem(properties: Properties) : Item(properties) {
 
         val newContents = contents.toMutableList()
         if (bagMagic != null) {
-            newContents.removeAt(0)
+            newContents.removeAt(magicIndex)
         }
         if (!loadedMagic.isEmpty) {
             if (newContents.size >= MAX_MAGIC_COUNT) {
                 return false
             }
-            newContents.add(0, sanitizeMagic(loadedMagic))
+            val insertIndex = if (magicIndex == EMPTY_MAGIC_INDEX) 0 else magicIndex.coerceAtMost(newContents.size)
+            newContents.add(insertIndex, sanitizeMagic(loadedMagic))
         }
 
         wand.cancelChargeIfNeeded(player, wandStack)
@@ -210,6 +215,11 @@ class SpellBagItem(properties: Properties) : Item(properties) {
         return true
     }
 
+    private fun exchangeWithWand(bagStack: ItemStack, wandStack: ItemStack, player: Player): Boolean {
+        val index = if (getMagicContents(bagStack).isEmpty()) EMPTY_MAGIC_INDEX else 0
+        return exchangeWithWandAt(bagStack, wandStack, index, player)
+    }
+
     private fun insertMagic(stack: ItemStack, magic: ItemStack): Boolean {
         if (!isMagicStack(magic)) {
             return false
@@ -224,11 +234,7 @@ class SpellBagItem(properties: Properties) : Item(properties) {
     }
 
     private fun getMagicContents(stack: ItemStack): List<ItemStack> {
-        return getMagicContentsFromContainer(stack)
-            .filter(SpellBagItem::isMagicStack)
-            .limit(MAX_MAGIC_COUNT.toLong())
-            .map(SpellBagItem::sanitizeMagic)
-            .toList()
+        return getMagicContentsForDisplay(stack)
     }
 
     private fun setMagicContents(stack: ItemStack, contents: List<ItemStack>) {
@@ -251,6 +257,7 @@ class SpellBagItem(properties: Properties) : Item(properties) {
 
     companion object {
         const val MAX_MAGIC_COUNT = 16
+        const val EMPTY_MAGIC_INDEX = -1
         private const val BAR_COLOR = 0x8D4DFF
 
         @JvmStatic
@@ -259,6 +266,15 @@ class SpellBagItem(properties: Properties) : Item(properties) {
                 .filter(SpellBagItem::isMagicStack)
                 .findAny()
                 .isPresent
+        }
+
+        @JvmStatic
+        fun getMagicContentsForDisplay(stack: ItemStack): List<ItemStack> {
+            return getMagicContentsFromContainer(stack)
+                .filter(SpellBagItem::isMagicStack)
+                .limit(MAX_MAGIC_COUNT.toLong())
+                .map(SpellBagItem::sanitizeMagic)
+                .toList()
         }
 
         private fun getMagicContentsFromContainer(stack: ItemStack) =

@@ -323,7 +323,6 @@ class MagicWand(properties: Properties) : Item(properties) {
         }
     }
 
-
     /**
      * 松开按键或者出现其他情况时
      *

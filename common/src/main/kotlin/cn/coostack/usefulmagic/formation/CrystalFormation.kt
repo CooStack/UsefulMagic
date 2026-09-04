@@ -1,8 +1,7 @@
-﻿package cn.coostack.usefulmagic.formation
+package cn.coostack.usefulmagic.formation
 
 import cn.coostack.cooparticlesapi.barrages.BarrageManager
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.platform.CooParticlesServices
 import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
@@ -19,12 +18,12 @@ import cn.coostack.usefulmagic.formation.target.ProjectileEntityTargetOption
 import cn.coostack.usefulmagic.managers.server.ServerFormationManager
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationBreak
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationCreate
+import cn.coostack.usefulmagic.particles.composition.formation.FormationComposition
+import cn.coostack.usefulmagic.particles.composition.formation.LargeFormationComposition
+import cn.coostack.usefulmagic.particles.composition.formation.MidFormationComposition
+import cn.coostack.usefulmagic.particles.composition.formation.SmallFormationComposition
 import cn.coostack.usefulmagic.particles.emitters.CircleEmitters
 import cn.coostack.usefulmagic.particles.emitters.LightningParticleEmitters
-import cn.coostack.usefulmagic.particles.style.formation.FormationStyle
-import cn.coostack.usefulmagic.particles.style.formation.LargeFormationStyle
-import cn.coostack.usefulmagic.particles.style.formation.MidFormationStyle
-import cn.coostack.usefulmagic.particles.style.formation.SmallFormationStyle
 import cn.coostack.usefulmagic.renderer.DefendCrystalRenderEntity
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
@@ -46,7 +45,7 @@ import kotlin.math.roundToInt
 
 class CrystalFormation(override var world: Level?, override var owner: UUID?, override var formationCore: Vec3) :
     BlockFormation {
-    var style: FormationStyle? = null
+    var style: FormationComposition? = null
     var defendEntity: DefendCrystalRenderEntity? = null
     override var uuid: UUID = UUID.randomUUID()
         internal set
@@ -296,22 +295,22 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
     private fun displayStyleOnBuild() {
         style?.let {
             it.formationPos = ofFloored(formationCore)
-            ParticleStyleManager.spawnStyle(world!!, formationCore.add(0.0, -0.4, 0.0), it)
+            it.spawn(world!!, formationCore.add(0.0, -0.4, 0.0))
         }
     }
 
     private fun createStyleOnBuild() {
         when (scale) {
             FormationScale.SMALL -> {
-                style = SmallFormationStyle()
+                style = SmallFormationComposition()
             }
 
             FormationScale.MID -> {
-                style = MidFormationStyle()
+                style = MidFormationComposition()
             }
 
             FormationScale.LARGE -> {
-                style = LargeFormationStyle()
+                style = LargeFormationComposition()
             }
 
             FormationScale.NONE -> {
@@ -394,10 +393,8 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
                 triggerTime = 120
                 inTriggerRangeActive = true
                 var option: FormationTargetOption = BarrageTargetOption(it)
-                activeCrystals.forEach { crystal ->
-                    if (!option.isValid()) {
-                        return@forEach
-                    }
+                for (crystal in activeCrystals.toList()) {
+                    if (!active || !option.isValid()) break
                     option = crystal.handle(option)
                 }
                 // 判断 option 是否还存在
@@ -410,6 +407,7 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
             }
         }
 
+        if (!active) return
 
         if (!checkIntact()) {
             breakFormation(Float.MAX_VALUE, null)
@@ -426,8 +424,14 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
             createStyleOnBuild()
             displayStyleOnBuild()
         }
-        if (hasDefend && (defendEntity == null || (defendEntity?.over
-                ?: true)) && (inTriggerRangeActive || !settings.displayDefendBallOnlyTrigger)
+        if (settings.displayDefendBallOnlyTrigger && !inTriggerRangeActive) {
+            defendEntity?.over()
+        }
+        if (defendEntity?.canceled == true) {
+            defendEntity = null
+        }
+        if (hasDefend && defendEntity == null
+            && (inTriggerRangeActive || !settings.displayDefendBallOnlyTrigger)
         ) {
             createEntityOnBuild()
             displayEntityOnBuild()
@@ -437,14 +441,14 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
             return
         }
         if (working) {
-            if (style!!.status != FormationStyle.FormationStatus.WORKING) {
-                style!!.changeStatus(FormationStyle.FormationStatus.WORKING)
+            if (style!!.formationStatus != FormationComposition.FormationStatus.WORKING) {
+                style!!.changeStatus(FormationComposition.FormationStatus.WORKING)
             }
             workTime = 60
         } else {
             if (workTime-- <= 0) {
-                if (style!!.status != FormationStyle.FormationStatus.IDLE) {
-                    style!!.changeStatus(FormationStyle.FormationStatus.IDLE)
+                if (style!!.formationStatus != FormationComposition.FormationStatus.IDLE) {
+                    style!!.changeStatus(FormationComposition.FormationStatus.IDLE)
                 }
                 workTime = 0
             }
@@ -531,7 +535,7 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
                     targetPos = end - start
                     maxTick = 1
                     templateData.apply {
-                        setTextureSheet(TextureSheetsEnum.ADDITION_BLEND_TRANSLUCENT)
+                        setTextureSheet(TextureSheetsEnum.ADDITION_BLEND_TRANSLUCENT_NOT_HDR)
                         color = Math3DUtil.colorOf(230, 130, 255)
                     }
                     simpleData.apply {
@@ -539,8 +543,8 @@ class CrystalFormation(override var world: Level?, override var owner: UUID?, ov
                         maxAge = 7
                         minCount = 2
                         maxCount = 4
-                        minSize = 0.1
-                        maxSize = 0.3
+                        minSize = 0.05
+                        maxSize = 0.1
                     }
                 }
             ParticleEmittersManager.spawnEmitters(emitter)

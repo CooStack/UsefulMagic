@@ -2,12 +2,11 @@ package cn.coostack.usefulmagic.entity.custom.dragon.eye.skills
 
 import cn.coostack.cooparticlesapi.barrages.BarrageManager
 import cn.coostack.cooparticlesapi.network.particle.composition.manager.ParticleCompositionManager
-import cn.coostack.cooparticlesapi.renderer.post.CooPostEffects
 import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
 import cn.coostack.cooparticlesapi.scheduler.CooScheduler
-import cn.coostack.cooparticlesapi.sound.ServerDuckingSoundEffect
-import cn.coostack.cooparticlesapi.sound.ServerManagedSoundInstance
-import cn.coostack.cooparticlesapi.sound.ServerSoundManager
+import cn.coostack.cooparticlesapi.supports.sound.ServerDuckingSoundEffect
+import cn.coostack.cooparticlesapi.supports.sound.ServerManagedSoundInstance
+import cn.coostack.cooparticlesapi.supports.sound.ServerSoundManager
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
 import cn.coostack.usefulmagic.barrages.entity.skill.StraightPointBarrage
@@ -42,9 +41,6 @@ class EyeLaserSkill(val damage: Double) : Skill<MagicEyeEntity>, SkillCondition<
     companion object {
         const val ID = "eye_laser_skill"
         private const val LASER_DISTANCE = 200.0
-        private const val LASER_DAMAGE_RADIUS = 6.0
-        private const val LASER_PHASE_TICKS = 20
-        private const val ROTATION_SPEED = 10f
     }
 
     private var laser: StraightLaserRenderEntity? = null
@@ -76,7 +72,7 @@ class EyeLaserSkill(val damage: Double) : Skill<MagicEyeEntity>, SkillCondition<
         source.phaseManager.forceSetPhase(
             EyeHoverPhase()
         ) {
-            setCurrentTarget(source.position().add(0.0, 5.0, 0.0))
+            setCurrentTarget(source.position() + Vec3(0.0, 5.0, 0.0))
         }
 
 
@@ -84,8 +80,8 @@ class EyeLaserSkill(val damage: Double) : Skill<MagicEyeEntity>, SkillCondition<
             source,
             UsefulMagicSoundEvents.LASER_CHARGE_UP.get(),
             SoundSource.HOSTILE,
-            0.25f,
-            1f,
+            0.25F,
+            1F,
             256.0,
         )
         task = submitTaskServer(5 * 20) {
@@ -96,8 +92,8 @@ class EyeLaserSkill(val damage: Double) : Skill<MagicEyeEntity>, SkillCondition<
                 source,
                 UsefulMagicSoundEvents.LASER_START.get(),
                 SoundSource.HOSTILE,
-                0.9f,
-                1f,
+                0.9F,
+                1F,
                 256.0,
             )
             source.deltaMovement += (currentLaserDirection ?: source.currentTowards()).normalize() * -2
@@ -105,7 +101,7 @@ class EyeLaserSkill(val damage: Double) : Skill<MagicEyeEntity>, SkillCondition<
                 ServerDuckingSoundEffect(
                     "laser_ducking", source.level() as ServerLevel,
                     source.positionOnEye(),
-                    0f,
+                    0F,
                     -1.0,
                     setOf(
                         UsefulMagicSoundEvents.LASER_START.id,
@@ -121,27 +117,28 @@ class EyeLaserSkill(val damage: Double) : Skill<MagicEyeEntity>, SkillCondition<
                 UsefulMagicSoundEvents.LASER_LOOP.get(),
                 SoundSource.HOSTILE
             )
-                .volume(0f)
-                .pitch(1f)
+                .volume(0F)
+                .pitch(1F)
                 .entity(source)
                 .layer("laser_loop")
                 .looping()
                 .visibleRange(256.0)
                 .stopWhenBoundEntityMissing(false)
                 .spawn().apply {
-                    fadeIn(100, 0.5f, 0f)
+                    fadeIn(100, 0.5F, 0F)
                 }
             laser = StraightLaserRenderEntity(source.level(), source.positionOnEye()).apply {
                 this.lifetime = 20 * 30
-                this.phaseTicks = LASER_PHASE_TICKS
+                this.phaseTicks = 20
                 this.color = Math3DUtil.colorOf(255, 100, 240)
-                this.maxRadius = 6f
+                this.maxRadius = 6F
+                this.brightness = 1.6f
             }
             val box = source.boundingBox.inflate(256.0)
             source.level().getEntitiesOfClass(Player::class.java, box).forEach {
-                CooPostEffects.server.send(
+                UsefulMagicPostEffects.playFlameExplodeFlash(
                     it as ServerPlayer,
-                    UsefulMagicPostEffects.flameExplodeFlash(color = Math3DUtil.colorOf(255, 100, 240).asVec3())
+                    color = Math3DUtil.colorOf(255, 100, 240).asVec3(),
                 )
             }
             ServerRenderEntityManager.spawn(laser!!)
@@ -155,8 +152,8 @@ class EyeLaserSkill(val damage: Double) : Skill<MagicEyeEntity>, SkillCondition<
             source.position(),
             UsefulMagicSoundEvents.LASER_OBLITERATION.get(),
             SoundSource.HOSTILE,
-            0.5f,
-            1f,
+            0.5F,
+            1F,
             256.0,
         )
         source.hasLaserSkillActive = true
@@ -188,7 +185,7 @@ class EyeLaserSkill(val damage: Double) : Skill<MagicEyeEntity>, SkillCondition<
             )
             currentLaserTargetPosition = laserTargetPos
             currentLaserDirection = holdingEntity.targetTowards(laserTargetPos)
-            holdingEntity.lookAtPos(targetPos, ROTATION_SPEED, ROTATION_SPEED)
+            holdingEntity.lookAtPos(targetPos, 10F, 10F)
             updateLaserAndComposition(holdingEntity)
         }
         if (holdTicks - 5 * 20 <= (laser?.phaseTicks ?: Int.MAX_VALUE)) return
@@ -196,8 +193,9 @@ class EyeLaserSkill(val damage: Double) : Skill<MagicEyeEntity>, SkillCondition<
         // 伤害实体
         val direction = currentLaserDirection?.normalize() ?: holdingEntity.currentTowards()
         val laserStart = holdingEntity.positionOnEye()
-        val laserEnd = laserStart.add(direction.scale(LASER_DISTANCE))
-        val laserBox = AABB(laserStart, laserEnd).inflate(LASER_DAMAGE_RADIUS)
+        val laserEnd = laserStart + direction * LASER_DISTANCE
+        val laserDamageRadius = 6.0
+        val laserBox = AABB(laserStart, laserEnd).inflate(laserDamageRadius)
         val damageSource = UsefulMagicDamageSources.entityDamage(
             holdingEntity.level(),
             holdingEntity,
@@ -207,11 +205,11 @@ class EyeLaserSkill(val damage: Double) : Skill<MagicEyeEntity>, SkillCondition<
             it.uuid != holdingEntity.uuid && it.isAlive && it !is MagicEyeEntity && it !is MagicSubEyeEntity
         }.forEach { entity ->
             val entityCenter = entity.boundingBox.center
-            val distanceOnLaser = entityCenter.subtract(laserStart).dot(direction)
+            val distanceOnLaser = (entityCenter - laserStart).dot(direction)
             if (distanceOnLaser !in 0.0..LASER_DISTANCE) return@forEach
 
-            val closestPoint = laserStart.add(direction.scale(distanceOnLaser))
-            if (entityCenter.distanceToSqr(closestPoint) <= LASER_DAMAGE_RADIUS * LASER_DAMAGE_RADIUS) {
+            val closestPoint = laserStart + direction * distanceOnLaser
+            if (entityCenter.distanceToSqr(closestPoint) <= laserDamageRadius * laserDamageRadius) {
                 if (entity.hurt(damageSource, damage.toFloat())) {
                     entity.invulnerableTime = 5
                 }
@@ -278,8 +276,11 @@ class EyeLaserSkill(val damage: Double) : Skill<MagicEyeEntity>, SkillCondition<
             ?: currentLaserDirection ?: return
         val start = source.positionOnEye() + direction * 4
         composition.teleportTo(start)
-        laser?.updateBeam(start, start.add(direction.scale(LASER_DISTANCE)))
+        laser?.updateBeam(start, start + direction * LASER_DISTANCE)
         composition.direction = currentLaserDirection!!.asRelative()
+        if (composition.displayed) {
+            composition.markDirty()
+        }
     }
 
     private fun initialLaserTargetPosition(source: MagicEyeEntity): Vec3 {
@@ -287,16 +288,16 @@ class EyeLaserSkill(val damage: Double) : Skill<MagicEyeEntity>, SkillCondition<
             return it.position()
         }
         val direction = currentLaserDirection ?: source.currentTowards()
-        return source.positionOnEye().add(direction.scale(LASER_DISTANCE))
+        return source.positionOnEye() + direction * LASER_DISTANCE
     }
 
     private fun moveTowards(current: Vec3, target: Vec3, maxDistance: Double): Vec3 {
-        val delta = target.subtract(current)
+        val delta = target - current
         val distanceSqr = delta.lengthSqr()
         if (distanceSqr <= maxDistance * maxDistance) {
             return target
         }
-        return current.add(delta.normalize().scale(maxDistance))
+        return current + delta.normalize() * maxDistance
     }
 
     override fun getSkillID(): String {

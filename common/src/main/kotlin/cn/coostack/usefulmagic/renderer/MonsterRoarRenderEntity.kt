@@ -1,107 +1,68 @@
 package cn.coostack.usefulmagic.renderer
 
+import cn.coostack.cooparticlesapi.extend.ofID
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
+import cn.coostack.cooparticlesapi.extend.plus
+import cn.coostack.cooparticlesapi.extend.times
 import cn.coostack.cooparticlesapi.renderer.AutoRenderEntity
-import cn.coostack.cooparticlesapi.renderer.client.RenderUtil
-import cn.coostack.cooparticlesapi.renderer.effects.builtin.BuiltinRenderEffectDescriptors
-import cn.coostack.cooparticlesapi.renderer.effects.builtin.MaskBloomConfig
-import cn.coostack.cooparticlesapi.renderer.runtime.FramePostRenderEntityRenderer
-import cn.coostack.cooparticlesapi.renderer.runtime.LocalRenderInput
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderContributionCollector
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderContributionInput
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderEntityInstance
-import cn.coostack.cooparticlesapi.renderer.runtime.RenderEntityReleaseHook
-import cn.coostack.cooparticlesapi.renderer.runtime.WorldPassRenderEntityRenderer
 import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
-import cn.coostack.cooparticlesapi.renderer.shader.ShaderProgramBuilder
-import cn.coostack.cooparticlesapi.renderer.shader.api.CooShaderProgram
-import cn.coostack.cooparticlesapi.renderer.shader.api.glsl.GlShaderType
-import cn.coostack.cooparticlesapi.renderer.shader.data.CooVertexFormat
-import cn.coostack.cooparticlesapi.renderer.shader.data.VertexData
-import cn.coostack.cooparticlesapi.renderer.shader.glsl.IdentifierShader
-import cn.coostack.cooparticlesapi.renderer.shader.vertex.SimpleVertexBuffer
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.entity.custom.dragon.MagicDragonEntity
-import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
-import org.joml.Matrix4f
-import org.joml.Matrix4fStack
-import org.joml.Quaternionf
-import org.joml.Vector2f
 import org.joml.Vector3f
-import org.joml.Vector4f
-import kotlin.math.cos
-import kotlin.math.sin
 
-private enum class MonsterRoarBlendMode {
-    ALPHA,
-    ADDITIVE,
-}
-
-private data class MonsterRoarPass(
-    val blendMode: MonsterRoarBlendMode,
-    val color: Vector3f,
-    val alpha: Float,
-    val brightness: Float,
-    val edgeBoost: Float,
-    val coreGlow: Float,
-    val refractionStrength: Float,
-    val noiseStrength: Float,
-)
-
+/** 保存怪物咆哮锥体的同步起点、方向和生命周期。 */
 @CooAutoRegister
 class MonsterRoarRenderEntity(
     world: Level? = null,
     pos: Vec3 = Vec3.ZERO,
-) : AutoRenderEntity(world, pos),
-    WorldPassRenderEntityRenderer<MonsterRoarRenderEntity>,
-    FramePostRenderEntityRenderer<MonsterRoarRenderEntity>,
-    RenderEntityReleaseHook<MonsterRoarRenderEntity> {
+) : AutoRenderEntity(world, pos) {
+    /** 发出咆哮的实体网络 ID，负值表示没有来源实体。 */
     @CodecField
     var sourceEntityId: Int = NO_SOURCE_ENTITY
 
+    /** 咆哮锥体尖端的同步世界坐标。 */
     @CodecField
     var start: Vec3 = pos
 
+    /** 咆哮锥体中心轴的单位方向。 */
     @CodecField
     var direction: Vec3 = Vec3(0.0, 0.0, 1.0)
 
+    /** 咆哮锥体的同步 RGB 颜色。 */
     @CodecField
-    var color: Vector3f = Vector3f(0.52f, 0.86f, 1.0f)
+    var color: Vector3f = Vector3f(0.52F, 0.86F, 1.0F)
 
+    /** 咆哮材质的整体透明度。 */
     @CodecField
     var alpha: Double = 1.0
 
+    /** 咆哮锥体沿中心轴延伸的最大距离。 */
     @CodecField
     var maxDistance: Float = DEFAULT_MAX_DISTANCE
 
+    /** 咆哮锥体末端的最大世界半径。 */
     @CodecField
     var maxRadius: Float = DEFAULT_MAX_RADIUS
 
+    /** 咆哮保持完整强度的 tick 数。 */
     @CodecField
     var lifetime: Int = DEFAULT_LIFETIME
 
+    /** 生命周期末尾的淡出 tick 数。 */
     @CodecField
-    var fadeTicks: Int = DEFAULT_FADE_TICKS
+    var fadeTicks: Int = 7
 
+    /** 沿来源实体朝向偏移咆哮起点的距离。 */
     @CodecField
-    var mouthOffset: Double = DEFAULT_MOUTH_OFFSET
-
-    override fun initialize(instance: RenderEntityInstance<MonsterRoarRenderEntity>) {
-        initStatic()
-        refreshFromSource(syncNetwork = false)
-        syncAnchor()
-    }
+    var mouthOffset: Double = 0.65
 
     override fun getRenderID(): ResourceLocation = ID
-
-    override fun release(instance: RenderEntityInstance<MonsterRoarRenderEntity>) {
-    }
 
     override fun clientTick() {
         refreshFromSource(syncNetwork = false)
@@ -115,53 +76,23 @@ class MonsterRoarRenderEntity(
         updateLifecycle()
     }
 
-    override fun renderLocal(input: LocalRenderInput<MonsterRoarRenderEntity>) {
-        initStatic()
+    /** 在客户端同步后刷新锚点和渲染范围。 */
+    internal fun refreshClientState() {
         refreshFromSource(syncNetwork = false)
         syncAnchor()
-        val timeline = currentTimeline(input.tickDelta)
-        val visibleAlpha = currentAlpha(timeline)
-        if (visibleAlpha <= MIN_VISIBLE_ALPHA || maxDistance <= MIN_DISTANCE || maxRadius <= MIN_RADIUS) {
-            return
-        }
-        renderPasses(
-            modelMatrix = orientedModelMatrix(input.modelMatrix),
-            viewMatrix = input.viewMatrix,
-            projMatrix = input.projMatrix,
-            time = timeline,
-            passAlpha = visibleAlpha,
-            bloomPass = false,
-        )
     }
 
-    override fun collectRenderContributions(
-        input: RenderContributionInput<MonsterRoarRenderEntity>,
-        collector: RenderContributionCollector,
-    ) {
-        val timeline = currentTimeline(input.frameContext.tickDelta)
-        val visibleAlpha = currentAlpha(timeline)
-        if (visibleAlpha <= MIN_VISIBLE_ALPHA) {
-            return
-        }
-        collector.submit(
-            BuiltinRenderEffectDescriptors.maskBloom(
-                effectId = MONSTER_ROAR_BLOOM_EFFECT_ID,
-                sourceInstanceId = uuid.toString(),
-                frameContext = input.frameContext,
-                sourceEntity = this,
-                config = buildBloomConfig(visibleAlpha),
-                priority = MONSTER_ROAR_BLOOM_PRIORITY,
-                requiredCapabilities = UsefulMagicShaderPipelines.DEPTH_AWARE_MASK_BLOOM_CAPABILITIES,
-            ) {
-                renderBloomMask(
-                    tickDelta = input.frameContext.tickDelta,
-                    viewMatrix = input.frameContext.viewMatrix,
-                    projMatrix = input.frameContext.projMatrix,
-                )
-            },
-        )
-    }
-
+    /**
+     * 配置跟随来源实体的咆哮锥体。
+     *
+     * @param sourceEntity 提供位置与后续朝向刷新的来源实体
+     * @param direction 初始中心轴方向，零向量回退为正 Z 轴
+     * @param lifetime 保持完整强度的 tick 数，最小按 `1` 处理
+     * @param color 咆哮 RGB 颜色
+     * @param maxDistance 锥体轴向长度
+     * @param maxRadius 锥体末端半径
+     * @return 当前实体，可继续链式配置
+     */
     fun configure(
         sourceEntity: Entity,
         direction: Vec3,
@@ -182,6 +113,13 @@ class MonsterRoarRenderEntity(
         return this
     }
 
+    /**
+     * 刷新咆哮方向和颜色，并重新计算来源实体嘴部位置。
+     *
+     * @param direction 新中心轴方向
+     * @param color 新 RGB 颜色
+     * @return 当前实体
+     */
     fun refresh(
         direction: Vec3,
         color: Vector3f = this.color,
@@ -196,46 +134,13 @@ class MonsterRoarRenderEntity(
         return this
     }
 
+    /** 立即取消咆哮并标记同步数据。 */
     fun finish() {
         canceled = true
         markDirty()
     }
 
-    private fun renderBloomMask(
-        tickDelta: Float,
-        viewMatrix: Matrix4f,
-        projMatrix: Matrix4f,
-    ) {
-        initStatic()
-        refreshFromSource(syncNetwork = false)
-        syncAnchor()
-        val timeline = currentTimeline(tickDelta)
-        val visibleAlpha = currentAlpha(timeline)
-        if (visibleAlpha <= MIN_VISIBLE_ALPHA) {
-            return
-        }
-        val modelMatrix = Matrix4fStack(16)
-        RenderUtil.setRenderStackWithEntity(modelMatrix, this, tickDelta)
-        renderPasses(
-            modelMatrix = orientedModelMatrix(modelMatrix),
-            viewMatrix = viewMatrix,
-            projMatrix = projMatrix,
-            time = timeline,
-            passAlpha = visibleAlpha * 0.72f,
-            bloomPass = true,
-        )
-    }
-
-    private fun buildBloomConfig(visibleAlpha: Float): MaskBloomConfig {
-        val energy = visibleAlpha.coerceIn(0.18f, 1.0f)
-        return MONSTER_ROAR_BLOOM_CONFIG.copy(
-            blurSigma = MONSTER_ROAR_BLOOM_CONFIG.blurSigma * mix(0.82f, 1.12f, energy),
-            blurRange = MONSTER_ROAR_BLOOM_CONFIG.blurRange * mix(0.86f, 1.16f, energy),
-            intensity = MONSTER_ROAR_BLOOM_CONFIG.intensity * mix(0.78f, 1.18f, energy),
-            tint = Vector3f(color).lerp(Vector3f(0.88f, 0.98f, 1.0f), 0.32f),
-        )
-    }
-
+    /** 从来源实体刷新锥体起点和方向，并按需标记网络同步。 */
     private fun refreshFromSource(syncNetwork: Boolean) {
         val source = sourceEntity() ?: return
         val resolvedDirection = when (source) {
@@ -254,13 +159,23 @@ class MonsterRoarRenderEntity(
         }
     }
 
+    /**
+     * 解析不同来源实体的咆哮起点。
+     *
+     * @return 来源实体嘴部或眼部前方的世界坐标
+     */
     private fun resolveMouthPosition(source: Entity, direction: Vec3): Vec3 {
         return when (source) {
             is MagicDragonEntity -> source.getMouthPosition(direction)
-            else -> source.eyePosition.add(normalizedDirection(direction).scale(mouthOffset))
+            else -> source.eyePosition + normalizedDirection(direction) * mouthOffset
         }
     }
 
+    /**
+     * 解析当前同步的来源实体。
+     *
+     * @return 当前世界中的来源实体，没有来源或实体已移除时返回 `null`
+     */
     private fun sourceEntity(): Entity? {
         if (sourceEntityId == NO_SOURCE_ENTITY) {
             return null
@@ -268,25 +183,37 @@ class MonsterRoarRenderEntity(
         return world?.getEntity(sourceEntityId)
     }
 
+    /** 按锥体中点更新 RenderEntity 锚点和可见范围。 */
     private fun syncAnchor() {
         val normalized = normalizedDirection(direction)
-        pos = start.add(normalized.scale(maxDistance * 0.5))
-        renderRange = maxDistance * 0.5 + maxRadius * 4.0 + VIEW_PADDING
+        pos = start + normalized * (maxDistance * 0.5)
+        renderRange = maxDistance * 0.5 + maxRadius * 4.0 + 36.0
     }
 
-    private fun currentTimeline(tickDelta: Float): Float {
-        return (age - 1f + tickDelta).coerceAtLeast(0f)
+    /**
+     * 返回包含帧插值的生命周期时间。
+     *
+     * @return 从实体首个渲染 tick 开始计算的非负时间
+     */
+    internal fun currentTimeline(tickDelta: Float): Float {
+        return (age - 1F + tickDelta).coerceAtLeast(0F)
     }
 
-    private fun currentAlpha(time: Float): Float {
-        val baseAlpha = alpha.toFloat().coerceIn(0f, 1f)
-        val fadeIn = smoothstep(0f, FADE_IN_TICKS, time)
+    /**
+     * 计算指定生命周期时间的可见透明度。
+     *
+     * @return 叠加淡入和淡出曲线后的透明度
+     */
+    internal fun currentAlpha(time: Float): Float {
+        val baseAlpha = alpha.toFloat().coerceIn(0F, 1F)
+        val fadeIn = smoothstep(0F, 3.5F, time)
         val fadeOutStart = lifetime.coerceAtLeast(1).toFloat()
         val fadeOutDuration = fadeTicks.coerceAtLeast(1).toFloat()
-        val fadeOut = 1f - smoothstep(fadeOutStart, fadeOutStart + fadeOutDuration, time)
+        val fadeOut = 1F - smoothstep(fadeOutStart, fadeOutStart + fadeOutDuration, time)
         return baseAlpha * fadeIn * fadeOut
     }
 
+    /** 在来源消失或淡出结束后终止实体。 */
     private fun updateLifecycle() {
         if (sourceEntityId != NO_SOURCE_ENTITY && sourceEntity() == null) {
             canceled = true
@@ -297,166 +224,39 @@ class MonsterRoarRenderEntity(
         }
     }
 
-    private fun renderPasses(
-        modelMatrix: Matrix4f,
-        viewMatrix: Matrix4f,
-        projMatrix: Matrix4f,
-        time: Float,
-        passAlpha: Float,
-        bloomPass: Boolean,
-    ) {
-        if (passAlpha <= MIN_VISIBLE_ALPHA) {
-            return
-        }
-        val baseColor = Vector3f(color)
-        val passes = if (bloomPass) {
-            listOf(
-                MonsterRoarPass(
-                    blendMode = MonsterRoarBlendMode.ADDITIVE,
-                    color = Vector3f(baseColor).lerp(Vector3f(0.92f, 0.99f, 1.0f), 0.42f),
-                    alpha = (passAlpha * 0.42f).coerceAtMost(0.62f),
-                    brightness = 3.8f,
-                    edgeBoost = 1.26f,
-                    coreGlow = 0.58f,
-                    refractionStrength = 0.12f,
-                    noiseStrength = 0.86f,
-                ),
-            )
-        } else {
-            listOf(
-                MonsterRoarPass(
-                    blendMode = MonsterRoarBlendMode.ALPHA,
-                    color = baseColor,
-                    alpha = (passAlpha * 0.38f).coerceAtMost(0.62f),
-                    brightness = 1.38f,
-                    edgeBoost = 0.72f,
-                    coreGlow = 0.28f,
-                    refractionStrength = 0.18f,
-                    noiseStrength = 0.72f,
-                ),
-                MonsterRoarPass(
-                    blendMode = MonsterRoarBlendMode.ADDITIVE,
-                    color = Vector3f(baseColor).lerp(Vector3f(1.0f, 0.96f, 0.84f), 0.34f),
-                    alpha = (passAlpha * 0.16f).coerceAtMost(0.34f),
-                    brightness = 2.5f,
-                    edgeBoost = 1.12f,
-                    coreGlow = 0.44f,
-                    refractionStrength = 0.10f,
-                    noiseStrength = 0.92f,
-                ),
-            )
-        }
-        RenderSystem.disableCull()
-        RenderSystem.enableDepthTest()
-        RenderSystem.enableBlend()
-        RenderSystem.depthMask(false)
-        try {
-            passes.forEach { pass ->
-                if (pass.alpha <= MIN_VISIBLE_ALPHA) {
-                    return@forEach
-                }
-                when (pass.blendMode) {
-                    MonsterRoarBlendMode.ALPHA -> RenderSystem.blendFunc(770, 771)
-                    MonsterRoarBlendMode.ADDITIVE -> RenderSystem.blendFunc(770, 1)
-                }
-                drawPass(modelMatrix, viewMatrix, projMatrix, time, pass)
-            }
-        } finally {
-            RenderSystem.depthMask(true)
-            RenderSystem.defaultBlendFunc()
-            RenderSystem.disableBlend()
-            RenderSystem.enableCull()
-        }
-    }
-
-    private fun drawPass(
-        modelMatrix: Matrix4f,
-        viewMatrix: Matrix4f,
-        projMatrix: Matrix4f,
-        time: Float,
-        pass: MonsterRoarPass,
-    ) {
-        roarShader.useOnContext {
-            setMatrix4("modelMatrix", modelMatrix)
-            setMatrix4("viewMatrix", viewMatrix)
-            setMatrix4("projMatrix", projMatrix)
-            setFloat("coneLength", maxDistance.coerceAtLeast(MIN_DISTANCE))
-            setFloat("coneRadius", maxRadius.coerceAtLeast(MIN_RADIUS))
-            setFloat3("color", pass.color)
-            setFloat("alpha", pass.alpha)
-            setFloat("brightness", pass.brightness)
-            setFloat("edgeBoost", pass.edgeBoost)
-            setFloat("coreGlow", pass.coreGlow)
-            setFloat("refractionStrength", pass.refractionStrength)
-            setFloat("noiseStrength", pass.noiseStrength)
-            setFloat("lifetime", lifetime.coerceAtLeast(1).toFloat())
-            setFloat("fadeTicks", fadeTicks.coerceAtLeast(1).toFloat())
-            setFloat("time", time)
-            roarVertexBuffer.draw()
-        }
-    }
-
-    private fun orientedModelMatrix(baseMatrix: Matrix4f): Matrix4f {
-        val normalized = normalizedDirection(direction)
-        return Matrix4f(baseMatrix).translate(
-            (start.x - pos.x).toFloat(),
-            (start.y - pos.y).toFloat(),
-            (start.z - pos.z).toFloat(),
-        ).rotate(
-            Quaternionf().rotationTo(
-                0f,
-                1f,
-                0f,
-                normalized.x.toFloat(),
-                normalized.y.toFloat(),
-                normalized.z.toFloat(),
-            ),
-        )
-    }
-
     companion object {
-        private const val DEFAULT_MAX_DISTANCE = 9.5f
-        private const val DEFAULT_MAX_RADIUS = 3.2f
-        private const val DEFAULT_LIFETIME = 18
-        private const val DEFAULT_FADE_TICKS = 7
-        private const val DEFAULT_MOUTH_OFFSET = 0.65
-        private const val FADE_IN_TICKS = 3.5f
-        private const val MIN_DISTANCE = 0.08f
-        private const val MIN_RADIUS = 0.02f
-        private const val MIN_VISIBLE_ALPHA = 0.001f
-        private const val VIEW_PADDING = 36.0
-        private const val MIN_DIRECTION_LENGTH_SQR = 1.0E-6
-        private const val NO_SOURCE_ENTITY = -1
-        private const val MONSTER_ROAR_BLOOM_EFFECT_ID = "usefulmagic:monster_roar_bloom"
-        private const val MONSTER_ROAR_BLOOM_PRIORITY = 260
+        /** 怪物咆哮实体的稳定注册路径。 */
+        private const val RENDER_ENTITY_ID = "monster_roar_render_entity"
 
+        /** 字段默认值、配置和 spawn 入口共用的最大距离。 */
+        private const val DEFAULT_MAX_DISTANCE = 9.5F
+        /** 字段默认值、配置和 spawn 入口共用的最大半径。 */
+        private const val DEFAULT_MAX_RADIUS = 3.2F
+        /** 字段默认值、配置和 spawn 入口共用的生命周期。 */
+        private const val DEFAULT_LIFETIME = 18
+        /** 实体状态和 renderer 共用的最小有效距离。 */
+        internal const val MIN_DISTANCE = 0.08F
+        /** 实体状态和 renderer 共用的最小有效半径。 */
+        internal const val MIN_RADIUS = 0.02F
+        /** 多个配置和跟随逻辑共用的无来源实体标记。 */
+        private const val NO_SOURCE_ENTITY = -1
+        /** 怪物咆哮锥体的稳定 RenderEntity 注册 ID。 */
         @JvmField
         val ID: ResourceLocation =
-            ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "monster_roar_render_entity")
+            ofID(UsefulMagic.MOD_ID, RENDER_ENTITY_ID)
 
-        @JvmField
-        var initialized: Boolean = false
-
-        private val MONSTER_ROAR_BLOOM_CONFIG = MaskBloomConfig(
-            blurSigma = 6.2f,
-            blurRange = 4.6f,
-            intensity = 1.55f,
-            baseMaskIntensity = 0.0f,
-            threshold = 0.018f,
-            thresholdSoftness = 0.03f,
-            tint = Vector3f(0.62f, 0.90f, 1.0f),
-        )
-
-        private lateinit var roarVertexBuffer: SimpleVertexBuffer
-        private lateinit var roarShader: CooShaderProgram
-
+        /**
+         * 生成并注册一个跟随来源实体的咆哮锥体。
+         *
+         * @return 已提交到服务端 RenderEntity 管理器的咆哮实体
+         */
         @JvmStatic
         fun spawn(
             world: ServerLevel,
             sourceEntity: Entity,
             direction: Vec3,
             lifetime: Int = DEFAULT_LIFETIME,
-            color: Vector3f = Vector3f(0.52f, 0.86f, 1.0f),
+            color: Vector3f = Vector3f(0.52F, 0.86F, 1.0F),
             maxDistance: Float = DEFAULT_MAX_DISTANCE,
             maxRadius: Float = DEFAULT_MAX_RADIUS,
         ): MonsterRoarRenderEntity {
@@ -465,85 +265,30 @@ class MonsterRoarRenderEntity(
                 .also(ServerRenderEntityManager::spawn)
         }
 
-        @JvmStatic
-        fun initStatic() {
-            if (initialized) {
-                return
-            }
-            roarVertexBuffer = SimpleVertexBuffer().apply {
-                init()
-                setVertexes(buildConeFieldVertices(), CooVertexFormat.POINT_FORMAT)
-            }
-            roarShader = ShaderProgramBuilder()
-                .vertex(
-                    IdentifierShader(
-                        ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "core/vsh/monster_roar_beam.vsh"),
-                        GlShaderType.VERTEX,
-                    ),
-                )
-                .fragment(
-                    IdentifierShader(
-                        ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "core/fsh/monster_roar_beam.fsh"),
-                        GlShaderType.FRAGMENT,
-                    ),
-                )
-                .build()
-            roarShader.init()
-            initialized = true
-        }
-
-        private fun buildConeFieldVertices(): List<VertexData> {
-            val segments = 42
-            val vertices = ArrayList<VertexData>(segments * 9)
-            val tip = Vector3f(0f, 0f, 0f)
-            val center = Vector3f(0f, 1f, 0f)
-
-            for (segment in 0 until segments) {
-                val angle0 = (Math.PI.toFloat() * 2f * segment) / segments.toFloat()
-                val angle1 = (Math.PI.toFloat() * 2f * (segment + 1)) / segments.toFloat()
-                val x0 = cos(angle0)
-                val z0 = sin(angle0)
-                val x1 = cos(angle1)
-                val z1 = sin(angle1)
-
-                val a = Vector3f(x0, 1f, z0)
-                val b = Vector3f(x1, 1f, z1)
-
-                appendTriangle(vertices, tip, a, b)
-                appendTriangle(vertices, center, b, a)
-            }
-            return vertices
-        }
-
-        private fun appendTriangle(
-            output: MutableList<VertexData>,
-            a: Vector3f,
-            b: Vector3f,
-            c: Vector3f,
-        ) {
-            output += VertexData(a, Vector4f(), Vector2f())
-            output += VertexData(b, Vector4f(), Vector2f())
-            output += VertexData(c, Vector4f(), Vector2f())
-        }
-
-        private fun normalizedDirection(direction: Vec3): Vec3 {
-            return if (direction.lengthSqr() <= MIN_DIRECTION_LENGTH_SQR) {
+        /**
+         * 返回可用于旋转和 renderer 计算的安全单位方向。
+         *
+         * @return 输入方向的单位向量，零向量回退为正 Z 轴
+         */
+        internal fun normalizedDirection(direction: Vec3): Vec3 {
+            return if (direction.lengthSqr() <= 0.000001) {
                 Vec3(0.0, 0.0, 1.0)
             } else {
                 direction.normalize()
             }
         }
 
+        /**
+         * 返回区间内平滑过渡的插值值。
+         *
+         * @return 位于 `0F..1F` 的平滑插值进度
+         */
         private fun smoothstep(edge0: Float, edge1: Float, value: Float): Float {
             if (edge0 == edge1) {
-                return if (value >= edge1) 1f else 0f
+                return if (value >= edge1) 1F else 0F
             }
-            val x = ((value - edge0) / (edge1 - edge0)).coerceIn(0f, 1f)
-            return x * x * (3f - 2f * x)
-        }
-
-        private fun mix(from: Float, to: Float, alpha: Float): Float {
-            return from + (to - from) * alpha.coerceIn(0f, 1f)
+            val x = ((value - edge0) / (edge1 - edge0)).coerceIn(0F, 1F)
+            return x * x * (3F - 2F * x)
         }
     }
 }

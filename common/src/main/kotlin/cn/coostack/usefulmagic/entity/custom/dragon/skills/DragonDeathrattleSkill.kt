@@ -5,10 +5,10 @@ import cn.coostack.cooparticlesapi.display.DisplayEntityManager
 import cn.coostack.cooparticlesapi.network.particle.composition.manager.ParticleCompositionManager
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
-import cn.coostack.cooparticlesapi.sound.ServerManagedSoundInstance
-import cn.coostack.cooparticlesapi.sound.ServerSoundManager
-import cn.coostack.cooparticlesapi.sound.SoundVolumeFalloff
 import cn.coostack.cooparticlesapi.supports.TextureSheetsEnum
+import cn.coostack.cooparticlesapi.supports.sound.ServerManagedSoundInstance
+import cn.coostack.cooparticlesapi.supports.sound.ServerSoundManager
+import cn.coostack.cooparticlesapi.supports.sound.SoundVolumeFalloff
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.usefulmagic.barrages.entity.skill.StraightPointBarrage
 import cn.coostack.usefulmagic.barrages.entity.skill.TrackedPointBarrage
@@ -19,14 +19,15 @@ import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicEyeEntity
 import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicSubEyeEntity
 import cn.coostack.usefulmagic.entity.custom.dragon.phases.DragonHoverFlightPhase
 import cn.coostack.usefulmagic.entity.custom.dragon.playDragonSoundOnce
+import cn.coostack.usefulmagic.entity.custom.dragon.skills.composition.MagicRuneRingComposition
+import cn.coostack.usefulmagic.entity.custom.dragon.skills.composition.MagicRuneRingEffects
 import cn.coostack.usefulmagic.entity.custom.dragon.skills.emitter.CollectDisplayLineEmitter
-import cn.coostack.usefulmagic.entity.custom.dragon.skills.emitter.MagicRuneRingComposition
-import cn.coostack.usefulmagic.entity.custom.dragon.skills.emitter.MagicRuneRingEffects
 import cn.coostack.usefulmagic.entity.custom.dragon.spawn.composition.MagicDragonSpawnLaserComposition
 import cn.coostack.usefulmagic.extend.boxCenterPosition
 import cn.coostack.usefulmagic.extend.lerpAsProgress
 import cn.coostack.usefulmagic.extend.searchLivingEntities
 import cn.coostack.usefulmagic.extend.serverLevel
+import cn.coostack.usefulmagic.particles.emitters.CollectLineParticleEmitter
 import cn.coostack.usefulmagic.particles.emitters.LightningParticleEmitters
 import cn.coostack.usefulmagic.renderer.StraightLaserRenderEntity
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
@@ -38,6 +39,7 @@ import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
+import org.joml.Vector3f
 import cn.coostack.cooparticlesapi.extend.*
 import java.util.*
 import kotlin.random.Random
@@ -88,13 +90,15 @@ class DragonDeathrattleSkill : DragonSkill() {
     private var deathrattleRuneRingsDisplayed = false
     private var deathrattleRuneRings: ArrayList<MagicRuneRingComposition>? = null
 
+    private var collectToExplosionEmitter: CollectLineParticleEmitter? = null
+
     override fun getSkillCountDown(source: MagicDragonEntity): Int {
         return 0
     }
 
     override fun onActive(source: MagicDragonEntity) {
         clearTrackingHugeLaser()
-        clearDeathrattleRuneRings()
+        clearDeathrattleAll()
         source.phaseManager.forceSetPhase(
             DragonHoverFlightPhase()
         ) {
@@ -104,13 +108,13 @@ class DragonDeathrattleSkill : DragonSkill() {
 
     override fun onRelease(source: MagicDragonEntity, holdingTick: Int) {
         clearTrackingHugeLaser()
-        clearDeathrattleRuneRings()
+        clearDeathrattleAll()
         source.dieSkillPlayed = true
         source.kill()
     }
 
     override fun getMaxHoldingTick(holdingEntity: MagicDragonEntity): Int {
-        return 20 * 45 + RECOVER_TICK // 45秒的亡语
+        return 20 * 85 + RECOVER_TICK // 45秒的亡语 -> 转成75秒
     }
 
     override fun holdingTick(
@@ -141,8 +145,7 @@ class DragonDeathrattleSkill : DragonSkill() {
     }
 
     override fun stopHolding(entity: MagicDragonEntity, holdTicks: Int) {
-        clearTrackingHugeLaser()
-        clearDeathrattleRuneRings()
+        clearDeathrattleAll()
         entity.phaseManager.resetDefaultPhase()
     }
 
@@ -159,12 +162,11 @@ class DragonDeathrattleSkill : DragonSkill() {
             return
         }
 
-        if (steppingTick % 60 == 0 && steppingTick in 20 * 2..20 * 10) {
-            placeLaser(entity, searchedEntities)
-            return
+        if (!(steppingTick % 60 != 0 || steppingTick !in 20 * 2..20 * 75)) {
+            placeLaser(entity, searchedEntities, steppingTick >= 20 * 35)
         }
 
-        if (steppingTick % 2 == 0 && steppingTick in 20 * 12..20 * 30) {
+        if (steppingTick % 2 == 0 && steppingTick in 20 * 17..20 * 35) {
             if (steppingTick % 30 == 0) {
                 placeLighting(entity, searchedEntities)
             }
@@ -173,12 +175,32 @@ class DragonDeathrattleSkill : DragonSkill() {
         }
 
         // 大量释放barrage
-        if (steppingTick > 20 * 30) {
+        if (steppingTick in 20 * 35..20 * 75) {
             if (steppingTick % 25 == 0) {
                 placeLighting(entity, searchedEntities)
             }
             placeAndTrackingHugeLaser(entity, steppingTick, searchedEntities)
         }
+        if (steppingTick == 20 * 75) {
+            clearTrackingHugeLaser()
+        }
+        // 十秒钟的尾声
+        if (steppingTick > 20 * 75) {
+            if (steppingTick % 40 == 0) {
+                playDragonSoundOnce(
+                    entity.level(),
+                    entity.position(),
+                    SoundEvents.ENDER_DRAGON_GROWL,
+                    entity.soundSource,
+                    24F,
+                    0.6F + Random.nextFloat() * 0.2F,
+                    256.0,
+                )
+            }
+            // 放一个粒子聚集的效果
+            placeCollectToExplosion(entity)
+        }
+
     }
 
 
@@ -188,6 +210,26 @@ class DragonDeathrattleSkill : DragonSkill() {
 
     override fun testCancel(entity: MagicDragonEntity): Boolean {
         return !canTrigger(entity)
+    }
+
+    private fun placeCollectToExplosion(entity: MagicDragonEntity) {
+        collectToExplosionEmitter ?: let {
+            collectToExplosionEmitter = CollectLineParticleEmitter(entity.boxCenterPosition(), entity.level()).apply {
+                this.maxTick = -1
+                this.disappearRadius = 0.1
+                this.simpleData.apply {
+                    this.minCount = 40
+                    this.maxCount = 80
+                    this.minSpeed = 2.5
+                    this.maxSpeed = 4.5
+                    this.leftColor = Vector3f(1f, 0.431613f, 0.431613f)
+                    this.rightColor = Vector3f(0.304848f, 0.353003f, 1f)
+                }
+            }
+            ParticleEmittersManager.spawnEmitters(collectToExplosionEmitter!!)
+            return
+        }
+        collectToExplosionEmitter!!.pos = entity.boxCenterPosition()
     }
 
     private fun placeAndTrackingHugeLaser(entity: MagicDragonEntity, tick: Int, searchedEntities: List<LivingEntity>) {
@@ -245,6 +287,7 @@ class DragonDeathrattleSkill : DragonSkill() {
         trackingHugeComposition?.apply {
             teleportTo(start)
             this.direction = direction.asRelative()
+            markDirty()
         }
 
         if (!trackingHugeShootSoundPlayed && trackingHugeLaserAge >= TRACKING_HUGE_LASER_PHASE_TICKS) {
@@ -272,7 +315,6 @@ class DragonDeathrattleSkill : DragonSkill() {
             ).volume(1f)
                 .pitch(0.75f)
                 .entity(entity)
-                .stopWhenBoundEntityMissing(false)
                 .layer("deathrattle_tracking_laser_shoot")
                 .uniqueKey(UUID.randomUUID().toString())
                 .visibleRange(256.0)
@@ -374,6 +416,7 @@ class DragonDeathrattleSkill : DragonSkill() {
                 .apply {
                     direction = Vec3.ZERO.random()
                     options.enableSpeedWithOptions(3.0)
+                        .maxLivingTick(30)
                     BarrageManager.spawn(this)
                     this.particleMinAge = 2
                     this.particleMaxAge = 5
@@ -397,6 +440,7 @@ class DragonDeathrattleSkill : DragonSkill() {
             TrackedPointBarrage(target, entity.boxCenterPosition(), entity.serverLevel!!, 10.0, entity).apply {
                 direction = Vec3.ZERO.random()
                 options.enableSpeedWithOptions(4.0)
+                    .maxLivingTick(40)
                 this.startTrackingTick = 15
                 this.trackingTick = 20
                 this.particleMinAge = 2
@@ -417,10 +461,15 @@ class DragonDeathrattleSkill : DragonSkill() {
         }
     }
 
-    private fun placeLaser(entity: MagicDragonEntity, searchedEntity: List<LivingEntity>) {
+    private fun placeLaser(
+        entity: MagicDragonEntity,
+        searchedEntity: List<LivingEntity>,
+        hasTrackingHugeLaser: Boolean = false
+    ) {
+        val count = if (hasTrackingHugeLaser) 3 else 6
         val targetPositions = searchedEntity
             .shuffled()
-            .take(3)
+            .take(count)
             .map { it.boxCenterPosition() }
             .toMutableList()
 
@@ -428,23 +477,27 @@ class DragonDeathrattleSkill : DragonSkill() {
             entity.target?.boxCenterPosition()?.let { targetPositions += it } ?: return
         }
 
-        while (targetPositions.size < 3) {
-            targetPositions += targetPositions.random().offsetRandomly(Random.nextDouble(12.0, 20.0))
+        while (targetPositions.size < count) {
+            targetPositions += targetPositions.random().offsetRandomly(Random.nextDouble(24.0, 32.0))
         }
 
-        playDragonSoundOnce(
-            entity,
-            UsefulMagicSoundEvents.DRAGON_HUGE_LASER_CHARGE_UP.get(),
-            SoundSource.HOSTILE,
-            1f,
-            0.75f,
-            256.0,
-        )
 
+        ServerSoundManager.instance(
+            UsefulMagicSoundEvents.DRAGON_HUGE_LASER_CHARGE_UP.get(),
+            entity.soundSource,
+        )
+            .visibleRange(256.0)
+            .pitch(0.75f)
+            .bindToEntity(entity)
+            .uniqueKey()
+            .spawn()
+            .fadeOut(30)
+
+        val laserRadius = if (hasTrackingHugeLaser) 2f else 4f
         targetPositions.forEach { target ->
             val dragonCenter = entity.boxCenterPosition()
             val start = dragonCenter
-                .offsetRandomlyHorizontal(Random.nextDouble(0.0, 64.0))
+                .offsetRandomlyHorizontal(Random.nextDouble(10.0, 64.0))
                 .add(0.0, Random.nextDouble(4.0, 20.0), 0.0)
             var direction = (target - start).normalize()
             val composition = MagicDragonSpawnLaserComposition(start, entity.level()).apply {
@@ -453,7 +506,7 @@ class DragonDeathrattleSkill : DragonSkill() {
                 ParticleCompositionManager.spawn(this)
             }
             val laserEntity = StraightLaserRenderEntity(entity.level(), start).apply {
-                this.maxRadius = 4f
+                this.maxRadius = laserRadius
                 this.color = Math3DUtil.colorOf(255, 100, 200)
                 this.brightness = 1.1f
                 this.phaseTicks = 10
@@ -462,6 +515,7 @@ class DragonDeathrattleSkill : DragonSkill() {
 
             submitTaskTimerMaxTickServer(DEATHRATTLE_LASER_CHARGE_TICKS) {
                 composition.direction = direction.asRelative()
+                composition.markDirty()
                 direction = (target - start).normalize()
             }.setCancelPredicate {
                 composition.status.isDisable()
@@ -473,25 +527,30 @@ class DragonDeathrattleSkill : DragonSkill() {
                     return@submitTaskServer
                 }
 
-                playDragonSoundOnce(
-                    entity,
-                    UsefulMagicSoundEvents.DRAGON_HUGE_LASER_SHOOT.get(),
-                    SoundSource.HOSTILE,
-                    0.5f,
-                    1f,
-                    256.0,
-                )
-
                 laserEntity.apply {
                     ServerRenderEntityManager.spawn(this)
                     updateBeam(start, start + direction * 200.0)
                 }
                 submitTaskTimerMaxTickServer(DEATHRATTLE_LASER_DAMAGE_TICKS) {
-                    damageWithLines(entity, 30f, start, start + direction * 200.0, 4.0)
+                    damageWithLines(entity, 30f, start, start + direction * 200.0, laserRadius.toDouble())
                 }.setFinishCallback {
                     composition.remove()
                 }
             }
+        }
+        // 只用跑一边而不是所有都跑
+        submitTaskServer(DEATHRATTLE_LASER_CHARGE_TICKS) {
+            if (entity.isDizzying()) {
+                return@submitTaskServer
+            }
+            playDragonSoundOnce(
+                entity,
+                UsefulMagicSoundEvents.DRAGON_HUGE_LASER_SHOOT.get(),
+                SoundSource.HOSTILE,
+                0.5f,
+                1f,
+                256.0,
+            )
         }
     }
 
@@ -528,15 +587,17 @@ class DragonDeathrattleSkill : DragonSkill() {
         trackingHugeShootSoundPlayed = false
         trackingHugeCollectEmitter?.remove()
         trackingHugeCollectEmitter = null
-        trackingHugeLaserLoopSound?.fadeOut(10)
+        trackingHugeLaserLoopSound?.fadeOut(20)
         trackingHugeLaserLoopSound = null
     }
 
-    private fun clearDeathrattleRuneRings() {
+    private fun clearDeathrattleAll() {
         deathrattleRuneRingsDisplayed = false
         deathrattleRuneRings?.forEach {
             it.remove()
         }
+        collectToExplosionEmitter?.remove()
+        collectToExplosionEmitter = null
         deathrattleRuneRings = null
     }
 

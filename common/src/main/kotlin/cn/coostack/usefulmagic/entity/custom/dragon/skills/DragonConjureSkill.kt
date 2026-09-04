@@ -132,8 +132,8 @@ class DragonConjureSkill : DragonSkill() {
                     minSize = 0.1
                     maxSize = 0.3
                 }
-                spawn(world, pos)
                 maxTick = 1
+                spawn(world, pos)
             }
         }
         // hurt(粒子释放）

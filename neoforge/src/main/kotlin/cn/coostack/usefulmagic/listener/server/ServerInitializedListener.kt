@@ -15,6 +15,7 @@ import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendAddRequest
 import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendListRequest
 import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendRemoveRequest
 import cn.coostack.usefulmagic.packet.c2s.PacketC2SFriendSettingsChangeRequest
+import cn.coostack.usefulmagic.packet.c2s.PacketC2SWandMagicExchangeRequest
 import cn.coostack.usefulmagic.packet.listener.client.FormationPacketListener
 import cn.coostack.usefulmagic.packet.listener.client.FormationSettingsPacketResponseListener
 import cn.coostack.usefulmagic.packet.listener.client.FriendChangeResponsePacketListener
@@ -26,6 +27,7 @@ import cn.coostack.usefulmagic.packet.listener.server.FriendAddListRequestHandle
 import cn.coostack.usefulmagic.packet.listener.server.FriendListRequestHandler
 import cn.coostack.usefulmagic.packet.listener.server.FriendRemoveListRequestHandler
 import cn.coostack.usefulmagic.packet.listener.server.FriendSettingsChangeRequestHandler
+import cn.coostack.usefulmagic.packet.listener.server.WandMagicExchangeRequestHandler
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CEnergyCrystalChange
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationBreak
 import cn.coostack.usefulmagic.packet.s2c.PacketS2CFormationCreate
@@ -84,6 +86,12 @@ object ServerInitializedListener {
             PacketC2SFriendSettingsChangeRequest.CODEC
         ) { packet, context ->
             FriendSettingsChangeRequestHandler.receive(packet, NeoForgeServerContext(context))
+        }
+        registrar.playToServer(
+            PacketC2SWandMagicExchangeRequest.payloadID,
+            PacketC2SWandMagicExchangeRequest.CODEC
+        ) { packet, context ->
+            WandMagicExchangeRequestHandler.receive(packet, NeoForgeServerContext(context))
         }
         registrar.playToClient(
             PacketS2CEnergyCrystalChange.payloadID,

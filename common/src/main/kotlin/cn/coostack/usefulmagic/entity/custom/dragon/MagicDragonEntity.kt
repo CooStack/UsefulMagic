@@ -1,19 +1,27 @@
 package cn.coostack.usefulmagic.entity.custom.dragon
 
+import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
+import cn.coostack.cooparticlesapi.supports.sound.ServerSoundManager
+import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.entity.UsefulMagicEntityTypes
 import cn.coostack.usefulmagic.entity.custom.UnlimitHealthEntity
+import cn.coostack.usefulmagic.entity.custom.dragon.emitters.DragonDeathExplosionEmitter
 import cn.coostack.usefulmagic.entity.custom.dragon.goal.MagicDragonAttackGoal
-import cn.coostack.usefulmagic.entity.custom.dragon.phases.DragonShotPhase
+import cn.coostack.usefulmagic.entity.custom.dragon.phases.DragonShoutPhase
 import cn.coostack.usefulmagic.entity.custom.dragon.phases.DragonSimpleFlightPhase
 import cn.coostack.usefulmagic.entity.custom.dragon.skills.*
 import cn.coostack.usefulmagic.entity.util.phases.PhaseManager
+import cn.coostack.usefulmagic.extend.boxCenterPosition
+import cn.coostack.usefulmagic.extend.serverLevelApply
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import cn.coostack.usefulmagic.managers.server.SkillManagerManager
 import cn.coostack.usefulmagic.renderer.StunStarsRenderEntity
+import cn.coostack.usefulmagic.renderer.UsefulMagicPostEffects
 import cn.coostack.usefulmagic.skill.api.EntityQueueSkillManager
 import cn.coostack.usefulmagic.skill.api.EntitySkillManager
+import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import net.minecraft.core.BlockPos
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
@@ -21,7 +29,6 @@ import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.server.level.ServerBossEvent
-import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundEvents
@@ -36,7 +43,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.ai.goal.FloatGoal
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.ServerLevelAccessor
@@ -137,9 +143,9 @@ class MagicDragonEntity(
         get() = entityData.get(DIE_SKILL_PLAYED)
         set(value) = entityData.set(DIE_SKILL_PLAYED, value)
 
-    var dragonSpawnShot: Boolean
-        get() = entityData.get(DRAGON_SPAWN_SHOT)
-        set(value) = entityData.set(DRAGON_SPAWN_SHOT, value)
+    var dragonSpawnShout: Boolean
+        get() = entityData.get(DRAGON_SPAWN_SHOUT)
+        set(value) = entityData.set(DRAGON_SPAWN_SHOUT, value)
 
     private var stunStar: StunStarsRenderEntity? = null
 
@@ -207,6 +213,7 @@ class MagicDragonEntity(
 
     companion object {
         private const val DEFAULT_MAX_HEALTH = 1536f
+        private const val PHASE_KEY = "phase"
 
         const val SCALE_MULTIPLIER = 1.5f
         const val BASE_RENDER_SCALE = 2f
@@ -266,7 +273,7 @@ class MagicDragonEntity(
         )
 
         @JvmStatic
-        private val DRAGON_SPAWN_SHOT = SynchedEntityData.defineId(
+        private val DRAGON_SPAWN_SHOUT = SynchedEntityData.defineId(
             MagicDragonEntity::class.java, EntityDataSerializers.BOOLEAN
         )
 
@@ -375,7 +382,7 @@ class MagicDragonEntity(
         builder.define(IMPACT_CD, 0)
         builder.define(ANIMATE_TICKING, 0)
         builder.define(DAMAGE_REDUCTION, 0f)
-        builder.define(DRAGON_SPAWN_SHOT, false)
+        builder.define(DRAGON_SPAWN_SHOUT, false)
     }
 
     fun syncPhaseState() {
@@ -398,7 +405,8 @@ class MagicDragonEntity(
         nbt.putInt("impact_cd", impactCD)
         nbt.putInt("animate_ticking", animateTicking)
         nbt.putUUID("cache_uuid", skillManager.cacheUUID)
-        nbt.putBoolean("dragon_spawn_shot", dragonSpawnShot)
+        nbt.putBoolean("dragon_spawn_shout", dragonSpawnShout)
+        nbt.put(PHASE_KEY, phaseManager.saveAsCompound())
         nbt.putBoolean("has_spawn_position", entityData.get(HAS_SPAWN_POSITION))
         if (entityData.get(HAS_SPAWN_POSITION)) {
             nbt.putDouble("spawn_x", spawnPosition.x)
@@ -426,13 +434,17 @@ class MagicDragonEntity(
         impactCD = if (nbt.contains("impact_cd")) nbt.getInt("impact_cd") else 0
         animateTicking = if (nbt.contains("animate_ticking")) nbt.getInt("animate_ticking") else 0
         damageReduction = if (nbt.contains("damage_reduction")) nbt.getFloat("damage_reduction") else 0f
-        dragonSpawnShot = if (nbt.contains("dragon_spawn_shot")) nbt.getBoolean("dragon_spawn_shot") else false
+        dragonSpawnShout = if (nbt.contains("dragon_spawn_shout")) nbt.getBoolean("dragon_spawn_shout") else false
         if (nbt.getBoolean("has_spawn_position")) {
             spawnPosition = Vec3(
                 nbt.getDouble("spawn_x"),
                 nbt.getDouble("spawn_y"),
                 nbt.getDouble("spawn_z")
             )
+        }
+        if (nbt.contains(PHASE_KEY)) {
+            phaseManager.loadFromCompound(nbt.getCompound(PHASE_KEY))
+            syncPhaseState()
         }
 
         runCatching {
@@ -469,22 +481,8 @@ class MagicDragonEntity(
         }
         targetSelector.apply {
             addGoal(0, HurtByTargetGoal(this@MagicDragonEntity))
-            addGoal(
-                1,
-                NearestAttackableTargetGoal(
-                    this@MagicDragonEntity,
-                    Player::class.java,
-                    10,
-                    true,
-                    false
-                ) { candidate ->
-                    val player = candidate as? Player ?: return@NearestAttackableTargetGoal false
-                    !player.hasInfiniteMaterials() &&
-                            !player.isSpectator &&
-                            this@MagicDragonEntity.distanceToSqr(player) <= 128.0 * 128.0 &&
-                            player.distanceToSqr(this@MagicDragonEntity.spawnPosition) <= 128.0 * 128.0
-                }
-            )
+            // 注意：目标选择主要由 resolveCombatTargetManually() 在 tick 中完成，
+            // 因为龙体积巨大且常被末地地形遮挡，原版视线检测几乎总是失败。
         }
     }
 
@@ -546,16 +544,28 @@ class MagicDragonEntity(
         if (isNotDizziness && noneActionTick <= 0) {
             phaseManager.tickPhase()
         }
-
-        if (!dragonSpawnShot) {
-            if (phaseManager.getCurrentPhaseID() != DragonShotPhase.ID) {
-                // 这个phase会设定dragonSpawnShot的值
-                phaseManager.forceSetPhase(DragonShotPhase())
+        // 龙重生大叫 - 需要切换到 DragonShoutPhase
+        if (isSpawnShoutLocked()) {
+            phaseManager.forceSetPhase(DragonShoutPhase())
+            if (!level().isClientSide && skillManager.hasActiveSkill()) {
+                skillManager.interruptActiveSkill(false)
             }
+        }
+        // 在 DragonShoutPhase 期间，阻止技能释放
+        if (!dragonSpawnShout) {
+            if (level().isClientSide) {
+                return
+            }
+            // 服务端在咆哮期间不执行技能
             return
         }
         if (level().isClientSide) {
             return
+        }
+
+        // 手动解析目标，绕开原版视线检测
+        if (tickCount % 10 == 0) {
+            resolveCombatTargetManually()
         }
 
         if (!isNotDizziness && skillManager.hasActiveSkill()) {
@@ -622,7 +632,7 @@ class MagicDragonEntity(
             if (amount > 1 && chance) {
                 stunProcess += 0.03f * Random.nextFloat()
             }
-            if (Random.nextFloat() < 0.1 * (amount / 8f).coerceAtMost(2f)) {
+            if (chance && Random.nextFloat() < 0.1 * (amount / 8f).coerceAtMost(2f)) {
                 stunProcess * 1.25
             }
             if (1 - stunProcess <= 1e-6) {
@@ -650,6 +660,10 @@ class MagicDragonEntity(
     }
 
     fun isDizzying() = dizzinessTick > 0
+
+    fun isSpawnShoutLocked(): Boolean {
+        return !dragonSpawnShout && phaseManager.getCurrentPhaseID() != DragonShoutPhase.ID
+    }
 
     private fun updateStunBossBar() {
         if (dizzinessTick > 0) {
@@ -683,7 +697,45 @@ class MagicDragonEntity(
         }
 
         if (wasDead || !attackedDeath) {
-            super.die(damageSource)
+            // 放一个大爆炸粒子 TODO
+            DragonDeathExplosionEmitter(boxCenterPosition(), level()).apply {
+                maxTick = 10
+                ParticleEmittersManager.spawnEmitters(this)
+            }
+
+            ServerSoundManager.instance(
+                UsefulMagicSoundEvents.DRAGON_MAGIC_BAN.get(), soundSource
+            )
+                .pitch(0.8f)
+                .visibleRange(256.0)
+                .volume(2f)
+                .bindToEntity(this)
+                .stopWhenBoundEntityMissing(false)
+                .uniqueKey()
+                .spawn()
+                .apply {
+                    submitTaskTimerServer(100) {
+                        fadeOut(20)
+                    }
+                }
+            serverLevelApply {
+                ServerCameraUtil
+                    .sendShake(
+                        it, boxCenterPosition(), 256.0, 8.0, 10
+                    )
+
+                it.players().filter { player -> player.distanceTo(this) <= 256.0 }
+                    .forEach { player ->
+                        UsefulMagicPostEffects.RGB_DASH_BLUR
+                            .play(player) { this.duration(10) }
+                    }
+
+            }
+
+            discard() // 直接消散，防止一个倒地破坏氛围
+            spawnAtLocation {
+                UsefulMagicItems.LIGHT_BEAM_MAGIC.getItem()
+            }
         }
         skillManager.setEntityDeath()
         SkillManagerManager.removeCache(skillManager.cacheUUID)
@@ -749,6 +801,33 @@ class MagicDragonEntity(
     fun getCombatTarget(): LivingEntity? {
         val current = target
         return if (current != null && current.isAlive && !current.isRemoved) current else null
+    }
+
+    /**
+     * 手动解析战斗目标。
+     * 龙体积巨大且在末地岛上常被地形遮挡，原版 NearestAttackableTargetGoal 的视线检测
+     * 几乎总是失败，导致 target 永远为 null。这里绕开视线检测，直接选择最近的合法玩家。
+     */
+    private fun resolveCombatTargetManually(): Player? {
+        val current = target as? Player
+        if (isValidCombatPlayer(current)) {
+            return current
+        }
+        val range = getAttributeValue(Attributes.FOLLOW_RANGE).coerceAtLeast(64.0)
+        val nearest = level().getEntitiesOfClass(Player::class.java, boundingBox.inflate(range)) {
+            isValidCombatPlayer(it)
+        }.minByOrNull { it.distanceToSqr(this) }
+        target = nearest
+        return nearest
+    }
+
+    private fun isValidCombatPlayer(player: Player?): Boolean {
+        return player != null &&
+                player.isAlive &&
+                !player.isRemoved &&
+                !player.isSpectator &&
+                !player.hasInfiniteMaterials() &&
+                this.distanceToSqr(player) <= 128.0 * 128.0
     }
 
     fun playAnimation(state: MagicDragonAnimationState) {
@@ -828,13 +907,6 @@ class MagicDragonEntity(
     fun createImpactVelocity(direction: Vec3, horizontalScale: Double, upwardBoost: Double): Vec3 {
         val push = if (direction.lengthSqr() <= 1.0E-6) Vec3.ZERO else direction.normalize().scale(horizontalScale)
         return Vec3(push.x, upwardBoost, push.z)
-    }
-
-    override fun dropCustomDeathLoot(level: ServerLevel, damageSource: DamageSource, recentlyHit: Boolean) {
-        super.dropCustomDeathLoot(level, damageSource, recentlyHit)
-        spawnAtLocation {
-            UsefulMagicItems.LIGHT_BEAM_MAGIC.getItem()
-        }
     }
 
     private fun resolveGeoAnimationState(): MagicDragonAnimationState? {

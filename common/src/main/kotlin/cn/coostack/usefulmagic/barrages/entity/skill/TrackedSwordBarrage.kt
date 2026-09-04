@@ -64,8 +64,8 @@ class TrackedSwordBarrage(
                 direction.normalize() * options.speed,
                 trackedTarget.boxCenterPosition(), 1.0,
                 16,
-                0.4,
-                2
+                4.0,
+                1
             )
             direction = nextV
             options.speed = nextV.length()
@@ -74,6 +74,7 @@ class TrackedSwordBarrage(
         }
         getBindControlerInstance<SwordComposition>().apply {
             direction = this@TrackedSwordBarrage.direction.asRelative()
+            markDirty()
         }
         super.tick()
     }

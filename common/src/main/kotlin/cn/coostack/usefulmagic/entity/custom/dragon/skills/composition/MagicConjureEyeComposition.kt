@@ -2,19 +2,19 @@ package cn.coostack.usefulmagic.entity.custom.dragon.skills.composition
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
+import cn.coostack.cooparticlesapi.cparticle.CParticleCurve
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComposition
 import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
-import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEnchantmentEffect
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionAlphaHelper
 import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionBezierScaleHelper
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
+import java.util.UUID
 import cn.coostack.cooparticlesapi.extend.*
 import kotlin.math.PI
 import kotlin.random.Random
@@ -28,12 +28,11 @@ class MagicConjureEyeComposition(position: Vec3, world: Level? = null) : AutoPar
     var direction: Vec3 = Vec3(0.0, 1.0, 0.0)
 
     private val scaleHelper = CompositionBezierScaleHelper(10, 0.01, 1.0, RelativeLocation(4.492099, 1.346079, 0.0), RelativeLocation(4.920993, 1.444882, 0.0))
+    private var alphaProgressTicks = 0
 
-    private val alphaHelper = CompositionAlphaHelper(0.0, 1.0, 10)
     init {
         axis = RelativeLocation(0.0, 1.0, 0.0)
         scaleHelper.loadControler(this)
-        alphaHelper.loadControler(this)
         setDisabledInterval(10)
     }
     override fun getParticles(): Map<CompositionData, RelativeLocation> {
@@ -133,14 +132,12 @@ class MagicConjureEyeComposition(position: Vec3, world: Level? = null) : AutoPar
                 .createWithCompositionData { rel ->
                     CompositionData()
                         .setDisplayerSupplier {
-                            ParticleDisplayer.withSingle(ControlableEndRodEffect(it))
+                            ParticleDisplayer.withCParticle(it)
                         }
-                        .addParticleInstanceInit {
+                        .addCParticleInstanceInit {
+                            effect = ControlableEndRodEffect(UUID.randomUUID())
                             size = 0.2F
                             color = this@MagicConjureEyeComposition.color
-                            textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
-                        }
-                        .addParticleControlerInstanceInit {
                         }
                 }
         )
@@ -151,13 +148,13 @@ class MagicConjureEyeComposition(position: Vec3, world: Level? = null) : AutoPar
                 .createWithCompositionData { rel ->
                     CompositionData()
                         .setDisplayerSupplier {
-                            ParticleDisplayer.withSingle(ControlableEnchantmentEffect(it))
+                            ParticleDisplayer.withCParticle(it)
                         }
-                        .addParticleInstanceInit {
+                        .addCParticleInstanceInit {
+                            effect = ControlableEnchantmentEffect(UUID.randomUUID())
                             size = 0.8F
                             color = this@MagicConjureEyeComposition.color
-                            currentAge = Random.nextInt(lifetime)
-                            textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
+                            age = Random.nextInt(maxAge)
                         }
                 }
         )
@@ -175,9 +172,13 @@ class MagicConjureEyeComposition(position: Vec3, world: Level? = null) : AutoPar
         addPreTickAction {
             scaleHelper.doScale()
             if (status.isDisable()) {
-                alphaHelper.decreaseAlpha()
+                playCParticleAlphaTransition(
+                    alphaProgressTicks.coerceAtLeast(1).toFloat(),
+                    CParticleCurve.linear(alphaProgressTicks / 10f, 0f)
+                )
             } else {
-                alphaHelper.increaseAlpha()
+                alphaProgressTicks = (alphaProgressTicks + 1).coerceAtMost(10)
+                playCParticleAlphaTransition(10f, CParticleCurve.linear(0f, 1f))
             }
             rotateToWithAngle(direction.asRelative(), 0.025465*PI)
         }

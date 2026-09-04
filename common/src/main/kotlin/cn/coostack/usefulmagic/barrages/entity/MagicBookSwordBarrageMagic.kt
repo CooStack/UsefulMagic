@@ -45,6 +45,7 @@ class MagicBookSwordBarrageMagic(
         super.tick()
         bindControl.get().runAsIfType<SwordComposition> {
             this.direction = this@MagicBookSwordBarrageMagic.direction.asRelative()
+            markDirty()
         }
         if (noclip()) return
         if (target == null) return
@@ -86,5 +87,4 @@ class MagicBookSwordBarrageMagic(
         return SwordComposition(loc, world)
     }
 }
-
 

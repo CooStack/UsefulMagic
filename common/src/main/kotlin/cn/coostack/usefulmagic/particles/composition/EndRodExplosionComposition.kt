@@ -1,12 +1,13 @@
-﻿package cn.coostack.usefulmagic.particles.composition
+package cn.coostack.usefulmagic.particles.composition
 
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComposition
+import cn.coostack.cooparticlesapi.cparticle.CParticleRenderLayer
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
+import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionBezierScaleHelper
-import net.minecraft.client.particle.ParticleRenderType
 import net.minecraft.util.Mth
 import java.util.UUID
 import kotlin.math.PI
@@ -127,28 +128,30 @@ class EndRodExplosionComposition(
 
             res.putAll(
                 builder.createWithCompositionData {
+                val particleMaxAge = if (randomMaxAge) {
+                    max(20, this@EndRodExplosionComposition.maxAge - random.nextInt(60)) - 10
+                } else {
+                    this@EndRodExplosionComposition.maxAge
+                }
                 CompositionData().setDisplayerSupplier {
-                        ParticleDisplayer.withSingle(
-                            ControlableEndRodEffect(it)
-                        )
-                    }.addParticleInstanceInit {
-                        colorOfRGB(
+                        ParticleDisplayer.withCParticle(it, CParticleRenderLayer.TRANSLUCENT)
+                    }.addCParticleInstanceInit {
+                        effect = ControlableEndRodEffect(UUID.randomUUID())
+                        color = Math3DUtil.colorOf(
                             this@EndRodExplosionComposition.r,
                             this@EndRodExplosionComposition.g,
                             this@EndRodExplosionComposition.b
                         )
                         this.size = particleSize
-                        if (randomMaxAge) {
-                            this.lifetime = max(20, this@EndRodExplosionComposition.maxAge - random.nextInt(60)) - 10
-                        } else {
-                            this.lifetime = this@EndRodExplosionComposition.maxAge
-                        }
-                        textureSheet = ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
-                    }.addParticleControlerInstanceInit {
+                        this.maxAge = particleMaxAge
+                    }.addCParticleControlerInstanceInit {
+                        var particleAge = 0
+                        var currentAlpha = 1f
                         addPreTickAction {
-                            this.currentAge++
-                            if (currentAge >= maxAge - 15) {
-                                particleAlpha *= 0.9f
+                            particleAge++
+                            if (particleAge >= particleMaxAge - 15) {
+                                currentAlpha *= 0.9f
+                                setAlpha(currentAlpha)
                             }
                         }
                     }

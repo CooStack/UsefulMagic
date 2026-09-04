@@ -1,5 +1,6 @@
-﻿package cn.coostack.usefulmagic.particles.composition.skill
+package cn.coostack.usefulmagic.particles.composition.skill
 
+import cn.coostack.cooparticlesapi.cparticle.CParticleRenderLayer
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComposition
 import cn.coostack.cooparticlesapi.network.particle.composition.ParticleShapeComposition
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
@@ -38,7 +39,9 @@ class TaiChiComposition(
                             }
                     ) {
                         CompositionData().setDisplayerSupplier {
-                            ParticleDisplayer.withSingle(ControlableEndRodEffect(it))
+                            ParticleDisplayer.withCParticle(it, CParticleRenderLayer.OPAQUE)
+                        }.addCParticleInstanceInit {
+                            effect = ControlableEndRodEffect(UUID.randomUUID())
                         }
                     }.applyBuilder(
                         PointsBuilder()
@@ -48,9 +51,10 @@ class TaiChiComposition(
                             }
                     ) {
                         CompositionData().setDisplayerSupplier {
-                            ParticleDisplayer.withSingle(ControlableEndRodEffect(it))
-                        }.addParticleInstanceInit {
-                            colorOfRGB(0, 0, 0)
+                            ParticleDisplayer.withCParticle(it, CParticleRenderLayer.OPAQUE)
+                        }.addCParticleInstanceInit {
+                            effect = ControlableEndRodEffect(UUID.randomUUID())
+                            color.set(0f, 0f, 0f)
                         }
                     }.applyBuilder(
                         PointsBuilder()
@@ -60,14 +64,18 @@ class TaiChiComposition(
                             .pointsOnEach { p -> p.x -= 1.5 }
                     ) {
                         CompositionData().setDisplayerSupplier {
-                            ParticleDisplayer.withSingle(ControlableEndRodEffect(it))
+                            ParticleDisplayer.withCParticle(it, CParticleRenderLayer.OPAQUE)
+                        }.addCParticleInstanceInit {
+                            effect = ControlableEndRodEffect(UUID.randomUUID())
                         }
                     }.applyBuilder(
                         PointsBuilder()
                             .addCircle(3.0, 240)
                     ) {
                         CompositionData().setDisplayerSupplier {
-                            ParticleDisplayer.withSingle(ControlableEndRodEffect(it))
+                            ParticleDisplayer.withCParticle(it, CParticleRenderLayer.OPAQUE)
+                        }.addCParticleInstanceInit {
+                            effect = ControlableEndRodEffect(UUID.randomUUID())
                         }
                     }
                     .loadScaleHelper(0.01, 1.0, 20)

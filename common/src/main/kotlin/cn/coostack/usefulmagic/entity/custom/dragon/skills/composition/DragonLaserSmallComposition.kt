@@ -2,19 +2,19 @@ package cn.coostack.usefulmagic.entity.custom.dragon.skills.composition
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
+import cn.coostack.cooparticlesapi.cparticle.CParticleCurve
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComposition
 import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
-import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEnchantmentEffect
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionAlphaHelper
 import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionBezierScaleHelper
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
+import java.util.UUID
 import kotlin.math.PI
 import kotlin.random.Random
 
@@ -28,12 +28,9 @@ class DragonLaserSmallComposition(position: Vec3, world: Level? = null) : AutoPa
 
     private val scaleHelper = CompositionBezierScaleHelper(10, 0.01, 1.0, RelativeLocation(5.609481, 1.082393, 0.0), RelativeLocation(1.670429, 1.250484, 0.0))
 
-    private val alphaHelper = CompositionAlphaHelper(0.0, 1.0, 10)
     init {
         axis = RelativeLocation.yAxis()
         scaleHelper.loadControler(this)
-        alphaHelper.loadControler(this)
-        alphaHelper.resetAlphaMax()
         setDisabledInterval(10)
     }
     override fun getParticles(): Map<CompositionData, RelativeLocation> {
@@ -52,12 +49,12 @@ class DragonLaserSmallComposition(position: Vec3, world: Level? = null) : AutoPa
                 .createWithCompositionData { rel ->
                     CompositionData()
                         .setDisplayerSupplier {
-                            ParticleDisplayer.withSingle(ControlableEndRodEffect(it))
+                            ParticleDisplayer.withCParticle(it)
                         }
-                        .addParticleInstanceInit {
+                        .addCParticleInstanceInit {
+                            effect = ControlableEndRodEffect(UUID.randomUUID())
                             size = 0.3F
                             color = this@DragonLaserSmallComposition.color
-                            textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
                         }
                 }
         )
@@ -68,13 +65,13 @@ class DragonLaserSmallComposition(position: Vec3, world: Level? = null) : AutoPa
                 .createWithCompositionData { rel ->
                     CompositionData()
                         .setDisplayerSupplier {
-                            ParticleDisplayer.withSingle(ControlableEnchantmentEffect(it))
+                            ParticleDisplayer.withCParticle(it)
                         }
-                        .addParticleInstanceInit {
+                        .addCParticleInstanceInit {
+                            effect = ControlableEnchantmentEffect(UUID.randomUUID())
                             size = 0.5F
                             color = this@DragonLaserSmallComposition.color
-                            currentAge = Random.nextInt(lifetime)
-                            textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
+                            age = Random.nextInt(maxAge)
                         }
                 }
         )
@@ -92,9 +89,7 @@ class DragonLaserSmallComposition(position: Vec3, world: Level? = null) : AutoPa
         addPreTickAction {
             scaleHelper.doScale()
             if (status.isDisable()) {
-                alphaHelper.decreaseAlpha()
-            } else {
-                alphaHelper.increaseAlpha()
+                playCParticleAlphaTransition(10f, CParticleCurve.linear(1f, 0f))
             }
             rotateToWithAngle(direction, 0.031831*PI)
         }

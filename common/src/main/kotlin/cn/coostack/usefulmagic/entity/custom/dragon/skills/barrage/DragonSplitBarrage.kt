@@ -64,6 +64,7 @@ class DragonSplitBarrage(loc: Vec3, world: ServerLevel, damage: Double, shooter:
                 tracked.direction = it.toVector().offsetRandomly(0.5).normalize()
                 // 朝着四周发散
                 tracked.options.enableSpeedWithOptions(0.8)
+                    .maxLivingTick(60)
                 BarrageManager.spawn(tracked)
             }
         hit(BarrageHitResult())
@@ -85,7 +86,6 @@ class DragonSplitBarrage(loc: Vec3, world: ServerLevel, damage: Double, shooter:
                 minCount = 10
                 maxCount = 30
             }
-//            this.right = Math3DUtil
         }
     }
 

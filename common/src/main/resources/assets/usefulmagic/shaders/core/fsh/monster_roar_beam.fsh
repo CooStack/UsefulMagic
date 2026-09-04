@@ -1,6 +1,7 @@
 #version 330 core
 
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out vec4 MaskColor;
 
 in vec3 localCoord;
 
@@ -14,9 +15,15 @@ uniform float noiseStrength = 0.6;
 uniform float lifetime = 18.0;
 uniform float fadeTicks = 7.0;
 uniform float time = 0.0;
+uniform int renderTarget = 2;
 
 float saturate(float value) {
     return clamp(value, 0.0, 1.0);
+}
+
+void outputColor(vec4 value) {
+    FragColor = renderTarget != 1 ? value : vec4(0.0);
+    MaskColor = renderTarget != 0 ? value : vec4(0.0);
 }
 
 float hash21(vec2 p) {
@@ -83,5 +90,5 @@ void main() {
     finalColor += coreColor * (throatGlow * 1.32 + airWobble * 0.36);
     finalColor *= brightness;
 
-    FragColor = vec4(finalColor, finalAlpha);
+    outputColor(vec4(finalColor, finalAlpha));
 }

@@ -39,7 +39,7 @@ import kotlin.random.Random
  *  2. 最后一次冲刺 使用大激光 （远离，跟随, 淡入眼睛）
  */
 class DragonMultiImpactSkill : DragonSkill() {
-    override var chance: Double = 0.25
+    override var chance: Double = 0.5
 
     companion object {
         const val ID = "dragon_multi_impact_skill"
@@ -173,7 +173,7 @@ class DragonMultiImpactSkill : DragonSkill() {
     }
 
     override fun canTrigger(entity: MagicDragonEntity): Boolean {
-        return super.canTrigger(entity) && entity.health <= entity.dragonMaxHealth * 0.7
+        return super.canTrigger(entity) && entity.health <= entity.dragonMaxHealth * 0.4
     }
 
     override fun testCancel(entity: MagicDragonEntity): Boolean {
@@ -248,7 +248,7 @@ class DragonMultiImpactSkill : DragonSkill() {
                 updateBeam(start, end)
                 this.maxRadius = 0.4f
                 this.color = Math3DUtil.colorOf(255, 100, 255)
-                this.brightness = 0.8f
+                this.brightness = 1.1f
                 this.phaseTicks = 2
                 this.lifetime = 2
                 ServerRenderEntityManager.spawn(this)

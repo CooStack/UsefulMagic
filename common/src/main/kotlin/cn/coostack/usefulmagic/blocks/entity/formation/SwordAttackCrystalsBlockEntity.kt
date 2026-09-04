@@ -1,7 +1,6 @@
-﻿package cn.coostack.usefulmagic.blocks.entity.formation
+package cn.coostack.usefulmagic.blocks.entity.formation
 
 import cn.coostack.cooparticlesapi.barrages.BarrageManager
-import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.barrages.SwordAttackFormationBarrage
@@ -12,8 +11,8 @@ import cn.coostack.usefulmagic.formation.api.FormationTargetOption
 import cn.coostack.usefulmagic.formation.target.BarrageTargetOption
 import cn.coostack.usefulmagic.formation.target.ProjectileEntityTargetOption
 import cn.coostack.usefulmagic.particles.composition.EndRodSwordComposition
-import cn.coostack.usefulmagic.particles.style.formation.crystal.CrystalStyle
-import cn.coostack.usefulmagic.particles.style.formation.crystal.SwordAttackCrystalStyle
+import cn.coostack.usefulmagic.particles.composition.formation.crystal.CrystalComposition
+import cn.coostack.usefulmagic.particles.composition.formation.crystal.SwordAttackCrystalComposition
 import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.ClientGamePacketListener
@@ -40,13 +39,13 @@ class SwordAttackCrystalsBlockEntity(pos: BlockPos, state: BlockState) :
         set(value) {
         }
 
-    var style: CrystalStyle? = null
+    var style: CrystalComposition? = null
     override fun onFormationActive(formation: BlockFormation) {
         this.activeFormation = formation
         if (level!!.isClientSide) return
-        style = SwordAttackCrystalStyle()
+        style = SwordAttackCrystalComposition()
         style!!.crystalPos = worldPosition
-        ParticleStyleManager.spawnStyle(level!!, worldPosition.center.add(0.0, -0.4, 0.0), style!!)
+        style!!.spawn(level!!, worldPosition.center.add(0.0, -0.4, 0.0))
     }
 
     val random = Random(System.nanoTime())

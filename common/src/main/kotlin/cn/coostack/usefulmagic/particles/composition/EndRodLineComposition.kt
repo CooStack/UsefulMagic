@@ -1,12 +1,13 @@
-﻿package cn.coostack.usefulmagic.particles.composition
+package cn.coostack.usefulmagic.particles.composition
 
 import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComposition
+import cn.coostack.cooparticlesapi.cparticle.CParticleRenderLayer
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
+import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import net.minecraft.client.particle.ParticleRenderType
 import net.minecraft.world.phys.Vec3
 import java.util.UUID
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
@@ -35,19 +36,15 @@ class EndRodLineComposition(
             .addLine(RelativeLocation().remove(endDir), end.clone().add(endDir), count)
             .createWithCompositionData {
                 CompositionData().setDisplayerSupplier {
-                    ParticleDisplayer.withSingle(ControlableEndRodEffect(it))
-                }.addParticleInstanceInit {
-                    colorOfRGB(
+                    ParticleDisplayer.withCParticle(it, CParticleRenderLayer.TRANSLUCENT)
+                }.addCParticleInstanceInit {
+                    effect = ControlableEndRodEffect(UUID.randomUUID())
+                    color = Math3DUtil.colorOf(
                         this@EndRodLineComposition.color.x.toInt(),
                         this@EndRodLineComposition.color.y.toInt(),
                         this@EndRodLineComposition.color.z.toInt()
                     )
-                    this.lifetime = this@EndRodLineComposition.maxAge
-                    textureSheet = ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
-                }.addParticleControlerInstanceInit {
-                    addPreTickAction {
-                        this.currentAge = age
-                    }
+                    this.maxAge = this@EndRodLineComposition.maxAge
                 }
             }
     }

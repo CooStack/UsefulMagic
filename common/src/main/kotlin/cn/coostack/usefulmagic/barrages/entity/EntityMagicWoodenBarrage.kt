@@ -4,12 +4,10 @@ import cn.coostack.cooparticlesapi.api.controler.server.ServerControler
 import cn.coostack.cooparticlesapi.barrages.BarrageHitResult
 import cn.coostack.cooparticlesapi.barrages.BarrageOption
 import cn.coostack.cooparticlesapi.barrages.HitBox
-import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.network.particle.util.ServerParticleUtil
 import cn.coostack.cooparticlesapi.particles.impl.ControlableFireworkEffect
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
-import cn.coostack.usefulmagic.barrages.api.EntityMagicDamagedBarrage
 import cn.coostack.usefulmagic.particles.composition.SingleBarrageComposition
 import cn.coostack.usefulmagic.particles.emitters.magic.BarrageTailEmitter
 import cn.coostack.usefulmagic.utils.FriendFilterHelper
@@ -48,7 +46,7 @@ class EntityMagicWoodenBarrage(
 
     val emitter = BarrageTailEmitter(loc, world)
         .apply {
-            template.color = Math3DUtil.colorOf(255, 100, 100)
+            left = Math3DUtil.colorOf(255, 100, 100)
             template.maxAge = 30
             template.effect = ControlableFireworkEffect(template.uuid)
             maxTick = -1

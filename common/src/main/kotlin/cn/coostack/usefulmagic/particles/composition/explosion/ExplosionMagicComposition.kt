@@ -1,4 +1,4 @@
-﻿package cn.coostack.usefulmagic.particles.composition.explosion
+package cn.coostack.usefulmagic.particles.composition.explosion
 
 import cn.coostack.cooparticlesapi.network.particle.composition.ParticleShapeComposition
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoSequencedParticleComposition
@@ -17,9 +17,8 @@ import java.util.UUID
 import kotlin.math.PI
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.annotations.CodecField
+import cn.coostack.cooparticlesapi.cparticle.CParticleCurve
 import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
-import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
-import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionAlphaHelper
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 
@@ -39,14 +38,9 @@ class ExplosionMagicComposition(
 
     @CodecField
     var maxAge = 240
-    val alphaHelper = CompositionAlphaHelper(
-        0.01, 1.0, 20,
-    )
 
     init {
         setDisabledInterval(30)
-        alphaHelper.loadControler(this)
-        alphaHelper.resetAlphaMax()
     }
 
     override fun remove() {
@@ -108,11 +102,12 @@ class ExplosionMagicComposition(
                 status.setStatus(2)
             }
             if (status.displayStatus == 2) {
-                alphaHelper.decreaseAlpha()
+                playCParticleAlphaTransition(20f, CParticleCurve.linear(1f, 0.01f))
                 toggleRelative()
             }
             if ((age - 1) % 5 == 0 && !client) {
                 addSingle()
+                markDirty()
             }
         }
     }
@@ -230,13 +225,13 @@ class ExplosionMagicComposition(
 
     }
 
-    private fun genSingle(effect: ControlableParticleEffect, color: Vec3i, scale: Float = 0.2f): CompositionData {
+    private fun genSingle(particleEffect: ControlableParticleEffect, color: Vec3i, scale: Float = 0.2f): CompositionData {
         return CompositionData().setDisplayerSupplier {
-            ParticleDisplayer.withSingle(effect.clone().apply { this.controlUUID = it })
-        }.addParticleInstanceInit {
-            this.colorOfRGB(color.x, color.y, color.z)
+            ParticleDisplayer.withCParticle(it)
+        }.addCParticleInstanceInit {
+            effect = particleEffect.clone()
+            this.color = Math3DUtil.colorOf(color.x, color.y, color.z)
             this.size = scale
-            this.textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
         }
     }
 

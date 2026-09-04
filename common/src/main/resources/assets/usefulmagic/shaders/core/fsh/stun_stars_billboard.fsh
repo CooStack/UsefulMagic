@@ -1,6 +1,7 @@
 #version 330 core
 
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out vec4 MaskColor;
 
 in vec2 vUv;
 in vec2 vLocal;
@@ -12,9 +13,15 @@ uniform float brightness = 1.0;
 uniform float mode = 0.0;
 uniform float time = 0.0;
 uniform float trailFade = 1.0;
+uniform int renderTarget = 2;
 
 float saturate(float value) {
     return clamp(value, 0.0, 1.0);
+}
+
+void outputColor(vec4 value) {
+    FragColor = renderTarget != 1 ? value : vec4(0.0);
+    MaskColor = renderTarget != 0 ? value : vec4(0.0);
 }
 
 void main() {
@@ -36,5 +43,5 @@ void main() {
     }
 
     vec3 finalColor = mix(color, color * sprite, 0.58) * brightness;
-    FragColor = vec4(finalColor, finalAlpha);
+    outputColor(vec4(finalColor, finalAlpha));
 }

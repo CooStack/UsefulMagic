@@ -7,7 +7,7 @@ import cn.coostack.cooparticlesapi.barrages.HitBox
 import cn.coostack.cooparticlesapi.utils.PhysicsUtil
 import cn.coostack.usefulmagic.barrages.api.EntityMagicDamagedBarrage
 import cn.coostack.usefulmagic.extend.boxCenterPosition
-import cn.coostack.usefulmagic.particles.composition.magic.SwordQiComposition
+import cn.coostack.usefulmagic.particles.composition.magic.attack.SwordQiComposition
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
 import cn.coostack.usefulmagic.utils.FriendFilterHelper
 import net.minecraft.core.BlockPos
@@ -77,6 +77,7 @@ class SwordQiBarrage(loc: Vec3, world: ServerLevel, damage: Double, shooter: Liv
         }
         val composition = bindControl.get() as SwordQiComposition
         composition.movement = direction.asRelative()
+        composition.markDirty()
         super.tick()
     }
 

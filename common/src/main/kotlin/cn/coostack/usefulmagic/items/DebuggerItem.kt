@@ -23,7 +23,6 @@ import cn.coostack.usefulmagic.particles.composition.explosion.ExplosionMagicBal
 import cn.coostack.usefulmagic.particles.composition.explosion.ExplosionMagicComposition
 import cn.coostack.usefulmagic.particles.composition.explosion.ExplosionStarComposition
 import cn.coostack.usefulmagic.particles.emitters.explosion.ExplosionLineEmitters
-import cn.coostack.usefulmagic.renderer.BillboardStarRenderEntity
 import cn.coostack.usefulmagic.renderer.MeteoriteAtmosphereFireRenderEntity
 import cn.coostack.usefulmagic.renderer.SkyFallingRenderEntity
 import net.minecraft.core.BlockPos
@@ -122,11 +121,7 @@ class DebuggerItem : Item(Properties()) {
                     阵法是否激活: ${entity.formation.isActiveFormation()}
                     阵法是否可激活: ${entity.formation.canBeFormation()}
                     阵法中水晶个数: ${entity.formation.activeCrystals.size}
-                    阵法激活主人: ${
-                    if (entity.formation.owner == null) "" else {
-                        world.server.playerList.getPlayer(entity.formation.owner)?.name
-                    }
-                }
+                    阵法激活主人: ${entity.formation.owner?.let{ world.server.playerList.getPlayer(it) } ?: ""}
                     阵法范围: ${entity.formation.getFormationTriggerRange()}
                   
                 """.trimIndent()
@@ -187,6 +182,7 @@ class DebuggerItem : Item(Properties()) {
         ParticleEmittersManager.spawnEmitters(emitters)
         CooParticlesAPI.scheduler.runTaskTimerMaxTick(1, 160) {
             emitters.targetPoint = user.eyePosition.add(user.forward.normalize().scale(3.0))
+            emitters.markDirty()
         }
     }
 

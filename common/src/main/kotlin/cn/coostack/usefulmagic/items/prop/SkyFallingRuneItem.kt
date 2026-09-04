@@ -1,15 +1,14 @@
-﻿package cn.coostack.usefulmagic.items.prop
+package cn.coostack.usefulmagic.items.prop
 
 import cn.coostack.cooparticlesapi.CooParticlesAPI
-import cn.coostack.cooparticlesapi.extend.ofFloored
-import cn.coostack.cooparticlesapi.extend.relativize
+import cn.coostack.cooparticlesapi.data.cache.CacheKey
+import cn.coostack.cooparticlesapi.network.particle.composition.manager.ParticleCompositionManager
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleManager
 import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
 import cn.coostack.cooparticlesapi.renderer.server.ServerRenderEntityManager
 import cn.coostack.cooparticlesapi.scheduler.CooScheduler
-import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
+import cn.coostack.cooparticlesapi.utils.ServerCameraUtil
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.blocks.entity.formation.EnergyCrystalsBlockEntity
 import cn.coostack.usefulmagic.effects.UsefulMagicEffects
@@ -17,41 +16,39 @@ import cn.coostack.usefulmagic.formation.CrystalFormation
 import cn.coostack.usefulmagic.formation.api.BlockFormation
 import cn.coostack.usefulmagic.formation.api.DefendCrystal
 import cn.coostack.usefulmagic.formation.target.LivingEntityTargetOption
+import cn.coostack.usefulmagic.gamerules.UsefulMagicGameRules
 import cn.coostack.usefulmagic.managers.server.ServerFormationManager
 import cn.coostack.usefulmagic.particles.emitters.ExplodeMagicEmitters
 import cn.coostack.usefulmagic.particles.emitters.explosion.ExplosionAnimateLaserMagicEmitters
 import cn.coostack.usefulmagic.particles.emitters.explosion.ExplosionWaveEmitters
-import cn.coostack.usefulmagic.particles.fall.style.GuildCircleStyle
-import cn.coostack.usefulmagic.particles.fall.style.SkyFallingStyle
+import cn.coostack.usefulmagic.particles.fall.composition.GuideCircleComposition
+import cn.coostack.usefulmagic.particles.fall.composition.SkyFallingComposition
 import cn.coostack.usefulmagic.renderer.SkyFallingRenderEntity
 import cn.coostack.usefulmagic.sounds.UsefulMagicSoundEvents
-import cn.coostack.usefulmagic.utils.UsefulMagicFlightController
 import cn.coostack.usefulmagic.utils.MathUtil
+import cn.coostack.usefulmagic.utils.UsefulMagicFlightController
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.sounds.SoundSource
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResultHolder
+import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.RelativeMovement
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.item.Item
-import net.minecraft.world.item.ItemStack
-import net.minecraft.server.level.ServerPlayer
-import net.minecraft.server.level.ServerLevel
-import net.minecraft.sounds.SoundSource
-import net.minecraft.sounds.SoundEvents
-import net.minecraft.network.chat.Component
-import net.minecraft.world.InteractionHand
-import net.minecraft.world.InteractionResultHolder
-import net.minecraft.world.effect.MobEffectInstance
-import net.minecraft.world.effect.MobEffects
-import net.minecraft.world.item.Rarity
-import net.minecraft.world.phys.Vec3
+import net.minecraft.world.item.*
 import net.minecraft.world.level.Level
-import net.minecraft.world.item.TooltipFlag
-import net.minecraft.world.item.UseAnim
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.AABB
+import net.minecraft.world.phys.Vec3
+import cn.coostack.cooparticlesapi.extend.*
 import java.util.*
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -65,14 +62,28 @@ import kotlin.math.roundToInt
  */
 class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
     companion object {
-        private val playerGuildStyles = HashMap<UUID, GuildCircleStyle>()
-        const val knockbackHitDamage = 100f
-        const val hitDamage = 200f
+        const val KNOCKBACK_HIT_DAMAGE = 100f
+        const val HIT_DAMAGE = 200f
         const val EXPLOSION_MAX_RADIUS = 48
         private const val PROTECTED_BLOCK_DAMAGE = 0.5f
         private const val FORMATION_MANA_PER_DAMAGE = 10f
         val playerTasks = HashMap<UUID, MutableList<CooScheduler.TickRunnable>>()
-        val playerMagicStyles = HashMap<UUID, SkyFallingStyle>()
+
+        @JvmField
+        val GUIDE_COMPOSITION = CacheKey.of<GuideCircleComposition>(
+            ResourceLocation.fromNamespaceAndPath(
+                UsefulMagic.MOD_ID,
+                "guide_composition"
+            )
+        )
+
+        @JvmField
+        val SKY_FALLING_COMPOSITION = CacheKey.of<SkyFallingComposition>(
+            ResourceLocation.fromNamespaceAndPath(
+                UsefulMagic.MOD_ID,
+                "sky_falling_composition"
+            )
+        )
 
         @JvmStatic
         fun getTargetLocation(user: Player): Vec3 {
@@ -141,18 +152,24 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
         val world = world as ServerLevel
         val entity = entity as ServerPlayer
 
-        var style = playerGuildStyles.getOrPut(entity.uuid) {
-            GuildCircleStyle()
+        var composition = entity.cacher.getOrCreate(GUIDE_COMPOSITION) {
+            GuideCircleComposition(getTargetLocation(entity), entity.level())
         }
-        style.bindPlayer = entity.uuid
-        if (!style.isValid()) {
-            style = GuildCircleStyle()
-            playerGuildStyles[entity.uuid] = style
-            ParticleStyleManager.spawnStyle(world, getTargetLocation(entity), style)
+        if (composition.bindPlayer != entity.uuid) {
+            composition.bindPlayer = entity.uuid
+            if (composition.displayed) {
+                composition.markDirty()
+            }
+        }
+        if (!composition.isValid()) {
+            composition = GuideCircleComposition(getTargetLocation(entity), entity.level())
+            composition.bindPlayer = entity.uuid
+            entity.cacher[GUIDE_COMPOSITION] = composition
+            ParticleCompositionManager.spawn(composition)
             return
         }
-        if (!style.displayed) {
-            ParticleStyleManager.spawnStyle(world, getTargetLocation(entity), style)
+        if (!composition.displayed) {
+            ParticleCompositionManager.spawn(composition)
             return
         }
     }
@@ -189,11 +206,11 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
             10f, 1f
         )
         val world = world as ServerLevel
-        if (!playerMagicStyles.containsKey(user.uuid) || !(playerMagicStyles[user.uuid]?.isValid() ?: false)) {
-            val style = SkyFallingStyle()
-            style.bindPlayer = user.uuid
-            ParticleStyleManager.spawnStyle(world, user.position(), style)
-            playerMagicStyles[user.uuid] = style
+        if (!(user.cacher[SKY_FALLING_COMPOSITION]?.isValid() ?: false)) {
+            val composition = SkyFallingComposition(user.position(), world)
+            composition.bindPlayer = user.uuid
+            ParticleCompositionManager.spawn(composition)
+            user.cacher[SKY_FALLING_COMPOSITION] = composition
         }
         // 设置target
         val target = getTargetLocation(user)
@@ -246,7 +263,7 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
             return InteractionResultHolder.fail(user.getItemInHand(hand))
         }
         // 防止重复执行（然后第二个无效）
-        val styleAlive = playerMagicStyles.containsKey(user.uuid) && playerMagicStyles[user.uuid]?.isValid() ?: false
+        val styleAlive = user.cacher[SKY_FALLING_COMPOSITION]?.isValid() ?: false
         val taskAlive = (playerTasks[user.uuid] ?: ArrayList()).all { it.canceled }
         if (styleAlive && taskAlive) {
             return super.use(world, user, hand)
@@ -293,17 +310,29 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
             // 4.0
             it.deltaMovement = dir
             it.hurtMarked = true
-            val source = world.damageSources().playerAttack(user)
-            it.hurt(source, knockbackHitDamage)
         }
         hitEntity.forEach {
             val dir = target.relativize(it.position()).normalize().scale(0.5)
             // 5.0
             it.deltaMovement = dir
             it.hurtMarked = true
-            val source = world.damageSources().playerAttack(user)
-            it.hurt(source, 2048f)
         }
+        applyDamageWithFormationProtection(
+            world,
+            user,
+            knockbackAndHitEntity.map { it to KNOCKBACK_HIT_DAMAGE } + hitEntity.map { it to 2048f },
+            formationDamage = { formation ->
+                val distance = max(
+                    0.0,
+                    formation.formationCore.distanceTo(target) - formation.getFormationTriggerRange()
+                )
+                when {
+                    distance <= 24.0 -> 2048f / 5
+                    distance <= 36.0 -> KNOCKBACK_HIT_DAMAGE / 5
+                    else -> null
+                }
+            }
+        )
 
         var currentRadius = 1
         val protectedBlocks = HashSet<BlockPos>()
@@ -329,14 +358,73 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
             applyProtectedFormationDamage(protectedBlockCounts, user)
         }
         CooParticlesAPI.scheduler.runTaskTimerMaxTick(5, 8 * 20) {
-            world.getEntitiesOfClass(LivingEntity::class.java, AABB.ofSize(target, 96.0, 96.0, 96.0)) {
+            val attackBox = AABB.ofSize(target, 96.0, 96.0, 96.0)
+            val hitEntities = world.getEntitiesOfClass(
+                LivingEntity::class.java,
+                attackBox
+            ) {
                 !data.isFriend(it.uuid) && it.uuid != user.uuid
-            }.forEach {
-                val playerAttack = it.damageSources().playerAttack(user)
-                it.hurt(playerAttack, hitDamage / 8)
-                it.invulnerableTime = 0
+            }
+            applyDamageWithFormationProtection(
+                world,
+                user,
+                hitEntities.map { it to HIT_DAMAGE / 8 },
+                formationDamage = { formation ->
+                    if (intersectsFormation(attackBox, formation)) HIT_DAMAGE / 8 / 5 else null
+                },
+                resetInvulnerableTime = true
+            )
+        }
+    }
+
+    private fun applyDamageWithFormationProtection(
+        world: ServerLevel,
+        user: ServerPlayer,
+        targets: Iterable<Pair<LivingEntity, Float>>,
+        formationDamage: (BlockFormation) -> Float?,
+        resetInvulnerableTime: Boolean = false
+    ) {
+        val attacker = LivingEntityTargetOption(user, false)
+        val blockingFormations = ServerFormationManager.activeFormations.values.mapNotNull { formation ->
+            if (formation.world !== world ||
+                formation.owner == user.uuid ||
+                !formation.isActiveFormation() ||
+                !formation.hasCrystalType(DefendCrystal::class.java) ||
+                formation.isFriendly(attacker)
+            ) {
+                return@mapNotNull null
+            }
+            formationDamage(formation)?.let { formation to it }
+        }
+
+        blockingFormations.forEach { (formation, damage) ->
+            formation.attack(damage, null, formation.formationCore)
+        }
+
+        val source = world.damageSources().playerAttack(user)
+        targets.forEach { (entity, damage) ->
+            if (blockingFormations.any { (formation) ->
+                    formation.formationCore.distanceTo(entity.position()) <= formation.getFormationTriggerRange()
+                }
+            ) {
+                return@forEach
+            }
+            entity.hurt(source, damage)
+            if (resetInvulnerableTime) {
+                entity.invulnerableTime = 0
             }
         }
+    }
+
+    private fun intersectsFormation(box: AABB, formation: BlockFormation): Boolean {
+        val core = formation.formationCore
+        val closest = Vec3(
+            core.x.coerceIn(box.minX, box.maxX),
+            core.y.coerceIn(box.minY, box.maxY),
+            core.z.coerceIn(box.minZ, box.maxZ)
+        )
+        val range = formation.getFormationTriggerRange()
+        return core.distanceToSqr(closest) <= range * range
     }
 
     private fun lockPlayerPosition(user: ServerPlayer, pos: Vec3) {
@@ -344,8 +432,8 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
             pos.x,
             pos.y,
             pos.z,
-            user.getYRot(),
-            user.getXRot(),
+            user.yRot,
+            user.xRot,
             RelativeMovement.ROTATION
         )
         user.deltaMovement = Vec3.ZERO
@@ -360,6 +448,8 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
         protectedBlocks: MutableSet<BlockPos>,
         protectedBlockCounts: MutableMap<BlockFormation, Int>
     ) {
+        // 魔法地形破坏关闭时, 跳过整段方块清除(实体伤害已在调用前单独结算)。
+        if (!UsefulMagicGameRules.canDestroyTerrain(world)) return
         val attacker = LivingEntityTargetOption(user, false)
         val solidBall = MathUtil.getSolidBall(currentRadius).map {
             ofFloored((it + RelativeLocation.of(center)).toVector())
@@ -399,7 +489,8 @@ class SkyFallingRuneItem : Item(Properties().stacksTo(16).rarity(Rarity.EPIC)) {
             if (requiredMana <= 0) return@forEach
 
             val defendCrystal = formation.activeCrystals.firstOrNull { it is DefendCrystal }
-            val currentMana = formation.activeCrystals.filterIsInstance<EnergyCrystalsBlockEntity>().sumOf { it.currentMana }
+            val currentMana =
+                formation.activeCrystals.filterIsInstance<EnergyCrystalsBlockEntity>().sumOf { it.currentMana }
 
             if (defendCrystal != null && currentMana >= requiredMana) {
                 formation.transformMana(defendCrystal, requiredMana)

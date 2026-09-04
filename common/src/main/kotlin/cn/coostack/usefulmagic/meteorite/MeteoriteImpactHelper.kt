@@ -3,6 +3,7 @@ package cn.coostack.usefulmagic.meteorite
 import cn.coostack.cooparticlesapi.extend.ofFloored
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.usefulmagic.formation.api.DefendCrystal
+import cn.coostack.usefulmagic.gamerules.UsefulMagicGameRules
 import cn.coostack.usefulmagic.formation.target.LivingEntityTargetOption
 import cn.coostack.usefulmagic.managers.server.ServerFormationManager
 import cn.coostack.usefulmagic.utils.MathUtil
@@ -28,6 +29,24 @@ object MeteoriteImpactHelper {
             pendingBlocks.addLast(it)
         }
         return ((pendingBlocks.size + 9) / 10).coerceAtLeast(1)
+    }
+
+    /**
+     * 带世界参数的重载: 当魔法地形破坏被关闭时, 不收集任何方块, 直接返回空队列。
+     * 实体伤害由各调用方单独结算, 不受影响。
+     */
+    fun queueImpactExplosion(
+        world: ServerLevel,
+        pendingBlocks: ArrayDeque<BlockPos>,
+        radius: Int,
+        center: Vec3,
+        impactDir: Vec3
+    ): Int {
+        if (!UsefulMagicGameRules.canDestroyTerrain(world)) {
+            pendingBlocks.clear()
+            return 1
+        }
+        return queueImpactExplosion(pendingBlocks, radius, center, impactDir)
     }
 
     fun processPendingExplosion(
@@ -120,6 +139,7 @@ object MeteoriteImpactHelper {
     }
 
     private fun breakImpactBlock(world: ServerLevel, pos: BlockPos, source: LivingEntity) {
+        if (!UsefulMagicGameRules.canDestroyTerrain(world)) return
         if (!world.hasChunk(pos.x shr 4, pos.z shr 4)) return
         val center = Vec3.atCenterOf(pos)
         val formation = ServerFormationManager.getFormationFromPos(center, world)

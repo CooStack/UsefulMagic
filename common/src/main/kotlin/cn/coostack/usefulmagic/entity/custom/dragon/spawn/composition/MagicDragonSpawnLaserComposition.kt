@@ -2,20 +2,20 @@ package cn.coostack.usefulmagic.entity.custom.dragon.spawn.composition
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
+import cn.coostack.cooparticlesapi.cparticle.CParticleCurve
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComposition
 import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
 import cn.coostack.cooparticlesapi.network.particle.composition.ParticleShapeComposition
-import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEnchantmentEffect
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionAlphaHelper
 import cn.coostack.cooparticlesapi.utils.helper.impl.composition.CompositionBezierScaleHelper
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
+import java.util.UUID
 import kotlin.math.PI
 import kotlin.random.Random
 
@@ -36,13 +36,9 @@ class MagicDragonSpawnLaserComposition(position: Vec3, world: Level? = null) :
         RelativeLocation(3.848758, 1.119329, 0.0)
     )
 
-    private val alphaHelper = CompositionAlphaHelper(0.0, 1.0, 10)
-
     init {
         axis = RelativeLocation.yAxis()
         scaleHelper.loadControler(this)
-        alphaHelper.loadControler(this)
-        alphaHelper.resetAlphaMax()
         setDisabledInterval(20)
     }
 
@@ -322,12 +318,12 @@ class MagicDragonSpawnLaserComposition(position: Vec3, world: Level? = null) :
                             ) { shapeRel1 ->
                                 CompositionData()
                                     .setDisplayerSupplier {
-                                        ParticleDisplayer.withSingle(ControlableEndRodEffect(it))
+                                        ParticleDisplayer.withCParticle(it)
                                     }
-                                    .addParticleInstanceInit {
+                                    .addCParticleInstanceInit {
+                                        effect = ControlableEndRodEffect(UUID.randomUUID())
                                         size = 0.18F
                                         color = this@MagicDragonSpawnLaserComposition.color
-                                        textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
                                     }
                             }
                             loadScaleHelperBezierValue(
@@ -359,13 +355,13 @@ class MagicDragonSpawnLaserComposition(position: Vec3, world: Level? = null) :
                             ) { shapeRel1 ->
                                 CompositionData()
                                     .setDisplayerSupplier {
-                                        ParticleDisplayer.withSingle(ControlableEnchantmentEffect(it))
+                                        ParticleDisplayer.withCParticle(it)
                                     }
-                                    .addParticleInstanceInit {
+                                    .addCParticleInstanceInit {
+                                        effect = ControlableEnchantmentEffect(UUID.randomUUID())
                                         size = 0.5F
                                         color = this@MagicDragonSpawnLaserComposition.color
-                                        currentAge = Random.nextInt(lifetime)
-                                        textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
+                                        age = Random.nextInt(maxAge)
                                     }
                             }
                             loadScaleHelperBezierValue(
@@ -400,9 +396,7 @@ class MagicDragonSpawnLaserComposition(position: Vec3, world: Level? = null) :
         addPreTickAction {
             scaleHelper.doScale()
             if (status.isDisable()) {
-                alphaHelper.decreaseAlpha()
-            } else {
-                alphaHelper.increaseAlpha()
+                playCParticleAlphaTransition(10f, CParticleCurve.linear(1f, 0f))
             }
             toggleRelative()
         }

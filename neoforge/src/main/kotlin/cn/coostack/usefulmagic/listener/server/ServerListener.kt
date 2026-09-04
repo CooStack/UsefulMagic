@@ -1,11 +1,13 @@
 package cn.coostack.usefulmagic.listener.server
 
 import cn.coostack.usefulmagic.UsefulMagic
+import cn.coostack.usefulmagic.command.UsefulMagicCommands
 import cn.coostack.usefulmagic.extend.isOf
 import cn.coostack.usefulmagic.items.UsefulMagicItems
 import cn.coostack.usefulmagic.platform.FuelHelper
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.common.EventBusSubscriber
+import net.neoforged.neoforge.event.RegisterCommandsEvent
 import net.neoforged.neoforge.event.furnace.FurnaceFuelBurnTimeEvent
 import net.neoforged.neoforge.event.server.ServerStartedEvent
 import net.neoforged.neoforge.event.tick.ServerTickEvent
@@ -21,6 +23,11 @@ object ServerListener {
     @SubscribeEvent
     fun onServerStart(event: ServerStartedEvent) {
         UsefulMagic.setupServer(event.server)
+    }
+
+    @SubscribeEvent
+    fun onRegisterCommands(event: RegisterCommandsEvent) {
+        UsefulMagicCommands.initCommand(event.dispatcher)
     }
 
     @SubscribeEvent

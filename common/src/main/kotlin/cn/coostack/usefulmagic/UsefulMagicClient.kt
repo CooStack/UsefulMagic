@@ -3,9 +3,11 @@ package cn.coostack.usefulmagic
 import cn.coostack.cooparticlesapi.CooParticlesAPIClient
 import cn.coostack.cooparticlesapi.CooShaderReloadSupport
 import cn.coostack.cooparticlesapi.key.CooKeyBindingManager
+import cn.coostack.cooparticlesapi.key.CooKeyBindingTriggerScope
 import cn.coostack.cooparticlesapi.renderer.client.ClientRenderPipelineManager
 import cn.coostack.cooparticlesapi.renderer.shader.ShaderReloadSignal
 import cn.coostack.usefulmagic.gui.friend.FriendManagerScreen
+import cn.coostack.usefulmagic.gui.magicexchange.MagicExchangeOverlay
 import cn.coostack.usefulmagic.renderer.UsefulMagicRenderTypes
 import cn.coostack.usefulmagic.renderer.UsefulMagicShaderPipelines
 import cn.coostack.usefulmagic.utils.ParticleOption
@@ -14,6 +16,7 @@ import net.minecraft.client.KeyMapping
 import net.minecraft.client.Minecraft
 
 object UsefulMagicClient {
+    const val KEY_CATEGORY = "category.usefulmagic.keys"
     lateinit var friendUIBinding: KeyMapping
     private var renderEntitiesInitialized = false
     private var renderEntitiesPendingInit = false
@@ -26,7 +29,14 @@ object UsefulMagicClient {
         renderEntitiesPendingInit = true
         CooKeyBindingManager.register(
             UsefulMagicKeys.CHARGE_MAGIC, InputConstants.Type.MOUSE,
-            InputConstants.MOUSE_BUTTON_RIGHT, "category.usefulmagic.keys"
+            InputConstants.MOUSE_BUTTON_RIGHT, KEY_CATEGORY,
+            CooKeyBindingTriggerScope.NON_GUI
+        )
+
+        CooKeyBindingManager.register(
+            UsefulMagicKeys.EXCHANGE_MAGIC,
+            InputConstants.Type.KEYSYM,
+            InputConstants.KEY_Y, KEY_CATEGORY
         )
     }
 
@@ -36,6 +46,7 @@ object UsefulMagicClient {
 
     fun tickClient() {
         ensureRenderEntitiesInitialized()
+        MagicExchangeOverlay.tickClient()
         val minecraft = Minecraft.getInstance()
         if (friendUIBinding.isDown) {
             minecraft.setScreen(FriendManagerScreen())

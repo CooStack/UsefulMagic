@@ -1,10 +1,12 @@
-﻿package cn.coostack.usefulmagic.particles.composition.skill
+package cn.coostack.usefulmagic.particles.composition.skill
 
+import cn.coostack.cooparticlesapi.cparticle.CParticleRenderLayer
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoParticleComposition
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
+import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.usefulmagic.utils.ParticleOption
 import java.util.UUID
 import kotlin.math.PI
@@ -37,11 +39,10 @@ class BookShootSkillComposition(
             .addPolygonInCircle(3, 10 * option, 5.0)
             .createWithCompositionData {
                 CompositionData().setDisplayerSupplier {
-                    ParticleDisplayer.withSingle(
-                        ControlableEndRodEffect(it)
-                    )
-                }.addParticleInstanceInit {
-                    colorOfRGB(255, 200, 100)
+                    ParticleDisplayer.withCParticle(it, CParticleRenderLayer.OPAQUE)
+                }.addCParticleInstanceInit {
+                    effect = ControlableEndRodEffect(UUID.randomUUID())
+                    color = Math3DUtil.colorOf(255, 200, 100)
                     size = 0.3f
                 }
             }

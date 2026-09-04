@@ -48,6 +48,9 @@ pluginManagement {
             }
         }
     }
+    plugins {
+        id "org.jetbrains.kotlin.kapt" version '2.2.0'
+    }
 }
 
 plugins {

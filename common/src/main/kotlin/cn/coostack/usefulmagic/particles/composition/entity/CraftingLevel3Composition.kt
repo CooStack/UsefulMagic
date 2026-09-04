@@ -2,6 +2,8 @@ package cn.coostack.usefulmagic.particles.composition.entity
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
+import cn.coostack.cooparticlesapi.cparticle.CParticleCurve
+import cn.coostack.cooparticlesapi.cparticle.CParticleRenderLayer
 import cn.coostack.cooparticlesapi.network.buffer.ParticleControlerDataBuffer
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoSequencedParticleComposition
 import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
@@ -14,6 +16,7 @@ import cn.coostack.cooparticlesapi.network.particle.style.ParticleStyleProvider
 import cn.coostack.cooparticlesapi.network.particle.style.SequencedParticleStyle
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableEndRodEffect
+import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.cooparticlesapi.utils.helper.HelperUtil
@@ -21,7 +24,6 @@ import cn.coostack.cooparticlesapi.utils.helper.buffer.ControlableBuffer
 import cn.coostack.cooparticlesapi.utils.helper.buffer.ControlableBufferHelper
 import cn.coostack.cooparticlesapi.utils.helper.impl.StyleStatusHelper
 import cn.coostack.usefulmagic.utils.ParticleOption
-import net.minecraft.client.particle.ParticleRenderType
 import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.world.level.Level
@@ -60,21 +62,24 @@ class CraftingLevel3Composition(
     }
 
     override fun onDisplay() {
+        var syncedAnimationIndex = animate.animationIndex
         addPreTickAction {
             age++
+            if (!client && syncedAnimationIndex != animate.animationIndex) {
+                syncedAnimationIndex = animate.animationIndex
+                markDirty()
+            }
             rotateAsAxis(PI / 64)
         }
     }
 
     fun ParticleComposition.doWithAlpha(alphaTick: Int = 10) {
-        val alphaHelper = HelperUtil.alphaStyle(0.0, 1.0, alphaTick)
-        alphaHelper.loadControler(this)
         var reverse = false
         this.addPreTickAction {
             if (!reverse) {
-                alphaHelper.increaseAlpha()
+                playCParticleAlphaTransition(alphaTick.toFloat(), CParticleCurve.linear(0f, 1f))
             } else {
-                alphaHelper.decreaseAlpha()
+                playCParticleAlphaTransition(alphaTick.toFloat(), CParticleCurve.linear(1f, 0f))
             }
             if (status.displayStatus == 2) {
                 reverse = true
@@ -88,10 +93,10 @@ class CraftingLevel3Composition(
         val random = Random(System.currentTimeMillis())
         var order = 0
         fun single(): CompositionData = CompositionData().setDisplayerSupplier {
-            ParticleDisplayer.withSingle(ControlableEndRodEffect(it))
-        }.addParticleInstanceInit {
-            textureSheet = ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT
-            colorOfRGB(210, random.nextInt(100, 140), 255)
+            ParticleDisplayer.withCParticle(it, CParticleRenderLayer.TRANSLUCENT)
+        }.addCParticleInstanceInit {
+            effect = ControlableEndRodEffect(UUID.randomUUID())
+            color = Math3DUtil.colorOf(210, random.nextInt(100, 140), 255)
         }
         res[
             CompositionData().setDisplayerSupplier {

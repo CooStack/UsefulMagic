@@ -5,7 +5,7 @@ import cn.coostack.cooparticlesapi.extend.asRelative
 import cn.coostack.cooparticlesapi.extend.minus
 import cn.coostack.cooparticlesapi.network.particle.composition.manager.ParticleCompositionManager
 import cn.coostack.cooparticlesapi.network.particle.data.minRangeTo
-import cn.coostack.usefulmagic.particles.composition.magic.MeteoriteMagicComposition
+import cn.coostack.usefulmagic.particles.composition.magic.attack.MeteoriteMagicComposition
 import cn.coostack.usefulmagic.particles.emitters.meteorite.MeteoriteTailEmitter
 import cn.coostack.usefulmagic.renderer.MeteoriteAtmosphereFireRenderEntity
 import net.minecraft.core.BlockPos

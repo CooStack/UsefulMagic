@@ -29,6 +29,10 @@ class CooDataTracker {
         trackedTypes[data.id] = data
     }
 
+    fun remove(data: CooTrackedData<*>) {
+        trackedTypes.remove(data.id)
+    }
+
     @Suppress("UNCHECKED_CAST")
     fun <T> get(data: CooTrackedData<T>): T {
         val value = trackedData[data.id]
@@ -39,6 +43,12 @@ class CooDataTracker {
     fun <T> getOrDefault(data: CooTrackedData<T>, default: T): T {
         val value = trackedData[data.id] ?: default
         return runCatching { value as T }.getOrDefault(default)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T> getOrNull(data: CooTrackedData<T>): T? {
+        val value = trackedData[data.id] ?: return null
+        return runCatching { value as T? }.getOrNull()
     }
 
 

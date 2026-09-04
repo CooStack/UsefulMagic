@@ -1,19 +1,12 @@
 ﻿package cn.coostack.usefulmagic.blocks.entity
 
 import cn.coostack.cooparticlesapi.CooParticlesAPI
-import cn.coostack.cooparticlesapi.barrages.HitBox
 import cn.coostack.cooparticlesapi.extend.relativize
 import cn.coostack.cooparticlesapi.network.particle.composition.manager.ParticleCompositionManager
-import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
-import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
-import cn.coostack.cooparticlesapi.network.particle.emitters.type.EmittersShootTypes
 import cn.coostack.cooparticlesapi.network.particle.util.ServerParticleUtil
-import cn.coostack.cooparticlesapi.particles.impl.ControlableCloudEffect
-import cn.coostack.cooparticlesapi.particles.impl.ControlableEnchantmentEffect
-import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.entity.util.MagicBookSpawner
-import cn.coostack.usefulmagic.particles.composition.entity.CraftingLevel1Style
+import cn.coostack.usefulmagic.particles.composition.entity.CraftingLevel1Composition
 import cn.coostack.usefulmagic.particles.composition.entity.CraftingLevel2Composition
 import cn.coostack.usefulmagic.particles.composition.entity.CraftingLevel3Composition
 import cn.coostack.usefulmagic.recipe.AltarRecipeType
@@ -403,7 +396,7 @@ class MagicCoreBlockEntity(pos: BlockPos, state: BlockState) :
     private fun spawnStyleLevel1(): (Boolean) -> Unit {
         if (level!!.isClientSide) return {}
         val toCenterPos = worldPosition.below(3).center
-        val style = CraftingLevel1Style(toCenterPos, level!!).apply {
+        val style = CraftingLevel1Composition(toCenterPos, level!!).apply {
             r = 4.0
             count = 120 * options
         }

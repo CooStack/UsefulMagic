@@ -2,12 +2,11 @@ package cn.coostack.usefulmagic.entity.custom.dragon.emitters
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
+import cn.coostack.cooparticlesapi.cparticle.force.CParticleForce
 import cn.coostack.cooparticlesapi.network.particle.emitters.AutoParticleEmitters
+import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableCParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.SimpleRandomParticleData
-import cn.coostack.cooparticlesapi.network.particle.emitters.command.ParticleCommandQueue
-import cn.coostack.cooparticlesapi.network.particle.emitters.command.ParticleDragCommand
-import cn.coostack.cooparticlesapi.network.particle.emitters.command.ParticleNoiseCommand
 import cn.coostack.cooparticlesapi.particles.control.ParticleControler
 import cn.coostack.cooparticlesapi.utils.PhysicsUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
@@ -22,12 +21,11 @@ import kotlin.random.Random
 @CooAutoRegister
 class TrackingTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, world) {
 
-
     @CodecField
     var simpleConfig = SimpleRandomParticleData()
 
     @CodecField
-    var particleConfig = ControlableParticleData()
+    var particleConfig = ControlableCParticleData()
 
     @CodecField
     var offsetNoise = 0.5
@@ -58,19 +56,12 @@ class TrackingTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, 
         emittersInterpolator.setRefiner(2.5)
     }
 
-    private fun buildCommandQueue(): ParticleCommandQueue {
-        return ParticleCommandQueue()
-            .add(
-                ParticleDragCommand()
-                    .damping(0.03)
-                    .minSpeed(0.1)
-                    .linear(0.0)
-            )
-            .add(
-                ParticleNoiseCommand()
-                    .strength(noiseStrength)
-                    .clampSpeed(16.20)
-            )
+
+    override fun cparticleForces(): List<CParticleForce> {
+        return listOf(
+            CParticleForce.ExpDrag(0.03,0.1),
+            CParticleForce.Noise(noiseStrength, clampSpeed = 16.2)
+        )
     }
 
     override fun doTick() {
@@ -118,14 +109,5 @@ class TrackingTailEmitter(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, 
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
-        // 不断吸附到trackingTarget (设置多种吸附动作）
-        var command: ParticleCommandQueue? = null
-        controler.addPreTickAction {
-            val queue = command ?: buildCommandQueue().also { command = it }
-            queue.updateWithTypes<ParticleNoiseCommand> {
-                strength(noiseStrength)
-            }
-            queue.applyVelocity(data, this)
-        }
     }
 }

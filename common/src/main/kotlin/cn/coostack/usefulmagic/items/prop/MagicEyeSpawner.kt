@@ -1,6 +1,6 @@
 package cn.coostack.usefulmagic.items.prop
 
-import cn.coostack.cooparticlesapi.sound.ServerSoundManager
+import cn.coostack.cooparticlesapi.supports.sound.ServerSoundManager
 import cn.coostack.usefulmagic.entity.custom.dragon.MagicDragonEntity
 import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicEyeEntity
 import cn.coostack.usefulmagic.entity.custom.dragon.spawn.DragonSpawner

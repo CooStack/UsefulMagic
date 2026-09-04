@@ -4,6 +4,7 @@ import cn.coostack.cooparticlesapi.extend.relativize
 import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmittersManager
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.usefulmagic.entity.custom.book.MagicBookEntity
+import cn.coostack.usefulmagic.gamerules.UsefulMagicGameRules
 import cn.coostack.usefulmagic.particles.emitters.ExplodeMagicEmitters
 import cn.coostack.usefulmagic.particles.emitters.LightningParticleEmitters
 import cn.coostack.usefulmagic.skill.api.Skill
@@ -30,9 +31,15 @@ class LightningShootSkill : Skill<MagicBookEntity> {
 
     private fun handleMultipleDamage(source: LivingEntity) {
         val world = source.level()
+        // 关闭魔法地形破坏时使用 NONE(等价于 BlockInteraction.KEEP): 仍造成实体伤害, 但不破坏方块。
+        val interaction = if (UsefulMagicGameRules.canDestroyTerrain(world)) {
+            Level.ExplosionInteraction.MOB
+        } else {
+            Level.ExplosionInteraction.NONE
+        }
         world.explode(
             source,
-            source.x, source.y, source.z, 10f, false, Level.ExplosionInteraction.MOB
+            source.x, source.y, source.z, 10f, false, interaction
         )
     }
 

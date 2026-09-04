@@ -1,121 +1,179 @@
 package cn.coostack.usefulmagic.renderer
 
-import cn.coostack.cooparticlesapi.renderer.backend.RenderBackendCapability
-import cn.coostack.cooparticlesapi.renderer.post.CooPostEffectTypes
-import cn.coostack.cooparticlesapi.renderer.post.PostEffectInstance
-import cn.coostack.cooparticlesapi.renderer.post.PostEffectLifecycle
-import cn.coostack.cooparticlesapi.renderer.post.PostEffectParamValue
+import cn.coostack.cooparticlesapi.extend.ofID
+import cn.coostack.cooparticlesapi.renderer.pipeline.CooShaderEffectPlayback
+import cn.coostack.cooparticlesapi.renderer.pipeline.CooShaderEffects
+import cn.coostack.cooparticlesapi.renderer.pipeline.CooUniformValue
 import cn.coostack.usefulmagic.UsefulMagic
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.phys.Vec3
 
+/**
+ * 注册并播放 UsefulMagic 的屏幕后处理效果。
+ *
+ * 服务端调用示例：
+ * ```kotlin
+ * UsefulMagicPostEffects.playRgbDashBlur(player, 40, 1F, 2F)
+ * ```
+ */
 object UsefulMagicPostEffects {
+    /** 火焰爆炸闪光的注册路径。 */
+    private const val FLAME_EXPLODE_FLASH_ID = "flame_explode_flash"
 
-    private fun id(path: String): ResourceLocation {
-        return ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, path)
+    /** RGB 分离径向模糊的注册路径。 */
+    private const val RGB_DASH_BLUR_ID = "rgb_dash_blur"
+
+    /** 火焰爆炸闪光的注册实例。 */
+    val FLAME_EXPLODE_FLASH = CooShaderEffects.register(id(FLAME_EXPLODE_FLASH_ID)) {
+        fragment(shader(FLAME_EXPLODE_FLASH_ID))
+        inputSceneColor("scene")
+        outputToScreen()
     }
 
-    private fun shader(path: String): ResourceLocation {
-        return ResourceLocation.fromNamespaceAndPath(UsefulMagic.MOD_ID, "post/$path.fsh")
+    /** 冲刺 RGB 分离径向模糊的注册实例。 */
+    val RGB_DASH_BLUR = CooShaderEffects.register(id(RGB_DASH_BLUR_ID)) {
+        fragment(shader(RGB_DASH_BLUR_ID))
+        inputSceneColor("scene")
+        outputToScreen()
     }
 
-    val FLAME_EXPLODE_FLASH = CooPostEffectTypes.register(
-        id("flame_explode_flash")
-    ) {
-        screenQuad()
-        require(RenderBackendCapability.FINAL_FRAME_POST)
-        require(RenderBackendCapability.SCENE_COLOR_COPY)
-        pass(
-            "explode_flash",
-            shader("flame_explode_flash")
-        ) {
-            inputSceneColor("scene")
-
-            uniform("time") {
-                it.params["time"] ?: PostEffectParamValue.FloatValue(0f)
-            }
-            uniform("strength") {
-                it.params["strength"] ?: PostEffectParamValue.FloatValue(1f)
-            }
-            uniform("warmth") {
-                it.params["warmth"] ?: PostEffectParamValue.FloatValue(1f)
-            }
-            uniform("flashColor") {
-                it.params["flashColor"] ?: PostEffectParamValue.Vec3Value(0.8, 0.5, 0.2)
-            }
-            outputToFinalScreen()
-        }
-        outputToFinalScreen()
-    }
-
-    val RGB_DASH_BLUR = CooPostEffectTypes.register(
-        id("rgb_dash_blur")
-    ) {
-        screenQuad()
-        require(RenderBackendCapability.FINAL_FRAME_POST)
-        require(RenderBackendCapability.SCENE_COLOR_COPY)
-        pass(
-            "rgb_dash_blur",
-            shader("rgb_dash_blur")
-        ) {
-            inputSceneColor("scene")
-
-            uniform("time") {
-                it.params["time"] ?: PostEffectParamValue.FloatValue(0f)
-            }
-            uniform("strength") {
-                it.params["strength"] ?: PostEffectParamValue.FloatValue(1f)
-            }
-            uniform("chromaticStrength") {
-                it.params["chromaticStrength"] ?: PostEffectParamValue.FloatValue(1f)
-            }
-            uniform("blurStrength") {
-                it.params["blurStrength"] ?: PostEffectParamValue.FloatValue(1f)
-            }
-
-            outputToFinalScreen()
-        }
-        outputToFinalScreen()
-    }
-
-    fun flameExplodeFlash(
+    /**
+     * 向指定玩家播放火焰爆炸闪光。
+     *
+     * ```kotlin
+     * val playback = UsefulMagicPostEffects.playFlameExplodeFlash(player)
+     * ```
+     *
+     * @param player 接收效果的服务端玩家
+     * @param durationTicks 持续时间，单位为 tick，最小按 1 处理
+     * @param strength 闪光强度
+     * @param warmth 暖色混合强度
+     * @param color 闪光颜色
+     * @return 可继续控制本次播放的句柄
+     */
+    fun playFlameExplodeFlash(
+        player: ServerPlayer,
         durationTicks: Int = 18,
-        strength: Float = 1f,
-        warmth: Float = 1f,
-        color: Vec3 = Vec3(0.8, 0.5, 0.2)
-    ): PostEffectInstance {
-        return FLAME_EXPLODE_FLASH.create(
-            lifecycle = PostEffectLifecycle(durationTicks = durationTicks.coerceAtLeast(1))
-        ).bindScreen().params {
-            float("strength", strength)
-            float("warmth", warmth)
-            vec3("flashColor", color.x, color.y, color.z)
+        strength: Float = 1F,
+        warmth: Float = 1F,
+        color: Vec3 = Vec3(0.8, 0.5, 0.2),
+    ): CooShaderEffectPlayback {
+        return FLAME_EXPLODE_FLASH.play(player) {
+            duration(durationTicks.coerceAtLeast(1))
+            uniform("strength", strength)
+            uniform("warmth", warmth)
+            uniform(
+                "flashColor",
+                CooUniformValue.Vec3Value(color.x.toFloat(), color.y.toFloat(), color.z.toFloat()),
+            )
         }
     }
 
     /**
-     * 创建冲刺用 RGB 分离径向模糊后处理。
+     * 向指定维度中的全部玩家播放火焰爆炸闪光。
      *
-     * @param durationTicks 效果持续 tick 数，小于 1 时按 1 tick 处理；生命周期会驱动 shader 的 progress 淡出。
-     * @param strength 整体效果强度，影响模糊、色散、中心提亮和边缘压暗的共同脉冲。
-     * @param chromaticStrength RGB 色散强度，越大红绿蓝通道分离偏移越明显。
-     * @param blurStrength 向屏幕中心方向采样的径向模糊强度，越大拖影越长、最终模糊混合越明显。
+     * ```kotlin
+     * UsefulMagicPostEffects.playFlameExplodeFlash(level, durationTicks = 20)
+     * ```
+     *
+     * @param level 目标服务端维度
+     * @param durationTicks 持续时间，单位为 tick，最小按 1 处理
+     * @param strength 闪光强度
+     * @param warmth 暖色混合强度
+     * @param color 闪光颜色
      */
-    fun rgbDashBlur(
-        durationTicks: Int = 14,
-        strength: Float = 1f,
-        chromaticStrength: Float = 1f,
-        blurStrength: Float = 1f
-    ): PostEffectInstance {
-        return RGB_DASH_BLUR.create(
-            lifecycle = PostEffectLifecycle(durationTicks = durationTicks.coerceAtLeast(1))
-        ).bindScreen().params {
-            float("strength", strength)
-            float("chromaticStrength", chromaticStrength)
-            float("blurStrength", blurStrength)
+    fun playFlameExplodeFlash(
+        level: ServerLevel,
+        durationTicks: Int = 18,
+        strength: Float = 1F,
+        warmth: Float = 1F,
+        color: Vec3 = Vec3(0.8, 0.5, 0.2),
+    ) {
+        level.players().forEach { player ->
+            playFlameExplodeFlash(player, durationTicks, strength, warmth, color)
         }
     }
 
+    /**
+     * 向指定玩家播放冲刺 RGB 分离径向模糊。
+     *
+     * ```kotlin
+     * val playback = UsefulMagicPostEffects.playRgbDashBlur(player, 40, 1F, 2F)
+     * ```
+     *
+     * @param player 接收效果的服务端玩家
+     * @param durationTicks 持续时间，单位为 tick，最小按 1 处理
+     * @param strength 整体效果强度
+     * @param chromaticStrength RGB 分离强度
+     * @param blurStrength 径向模糊强度
+     * @return 可继续控制本次播放的句柄
+     */
+    fun playRgbDashBlur(
+        player: ServerPlayer,
+        durationTicks: Int = 14,
+        strength: Float = 1F,
+        chromaticStrength: Float = 1F,
+        blurStrength: Float = 1F,
+    ): CooShaderEffectPlayback {
+        return RGB_DASH_BLUR.play(player) {
+            duration(durationTicks.coerceAtLeast(1))
+            uniform("strength", strength)
+            uniform("chromaticStrength", chromaticStrength)
+            uniform("blurStrength", blurStrength)
+        }
+    }
+
+    /**
+     * 向指定维度中的全部玩家播放冲刺 RGB 分离径向模糊。
+     *
+     * ```kotlin
+     * UsefulMagicPostEffects.playRgbDashBlur(level, durationTicks = 20)
+     * ```
+     *
+     * @param level 目标服务端维度
+     * @param durationTicks 持续时间，单位为 tick，最小按 1 处理
+     * @param strength 整体效果强度
+     * @param chromaticStrength RGB 分离强度
+     * @param blurStrength 径向模糊强度
+     */
+    fun playRgbDashBlur(
+        level: ServerLevel,
+        durationTicks: Int = 14,
+        strength: Float = 1F,
+        chromaticStrength: Float = 1F,
+        blurStrength: Float = 1F,
+    ) {
+        level.players().forEach { player ->
+            playRgbDashBlur(player, durationTicks, strength, chromaticStrength, blurStrength)
+        }
+    }
+
+    /**
+     * 触发对象初始化并完成效果注册。
+     *
+     * ```kotlin
+     * UsefulMagicPostEffects.init()
+     * ```
+     */
     fun init() = Unit
 
+    /**
+     * 创建 UsefulMagic 命名空间下的效果 ID。
+     *
+     * @return 使用模组命名空间的资源 ID
+     */
+    private fun id(path: String): ResourceLocation {
+        return ofID(UsefulMagic.MOD_ID, path)
+    }
+
+    /**
+     * 创建 UsefulMagic 后处理 fragment shader 的资源 ID。
+     *
+     * @return 指向 `shaders/post` 资源的 ID
+     */
+    private fun shader(path: String): ResourceLocation {
+        return ofID(UsefulMagic.MOD_ID, "post/$path.fsh")
+    }
 }

@@ -81,6 +81,9 @@ class UsefulMagicZHLangProvider(
             add(UsefulMagicItems.STARRY_MAGIC, "群星魔法")
             add(UsefulMagicItems.ANTI_ENTITY_DOMAIN_MAGIC, "反实体领域魔法")
             add(UsefulMagicItems.EXPLOSION_MAGIC, "§c§l爆裂魔法")
+            add(UsefulMagicItems.BLOOM_MAGIC, "盛开魔法")
+            add(UsefulMagicItems.PUSH_MAGIC, "风吹魔法")
+            add(UsefulMagicItems.DIGGING_MAGIC, "挖掘魔法")
 
             // entity 信息
             add(UsefulMagicEntityTypes.MAGIC_BOOK_ENTITY_TYPE, "禁忌魔典")
@@ -164,6 +167,11 @@ class UsefulMagicZHLangProvider(
             add("item.usefulmagic.magic.base_usage", "§7法术基本蓄力: %s")
 
             add("item.usefulmagic.magic.barrage_magic", "§7蓄力释放一个魔法球")
+            add("item.usefulmagic.items.push_magic", "§7推开前方的实体\n§7也许会有点痛")
+            add(
+                "item.usefulmagic.items.bloom_magic",
+                "§a将万物化春吧，释放后可以催熟周围的作物\n§a§n创造属于你的花田吧!"
+            )
             add("item.usefulmagic.spell_bag.fullness", "§7法术: %s/%s")
             add("item.usefulmagic.spell_bag.empty", "空")
 
@@ -347,6 +355,9 @@ class UsefulMagicZHLangProvider(
             add("item.usefulmagic.prefer.level3", "§a明显偏好");
             add("item.usefulmagic.prefer.level4", "§a强烈偏好");
             add("item.usefulmagic.prefer.level5", "§a极度偏好");
+
+            // game rules
+            add("gamerule.magicTerrainDestruction", "魔法地形破坏")
 
         }
     }

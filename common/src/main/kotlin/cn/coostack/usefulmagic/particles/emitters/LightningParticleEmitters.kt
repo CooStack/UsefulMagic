@@ -2,27 +2,26 @@ package cn.coostack.usefulmagic.particles.emitters
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
+import cn.coostack.cooparticlesapi.cparticle.force.CParticleForce
 import cn.coostack.cooparticlesapi.extend.asRelative
 import cn.coostack.cooparticlesapi.extend.minus
 import cn.coostack.cooparticlesapi.network.particle.data.minRangeTo
 import cn.coostack.cooparticlesapi.network.particle.emitters.AutoParticleEmitters
+import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableCParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.SimpleRandomParticleData
 import cn.coostack.cooparticlesapi.particles.control.ParticleControler
-import cn.coostack.cooparticlesapi.utils.GraphMathHelper
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.utils.ParticleOption
-import net.minecraft.world.phys.Vec3
 import net.minecraft.world.level.Level
-import kotlin.math.cos
-import kotlin.math.sin
+import net.minecraft.world.phys.Vec3
 
 // 碎片
 @CooAutoRegister
 class LightningParticleEmitters(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, world) {
     @CodecField
-    var templateData = ControlableParticleData()
+    var templateData = ControlableCParticleData()
 
     // 相对位置
     @CodecField
@@ -38,6 +37,13 @@ class LightningParticleEmitters(pos: Vec3, world: Level?) : AutoParticleEmitters
     var subCount = 7 minRangeTo 9
 
     override fun doTick() {
+    }
+
+    override fun cparticleForces(): List<CParticleForce> {
+        return listOf(
+            CParticleForce.FlowField(0.08, 0.2, timeScale = 1.5),
+            CParticleForce.ExpDrag(0.2, 0.0, 0.005)
+        )
     }
 
     val options
@@ -69,25 +75,6 @@ class LightningParticleEmitters(pos: Vec3, world: Level?) : AutoParticleEmitters
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
-        controler.addPreTickAction {
-            val p = loc.add(this@LightningParticleEmitters.pos)
-            val t = currentAge.toDouble() + 0.1
-            val frequency = 0.2
-            val amplitude = 0.08
-            val fx = sin((p.y + t) * frequency) + cos((p.z - t) * frequency)
-            val fy = sin((p.z + t) * frequency) + cos((p.x + t) * frequency)
-            val fz = sin((p.x - t) * frequency) + cos((p.y - t) * frequency)
-            data.velocity = data.velocity.add(Vec3(fx * 0.5, fy * 0.5, fz * 0.5).scale(amplitude))
-
-            val speed = data.velocity.length()
-            if (speed <= 0.01) {
-                data.velocity = Vec3.ZERO
-                return@addPreTickAction
-            }
-            data.velocity = data.velocity
-                .scale(GraphMathHelper.expDampFactor(0.2, 1.0))
-                .scale(0.995)
-        }
     }
 
 }

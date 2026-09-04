@@ -1,78 +1,49 @@
 package cn.coostack.usefulmagic.particles.emitters.explosion
 
+import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
-import cn.coostack.cooparticlesapi.extend.random
-import cn.coostack.cooparticlesapi.network.particle.emitters.ClassParticleEmitters
+import cn.coostack.cooparticlesapi.cparticle.force.CParticleForce
+import cn.coostack.cooparticlesapi.network.particle.emitters.AutoParticleEmitters
+import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableCParticleData
 import cn.coostack.cooparticlesapi.network.particle.emitters.ControlableParticleData
-import cn.coostack.cooparticlesapi.network.particle.emitters.ParticleEmitters
-import cn.coostack.cooparticlesapi.api.controler.Controlable
 import cn.coostack.cooparticlesapi.particles.control.ParticleControler
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
-import cn.coostack.cooparticlesapi.utils.helper.emitters.LinearResistanceHelper
-import cn.coostack.usefulmagic.extend.multiply
-
-import net.minecraft.network.RegistryFriendlyByteBuf
-
-import net.minecraft.network.codec.StreamCodec
-import net.minecraft.world.phys.Vec3
 import net.minecraft.world.level.Level
+import net.minecraft.world.phys.Vec3
 import kotlin.random.Random
-import kotlin.random.nextInt
 
 @CooAutoRegister
-class ExplosionWaveEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(pos, world) {
-    var templateData = ControlableParticleData()
+class ExplosionWaveEmitters(pos: Vec3, world: Level?) : AutoParticleEmitters(pos, world) {
+    @CodecField
+    var templateData = ControlableCParticleData()
 
     // 圆生成时的半径大小
+    @CodecField
     var waveSize = 1.0
 
     // 冲击波的扩散速度
+    @CodecField
     var waveSpeed = 0.2
 
+    @CodecField
     var speedDrag = 0.95
 
     // 生成冲击波圆环时的粒子个数范围
+    @CodecField
     var waveCircleCountMin = 60
+
+    @CodecField
     var waveCircleCountMax = 120
 
+    @CodecField
     var discrete = 0.1
 
+    @CodecField
     var randomVector = false
+
+    @CodecField
     var randomSpeed = 0.1
-
-    companion object {
-        const val ID = "explosion-wave-magic-emitters"
-        val CODEC = StreamCodec.of<RegistryFriendlyByteBuf, ParticleEmitters>(
-            { buf, data ->
-                data as ExplosionWaveEmitters
-                encodeBase(data, buf)
-                ControlableParticleData.PACKET_CODEC.encode(buf, data.templateData)
-                buf.writeDouble(data.waveSize)
-                buf.writeDouble(data.waveSpeed)
-                buf.writeDouble(data.speedDrag)
-                buf.writeInt(data.waveCircleCountMin)
-                buf.writeInt(data.waveCircleCountMax)
-                buf.writeDouble(data.discrete)
-                buf.writeBoolean(data.randomVector)
-                buf.writeDouble(data.randomSpeed)
-            }, {
-                val container = ExplosionWaveEmitters(Vec3.ZERO, null)
-                decodeBase(container, it)
-                container.templateData = ControlableParticleData.PACKET_CODEC.decode(it)
-                container.waveSize = it.readDouble()
-                container.waveSpeed = it.readDouble()
-                container.speedDrag = it.readDouble()
-                container.waveCircleCountMin = it.readInt()
-                container.waveCircleCountMax = it.readInt()
-                container.discrete = it.readDouble()
-                container.randomVector = it.readBoolean()
-                container.randomSpeed = it.readDouble()
-                container
-            }
-        )
-
-    }
 
     override fun doTick() {
     }
@@ -86,8 +57,19 @@ class ExplosionWaveEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(po
                 templateData.clone()
                     .apply {
                         velocity = it.clone().multiply(waveSpeed).toVector()
+                        maxAge += random.nextInt(-maxAge / 4, (maxAge / 3).coerceAtLeast(1))
                     } to it
             }
+    }
+
+    override fun cparticleForces(): List<CParticleForce> {
+        val res = arrayListOf<CParticleForce>()
+
+        res += CParticleForce.ExpDrag(1 - speedDrag, 0.0, 0.0)
+        if (randomVector) {
+            res += CParticleForce.Noise(randomSpeed, clampSpeed = waveSpeed * 1.5)
+        }
+        return res
     }
 
     override fun singleParticleAction(
@@ -98,24 +80,5 @@ class ExplosionWaveEmitters(pos: Vec3, world: Level?) : ClassParticleEmitters(po
         particleLerpProgress: Float,
         posLerpProgress: Float
     ) {
-        data.maxAge += random.nextInt(-data.maxAge / 4, (data.maxAge / 3).coerceAtLeast(1))
-        controler.addPreTickAction {
-            data.velocity = LinearResistanceHelper.setPercentageVelocity(
-                data.velocity, speedDrag
-            )
-            if (randomVector) {
-                data.velocity = data.velocity.add(
-                    Vec3.ZERO.random().multiply(random.nextDouble(-randomSpeed, randomSpeed))
-                )
-            }
-        }
-    }
-
-    override fun getEmittersID(): String {
-        return ID
-    }
-
-    override fun getCodec(): StreamCodec<RegistryFriendlyByteBuf, ParticleEmitters> {
-        return CODEC
     }
 }

@@ -9,7 +9,7 @@ import cn.coostack.usefulmagic.entity.custom.dragon.MagicDragonEntity
 import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicHeartEntity
 import cn.coostack.usefulmagic.entity.custom.dragon.phases.DragonHoverFlightPhase
 import cn.coostack.usefulmagic.entity.custom.dragon.playDragonSoundOnce
-import cn.coostack.usefulmagic.entity.custom.dragon.skills.emitter.MagicRuneRingComposition
+import cn.coostack.usefulmagic.entity.custom.dragon.skills.composition.MagicRuneRingComposition
 import cn.coostack.usefulmagic.extend.boxCenterPosition
 import cn.coostack.usefulmagic.particles.emitters.LightningParticleEmitters
 import net.minecraft.sounds.SoundEvents
@@ -85,8 +85,8 @@ class DragonHealingSkill : DragonSkill() {
                     minSize = 0.1
                     maxSize = 0.3
                 }
-                spawn(world!!, pos)
                 maxTick = 1
+                spawn(world!!, pos)
             }
             it.kill()
         }

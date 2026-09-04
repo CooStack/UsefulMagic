@@ -101,8 +101,8 @@ class MagicSwordSkill : Skill<MagicBookEntity>, SkillCondition<MagicBookEntity>,
             val it = entry.key
             it.options.maxLivingTick = maxLivingTickOrigin + 120
             it.options.noneHitBoxTick = 0
-            it.options.speed = 0.01
-            it.options.acceleration = 0.005
+            it.options.speed = 0.02
+            it.options.acceleration(0.2)
             it.options.accelerationMaxSpeedEnabled = true
             it.options.accelerationMaxSpeed = 2.0
             // 设置朝向

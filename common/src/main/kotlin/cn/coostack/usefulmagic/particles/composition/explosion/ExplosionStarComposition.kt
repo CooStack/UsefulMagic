@@ -1,13 +1,13 @@
-﻿package cn.coostack.usefulmagic.particles.composition.explosion
+package cn.coostack.usefulmagic.particles.composition.explosion
 
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.network.particle.composition.AutoSequencedParticleComposition
 import cn.coostack.cooparticlesapi.network.particle.composition.CompositionData
 import cn.coostack.cooparticlesapi.network.particle.composition.ParticleShapeComposition
-import cn.coostack.cooparticlesapi.particles.CooParticleTextureSheet
 import cn.coostack.cooparticlesapi.particles.ParticleDisplayer
 import cn.coostack.cooparticlesapi.particles.impl.ControlableFireworkEffect
+import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.cooparticlesapi.utils.builder.PointsBuilder
 import cn.coostack.usefulmagic.utils.ParticleOption
@@ -66,17 +66,15 @@ class ExplosionStarComposition(
                                 )
                         ) { it ->
                             CompositionData().setDisplayerSupplier { it ->
-                                ParticleDisplayer.withSingle(
-                                    ControlableFireworkEffect(it)
-                                )
-                            }.addParticleInstanceInit {
+                                ParticleDisplayer.withCParticle(it)
+                            }.addCParticleInstanceInit {
+                                effect = ControlableFireworkEffect(UUID.randomUUID())
                                 this.size = 0.1f
-                                colorOfRGB(
+                                color = Math3DUtil.colorOf(
                                     random.nextInt(170, 255),
                                     random.nextInt(180, 255),
                                     random.nextInt(230, 255),
                                 )
-                                textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
                             }
                         }
                         .applyDisplayAction {
@@ -114,16 +112,14 @@ class ExplosionStarComposition(
                                 )
                         ) { it ->
                             CompositionData().setDisplayerSupplier { it ->
-                                ParticleDisplayer.withSingle(
-                                    ControlableFireworkEffect(it)
-                                )
-                            }.addParticleInstanceInit {
-                                colorOfRGB(
+                                ParticleDisplayer.withCParticle(it)
+                            }.addCParticleInstanceInit {
+                                effect = ControlableFireworkEffect(UUID.randomUUID())
+                                color = Math3DUtil.colorOf(
                                     random.nextInt(230, 255),
                                     random.nextInt(130, 180),
                                     random.nextInt(130, 180),
                                 )
-                                textureSheet = CooParticleTextureSheet.ADDITION_BLEND_TRANSLUCENT
                             }
                         }
                         .applyDisplayAction {
@@ -158,14 +154,15 @@ class ExplosionStarComposition(
         addPreTickAction {
             if (age == 1 && !client) {
                 addSingle()
+                markDirty()
             }
             if (age++ > maxAge) {
                 status.disable()
             }
             if (age == maxAge / 2 && !client) {
                 addSingle()
+                markDirty()
             }
         }
     }
 }
-
