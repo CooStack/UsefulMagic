@@ -61,8 +61,7 @@ class ExplosionBeamRenderEntityRenderer : RenderEntityRenderer<ExplosionBeamRend
     /** 光柱本体及其辉光使用的渲染 Pipeline。 */
     override val pipeline = UsefulMagicShaderPipelines.maskBloom<ExplosionBeamRenderEntity>(
         renderEntityId = ExplosionBeamRenderEntity.ID,
-        blurSigma = 7.2F,
-        blurRange = 5.8F,
+        bloomMipLevels = 5,
         intensity = 2.2F,
         threshold = 0.015F,
         thresholdSoftness = 0.02F,

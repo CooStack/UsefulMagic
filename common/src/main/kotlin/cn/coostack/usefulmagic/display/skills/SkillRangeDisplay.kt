@@ -4,7 +4,7 @@ import cn.coostack.cooparticlesapi.animation.timeline.Eases
 import cn.coostack.cooparticlesapi.annotations.CodecField
 import cn.coostack.cooparticlesapi.annotations.CooAutoRegister
 import cn.coostack.cooparticlesapi.display.AutoDisplayEntity
-import cn.coostack.cooparticlesapi.platform.CooParticlesServices
+import cn.coostack.cooparticlesapi.display.CooParticlesRenderTypes
 import cn.coostack.cooparticlesapi.utils.RelativeLocation
 import cn.coostack.usefulmagic.UsefulMagic
 import com.mojang.blaze3d.vertex.PoseStack
@@ -84,7 +84,7 @@ class SkillRangeDisplay(pos: Vec3, world: Level?) : AutoDisplayEntity(pos, world
         }
         val axisVector = normalizedAxis()
         val solidConsumer = buffer.getBuffer(
-            CooParticlesServices.PLATFORM.getRenderTypesProvider().entityCutoutEmissive(TEXTURE, bright)
+            CooParticlesRenderTypes.entityCutoutEmissive(TEXTURE, bright)
         )
 
         modelMatrixStack.pushPose()

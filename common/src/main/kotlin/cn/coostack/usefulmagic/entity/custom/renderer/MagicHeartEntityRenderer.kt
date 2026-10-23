@@ -1,6 +1,6 @@
 package cn.coostack.usefulmagic.entity.custom.renderer
 
-import cn.coostack.cooparticlesapi.platform.CooParticlesServices
+import cn.coostack.cooparticlesapi.display.CooParticlesRenderTypes
 import cn.coostack.cooparticlesapi.utils.Math3DUtil
 import cn.coostack.usefulmagic.UsefulMagic
 import cn.coostack.usefulmagic.entity.custom.dragon.eye.MagicHeartEntity
@@ -155,7 +155,7 @@ class MagicHeartEntityRenderer(context: EntityRendererProvider.Context) : Entity
         bright: Float = 1f
     ) {
         val solid = buffer.getBuffer(
-            CooParticlesServices.PLATFORM.getRenderTypesProvider().entityCutoutEmissive(texture, bright)
+            CooParticlesRenderTypes.entityCutoutEmissive(texture, bright)
         )
 
         poseStack.pushPose()

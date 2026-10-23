@@ -30,8 +30,7 @@ class BillboardStarRenderEntityRenderer : RenderEntityRenderer<BillboardStarRend
     /** 星芒本体及其辉光使用的渲染 Pipeline。 */
     override val pipeline = UsefulMagicShaderPipelines.maskBloom<BillboardStarRenderEntity>(
         renderEntityId = BillboardStarRenderEntity.ID,
-        blurSigma = 13.0F,
-        blurRange = 9.5F,
+        bloomMipLevels = 6,
         intensity = 4.6F,
         baseMaskIntensity = 0.36F,
         thresholdSoftness = 0.02F,

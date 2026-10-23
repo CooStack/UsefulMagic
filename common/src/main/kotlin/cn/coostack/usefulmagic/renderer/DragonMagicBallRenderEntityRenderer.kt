@@ -25,8 +25,7 @@ class DragonMagicBallRenderEntityRenderer : RenderEntityRenderer<DragonMagicBall
     /** 魔法球本体及其辉光使用的渲染 Pipeline。 */
     override val pipeline = UsefulMagicShaderPipelines.maskBloom<DragonMagicBallRenderEntity>(
         renderEntityId = DragonMagicBallRenderEntity.ID,
-        blurSigma = 4.6F,
-        blurRange = 3.2F,
+        bloomMipLevels = 4,
         intensity = 1.05F,
         baseMaskIntensity = 0.06F,
         threshold = 0.08F,

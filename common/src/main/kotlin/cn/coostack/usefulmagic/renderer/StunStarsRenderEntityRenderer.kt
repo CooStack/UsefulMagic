@@ -33,8 +33,7 @@ class StunStarsRenderEntityRenderer : RenderEntityRenderer<StunStarsRenderEntity
     /** 星形本体和拖尾辉光使用的渲染 Pipeline。 */
     override val pipeline = UsefulMagicShaderPipelines.maskBloom<StunStarsRenderEntity>(
         renderEntityId = StunStarsRenderEntity.ID,
-        blurSigma = 7.4F,
-        blurRange = 5.2F,
+        bloomMipLevels = 5,
         intensity = 2.2F,
         baseMaskIntensity = 0.20F,
         threshold = 0.01F,

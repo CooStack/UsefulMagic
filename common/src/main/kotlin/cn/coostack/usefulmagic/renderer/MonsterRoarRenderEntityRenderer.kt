@@ -30,8 +30,7 @@ class MonsterRoarRenderEntityRenderer : RenderEntityRenderer<MonsterRoarRenderEn
     /** 咆哮锥体及其辉光使用的渲染 Pipeline。 */
     override val pipeline = UsefulMagicShaderPipelines.maskBloom<MonsterRoarRenderEntity>(
         renderEntityId = MonsterRoarRenderEntity.ID,
-        blurSigma = 6.2F,
-        blurRange = 4.6F,
+        bloomMipLevels = 5,
         intensity = 1.55F,
         threshold = 0.018F,
         thresholdSoftness = 0.03F,
